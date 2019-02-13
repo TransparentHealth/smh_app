@@ -24,9 +24,8 @@ First clone the repository from Github and switch to the new directory::
     $ cd smh-organization
 
 To setup your local environment you can use the quickstart make target `setup`, which will
-install both Python and Javascript dependencies (via pip and npm) into a virtualenv named
-"smh_organization", configure a local django settings file, and create a database via
-Postgres named "smh_organization" with all migrations run::
+install both Python (via pip) into a virtualenv named "smh_organization",
+and create a database via Postgres named "smh_organization" with all migrations run::
 
     $ make setup
     $ workon smh_organization
