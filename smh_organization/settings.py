@@ -53,7 +53,7 @@ ROOT_URLCONF = 'smh_organization.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates', 'smh_organization'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
