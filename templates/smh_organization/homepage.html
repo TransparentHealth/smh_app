@@ -5,7 +5,7 @@
 Welcome to the homepage!
 
 {% if request.user.is_authenticated %}
-  <button>Authenticate</button>
+  <a href="{% url 'social:begin' 'oauth2io' %}">Authenticate</a>
 {% else %}
   <a href="{% url 'login' %}">Log in</a>
 {% endif %}

@@ -21,5 +21,6 @@ from django.urls import include, path
 urlpatterns = [
     path('', TemplateView.as_view(template_name='homepage.html'), name='home'),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('social_auth', include('social_django.urls', namespace='social')),
     path('admin/', admin.site.urls),
 ]
