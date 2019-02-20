@@ -30,6 +30,25 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+
+Health
+
+Grey
+
+Running Version
+
+v07ec78b
+
+Upload and Deploy
+
+Configuration
+
+Docker running on 64bit Amazon Linux/2.12.3
+
+Newer version available
+
+Change
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -120,6 +139,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
 
 LOGIN_REDIRECT_URL = '/'
