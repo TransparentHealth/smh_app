@@ -30,6 +30,25 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+
+Health
+
+Grey
+
+Running Version
+
+v07ec78b
+
+Upload and Deploy
+
+Configuration
+
+Docker running on 64bit Amazon Linux/2.12.3
+
+Newer version available
+
+Change
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,7 +72,7 @@ ROOT_URLCONF = 'smh_organization.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates', 'smh_organization'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -120,3 +139,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOGIN_REDIRECT_URL = '/'

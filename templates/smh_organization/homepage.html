@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+Welcome to the homepage!
+
+{% if request.user.is_authenticated %}
+  <button>Authenticate</button>
+{% else %}
+  <a href="{% url 'login' %}">Log in</a>
+{% endif %}
+
+{% endblock content %}
