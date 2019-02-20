@@ -2,6 +2,12 @@
 import os
 import sys
 
+from smh_organization import load_env
+
+
+load_env.load_env()
+
+
 if __name__ == '__main__':
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'smh_organization.settings')
     try:
