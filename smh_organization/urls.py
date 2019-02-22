@@ -24,7 +24,7 @@ urlpatterns = [
         '',
         TemplateView.as_view(
             template_name='homepage.html',
-            extra_context={'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_SHAREMYHEALTH_NAME}
+            extra_context={'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_VMI_NAME}
         ),
         name='home'
     ),

@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'apps.sharemyhealth',
+    'apps.vmi',
 
     'social_django',
 ]
@@ -130,7 +130,7 @@ STATIC_URL = '/static/'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'apps.sharemyhealth.backends.SMHOrganizationOAuth2Backend'
+    'apps.vmi.backends.VMIOAuth2Backend'
 )
 
 LOGIN_REDIRECT_URL = '/'
@@ -152,7 +152,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.debug.debug'
 )
 # Settings for our custom OAuth backend
-SOCIAL_AUTH_SHAREMYHEALTH_NAME = os.environ.get('SHAREMYHEALTH_OAUTH_NAME')
-SOCIAL_AUTH_SHAREMYHEALTH_HOST = os.environ.get('SHAREMYHEALTH_OAUTH_HOST')
-SOCIAL_AUTH_SHAREMYHEALTH_KEY = os.environ.get('SHAREMYHEALTH_OAUTH_KEY')
-SOCIAL_AUTH_SHAREMYHEALTH_SECRET = os.environ.get('SHAREMYHEALTH_OAUTH_SECRET')
+SOCIAL_AUTH_VMI_NAME = os.environ.get('VMI_OAUTH_NAME')
+SOCIAL_AUTH_VMI_HOST = os.environ.get('VMI_OAUTH_HOST')
+SOCIAL_AUTH_VMI_KEY = os.environ.get('VMI_OAUTH_KEY')
+SOCIAL_AUTH_VMI_SECRET = os.environ.get('VMI_OAUTH_SECRET')
