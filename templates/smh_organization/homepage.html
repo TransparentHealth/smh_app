@@ -5,7 +5,7 @@
 Welcome to the homepage!
 
 {% if request.user.is_authenticated %}
-  <button>Authenticate</button>
+  <a href="{% url 'social:begin' SOCIAL_AUTH_NAME %}">Authenticate</a>
 {% else %}
   <a href="{% url 'login' %}">Log in</a>
 {% endif %}

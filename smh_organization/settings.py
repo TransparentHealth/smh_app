@@ -30,31 +30,16 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-
-Health
-
-Grey
-
-Running Version
-
-v07ec78b
-
-Upload and Deploy
-
-Configuration
-
-Docker running on 64bit Amazon Linux/2.12.3
-
-Newer version available
-
-Change
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'apps.vmi',
+
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -80,6 +65,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -140,4 +127,32 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'apps.vmi.backends.VMIOAuth2Backend'
+)
+
 LOGIN_REDIRECT_URL = '/'
+
+# Settings for social_django
+SOCIAL_AUTH_URL_NAMESPACE = "social"
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.mail.mail_validation',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.debug.debug',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'social_core.pipeline.debug.debug'
+)
+# Settings for our custom OAuth backend
+SOCIAL_AUTH_VMI_NAME = os.environ.get('VMI_OAUTH_NAME')
+SOCIAL_AUTH_VMI_HOST = os.environ.get('VMI_OAUTH_HOST')
+SOCIAL_AUTH_VMI_KEY = os.environ.get('VMI_OAUTH_KEY')
+SOCIAL_AUTH_VMI_SECRET = os.environ.get('VMI_OAUTH_SECRET')
