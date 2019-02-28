@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'apps.resources',
     'apps.sharemyhealth',
     'apps.vmi',
 
@@ -58,7 +59,7 @@ ROOT_URLCONF = 'smh_organization.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates', 'smh_organization'),],
+        'DIRS': [os.path.join(BASE_DIR, 'templates', 'smh_organization'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -135,7 +136,7 @@ AUTHENTICATION_BACKENDS = (
     'apps.vmi.backends.VMIOAuth2Backend'
 )
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = 'resources'
 
 # Settings for social_django
 SOCIAL_AUTH_URL_NAMESPACE = "social"

@@ -29,6 +29,7 @@ urlpatterns = [
         name='home'
     ),
     path('accounts/', include('django.contrib.auth.urls')),
+    path(r'resources/', include('apps.resources.urls')),
     path('social_auth/', include('social_django.urls', namespace='social')),
     path('admin/', admin.site.urls),
 ]

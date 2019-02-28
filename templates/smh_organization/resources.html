@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+You may connect to the following:
+<ul>
+  {% for resource in resources %}
+    <li>
+      <a href="{{ resource.url }}">{{ resource.name }}</a>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock content %}
