@@ -7,14 +7,23 @@ from django.urls import reverse
 @login_required(login_url='home')
 def resources_page(request):
     """Render a page of resources."""
+    # A list of resources that may show up on the page
     resource_provider_names = [getattr(settings, 'SOCIAL_AUTH_SHAREMYHEALTH_NAME')]
-    resources_for_user = request.user.social_auth.filter(provider__in=resource_provider_names)
-
-    current_resources = [
+    # The resources that the user is currently connected to
+    connected_resource_names = request.user.social_auth.filter(
+        provider__in=resource_provider_names
+    ).values_list(
+        'provider',
+        flat=True
+    )
+    # All of the user's resources, whether they are connected or not
+    resources = [
         {
-            'name': resource.provider,
-            'url': reverse('social:begin', kwargs={'backend': resource.provider})
+            'name': resource_name,
+            'connected': resource_name in connected_resource_names,
+            'connect_url': reverse('social:begin', kwargs={'backend': resource_name}),
+            'disconnect_url': reverse('social:disconnect', kwargs={'backend': resource_name})
         }
-        for resource in resources_for_user
+        for resource_name in resource_provider_names
     ]
-    return render(request, 'resources.html', context={'resources': current_resources})
+    return render(request, 'resources.html', context={'resources': resources})

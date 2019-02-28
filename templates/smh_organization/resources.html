@@ -6,7 +6,12 @@ You may connect to the following:
 <ul>
   {% for resource in resources %}
     <li>
-      <a href="{{ resource.url }}">{{ resource.name }}</a>
+      <span>{{ resource.name }}</span>
+      {% if resource.connected %}
+        <form action="{{ resource.disconnect_url }}" method="post">{% csrf_token %}<button type="submit">disconnect</button></form>
+      {% else %}
+        <a href="{{ resource.connect_url }}">connect</a>
+      {% endif %}
     </li>
   {% endfor %}
 </ul>
