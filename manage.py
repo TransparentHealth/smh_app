@@ -2,14 +2,14 @@
 import os
 import sys
 
-from smh_organization import load_env
+from smh_app import load_env
 
 
 load_env.load_env()
 
 
 if __name__ == '__main__':
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'smh_organization.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'smh_app.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
