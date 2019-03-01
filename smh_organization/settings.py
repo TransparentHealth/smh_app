@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'apps.resources',
+    'apps.sharemyhealth',
     'apps.vmi',
 
     'social_django',
@@ -57,7 +59,7 @@ ROOT_URLCONF = 'smh_organization.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates', 'smh_organization'),],
+        'DIRS': [os.path.join(BASE_DIR, 'templates', 'smh_organization'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -130,14 +132,15 @@ STATIC_URL = '/static/'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
+    'apps.sharemyhealth.backends.ShareMyHealthOAuth2Backend',
     'apps.vmi.backends.VMIOAuth2Backend'
 )
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = 'resources'
 
 # Settings for social_django
 SOCIAL_AUTH_URL_NAMESPACE = "social"
-SOCIAL_AUTH_PIPELINE = (
+SOCIAL_AUTH_VMI_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.auth_allowed',
@@ -151,8 +154,26 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.user_details',
     'social_core.pipeline.debug.debug'
 )
-# Settings for our custom OAuth backend
+SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.debug.debug',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'social_core.pipeline.debug.debug'
+)
+# Settings for our custom OAuth backends. Note: The name of the social auth
+# backend must come after 'SOCIAL_AUTH_' in these settings, in order for
+# social-auth-app-django to recognize it. For example, for VMI, we define
+# settings that begin with 'SOCIAL_AUTH_VMI_'.
 SOCIAL_AUTH_VMI_NAME = os.environ.get('VMI_OAUTH_NAME')
 SOCIAL_AUTH_VMI_HOST = os.environ.get('VMI_OAUTH_HOST')
 SOCIAL_AUTH_VMI_KEY = os.environ.get('VMI_OAUTH_KEY')
 SOCIAL_AUTH_VMI_SECRET = os.environ.get('VMI_OAUTH_SECRET')
+SOCIAL_AUTH_SHAREMYHEALTH_NAME = os.environ.get('SMH_OAUTH_NAME')
+SOCIAL_AUTH_SHAREMYHEALTH_HOST = os.environ.get('SMH_OAUTH_HOST')
+SOCIAL_AUTH_SHAREMYHEALTH_KEY = os.environ.get('SMH_OAUTH_KEY')
+SOCIAL_AUTH_SHAREMYHEALTH_SECRET = os.environ.get('SMH_OAUTH_SECRET')
