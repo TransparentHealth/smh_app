@@ -8,7 +8,7 @@ from django.urls import reverse
 def resources_page(request):
     """Render a page of resources."""
     # A list of resources that may show up on the page
-    resource_provider_names = [getattr(settings, 'SOCIAL_AUTH_SHAREMYHEALTH_NAME')]
+    resource_provider_names = ['sharemyhealth']
     # The resources that the user is currently connected to
     connected_resource_names = request.user.social_auth.filter(
         provider__in=resource_provider_names

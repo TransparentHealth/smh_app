@@ -10,7 +10,7 @@ class ShareMyHealthOAuth2Backend(OpenIdConnectAuth):
     For reference, the sharemyhealth use is: https://github.com/TransparentHealth/
     sharemyhealth/blob/master/apps/verifymyidentity/authentication.py.
     """
-    name = getattr(settings, 'SOCIAL_AUTH_SHAREMYHEALTH_NAME')
+    name = "sharemyhealth"
 
     # differs from value in discovery document
     # http://openid.net/specs/openid-connect-core-1_0.html#rfc.section.15.6.2

@@ -213,11 +213,10 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
 # backend must come after 'SOCIAL_AUTH_' in these settings, in order for
 # social-auth-app-django to recognize it. For example, for VMI, we define
 # settings that begin with 'SOCIAL_AUTH_VMI_'.
-SOCIAL_AUTH_VMI_NAME = os.environ.get('VMI_OAUTH_NAME')
+SOCIAL_AUTH_NAME = os.environ.get('VMI_OAUTH_NAME', 'vmi')
 SOCIAL_AUTH_VMI_HOST = os.environ.get('VMI_OAUTH_HOST')
 SOCIAL_AUTH_VMI_KEY = os.environ.get('VMI_OAUTH_KEY')
 SOCIAL_AUTH_VMI_SECRET = os.environ.get('VMI_OAUTH_SECRET')
-SOCIAL_AUTH_SHAREMYHEALTH_NAME = os.environ.get('SMH_OAUTH_NAME')
 SOCIAL_AUTH_SHAREMYHEALTH_HOST = os.environ.get('SMH_OAUTH_HOST')
 SOCIAL_AUTH_SHAREMYHEALTH_KEY = os.environ.get('SMH_OAUTH_KEY')
 SOCIAL_AUTH_SHAREMYHEALTH_SECRET = os.environ.get('SMH_OAUTH_SECRET')
