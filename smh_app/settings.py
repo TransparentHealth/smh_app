@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+from getenv import env
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -169,11 +171,11 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
 # backend must come after 'SOCIAL_AUTH_' in these settings, in order for
 # social-auth-app-django to recognize it. For example, for VMI, we define
 # settings that begin with 'SOCIAL_AUTH_VMI_'.
-SOCIAL_AUTH_VMI_NAME = os.environ.get('VMI_OAUTH_NAME')
-SOCIAL_AUTH_VMI_HOST = os.environ.get('VMI_OAUTH_HOST')
-SOCIAL_AUTH_VMI_KEY = os.environ.get('VMI_OAUTH_KEY')
-SOCIAL_AUTH_VMI_SECRET = os.environ.get('VMI_OAUTH_SECRET')
-SOCIAL_AUTH_SHAREMYHEALTH_NAME = os.environ.get('SMH_OAUTH_NAME')
-SOCIAL_AUTH_SHAREMYHEALTH_HOST = os.environ.get('SMH_OAUTH_HOST')
-SOCIAL_AUTH_SHAREMYHEALTH_KEY = os.environ.get('SMH_OAUTH_KEY')
-SOCIAL_AUTH_SHAREMYHEALTH_SECRET = os.environ.get('SMH_OAUTH_SECRET')
+SOCIAL_AUTH_VMI_NAME = env('VMI_OAUTH_NAME')
+SOCIAL_AUTH_VMI_HOST = env('VMI_OAUTH_HOST')
+SOCIAL_AUTH_VMI_KEY = env('VMI_OAUTH_KEY')
+SOCIAL_AUTH_VMI_SECRET = env('VMI_OAUTH_SECRET')
+SOCIAL_AUTH_SHAREMYHEALTH_NAME = env('SMH_OAUTH_NAME')
+SOCIAL_AUTH_SHAREMYHEALTH_HOST = env('SMH_OAUTH_HOST')
+SOCIAL_AUTH_SHAREMYHEALTH_KEY = env('SMH_OAUTH_KEY')
+SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SMH_OAUTH_SECRET')
