@@ -4,6 +4,7 @@ from .views import DashboardView
 
 # Copyright Videntity Systems Inc.
 
+app_name = 'member'
 urlpatterns = [
     url(r'^$',
         DashboardView.as_view(), name='dashboard'),
