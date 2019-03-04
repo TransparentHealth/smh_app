@@ -1,6 +1,6 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.base import TemplateView
 
-@login_required
-def organization_dashboard(request):
-    return render(request, 'organization-dashboard.html', context={}) 
+
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard.html"

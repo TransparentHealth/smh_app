@@ -1,12 +1,12 @@
 # Copyright Videntity Systems, Inc.
 from django.conf.urls import url
-from .views import organization_dashboard
+from .views import DashboardView
 
 
 # Copyright Videntity Systems Inc.
 
 urlpatterns = [
     url(r'^dashboard$',
-        organization_dashboard, name='organization_dashboard'),
+        DashboardView.as_view(), name='dashboard'),
 
 ]
