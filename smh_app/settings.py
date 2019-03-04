@@ -101,23 +101,11 @@ TEMPLATES = [
 ]
 
 
-
 WSGI_APPLICATION = 'smh_app.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-
-# DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'smh_app',
-#        'USER': '',
-#        'PASSWORD': '',
-#        'HOST': '',
-#        'PORT': '',
-#    }
-# }
 
 DATABASES = {
     'default': dj_database_url.config(
@@ -180,7 +168,7 @@ AUTHENTICATION_BACKENDS = (
     'apps.vmi.backends.VMIOAuth2Backend'
 )
 
-LOGIN_REDIRECT_URL = 'resources'
+LOGIN_REDIRECT_URL = 'home'
 
 # Settings for social_django
 SOCIAL_AUTH_URL_NAMESPACE = "social"
@@ -234,37 +222,32 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'collectedstatic')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-APPLICATION_TITLE = env('DJANGO_APPLICATION_TITLE',
-'Share My Health')
+APPLICATION_TITLE = env('DJANGO_APPLICATION_TITLE', 'Share My Health')
 
-LOGIN_REDIRECT_URL = 'home'
 
-EXTERNAL_AUTH_NAME = "Google"
-
-APPLICATION_TITLE = env('DJANGO_APPLICATION_TITLE',
-                        'Share My Health')
 ORGANIZATION_TITLE = env(
     'DJANGO_ORGANIZATION_TITLE',
     'Alliance for Better Health')
+
 ORGANIZATION_URI = env('DJANGO_ORGANIZATION_URI', 'https://abhealth.us')
+
 POLICY_URI = env(
     'DJANGO_POLICY_URI',
     'https://abhealth.us')
+
 POLICY_TITLE = env('DJANGO_POLICY_TITLE', 'Privacy Policy')
 TOS_URI = env('DJANGO_TOS_URI', 'https://abhealth.us')
+
 TOS_TITLE = env('DJANGO_TOS_TITLE', 'Terms of Service')
-TAG_LINE_1 = env('DJANGO_TAG_LINE_1', 'Share your health data')
-TAG_LINE_2 = env('DJANGO_TAG_LINE_2',
-                 'with applications, organizations, and people you trust.')
+TAG_LINE = env('DJANGO_TAG_LINE', 'Share your health data with applications, organizations, and people you trust.')
+
 EXPLAINATION_LINE = 'This service allows Medicare beneficiaries to connect their health data to applications of their choosing.'  # noqa
 EXPLAINATION_LINE = env('DJANGO_EXPLAINATION_LINE ', EXPLAINATION_LINE)
+
 USER_DOCS_URI = "https://abhealth.us"
 USER_DOCS_TITLE = "User Documentation"
 USER_DOCS = "USer Docs"
-# LINKS TO DOCS
-DEVELOPER_DOCS_URI = "https:/abhealth.us"
-DEVELOPER_DOCS_TITLE = "Developer Documentation"
-DEVELOPER_DOCS = "Developer Docs"
+
 DEFAULT_DISCLOSURE_TEXT = """
     This system may be monitored, recorded and
     subject to audit. Improper use of this system or
@@ -272,9 +255,6 @@ DEFAULT_DISCLOSURE_TEXT = """
     """
 
 DISCLOSURE_TEXT = env('DJANGO_PRIVACY_POLICY_URI', DEFAULT_DISCLOSURE_TEXT)
-
-HOSTNAME_URL = env('HOSTNAME_URL', 'http://sharemyhealth:8001')
-
 
 CALL_MEMBER = "community member"
 CALL_MEMBER_PLURAL = "community members"
@@ -288,25 +268,19 @@ SETTINGS_EXPORT = [
     'APPLICATION_TITLE',
     'STATIC_URL',
     'STATIC_ROOT',
-    'DEVELOPER_DOCS_URI',
-    'DEVELOPER_DOCS_TITLE',
     'ORGANIZATION_TITLE',
     'POLICY_URI',
     'POLICY_TITLE',
     'DISCLOSURE_TEXT',
     'TOS_URI',
     'TOS_TITLE',
-    'TAG_LINE_1',
-    'TAG_LINE_2',
+    'TAG_LINE',
     'EXPLAINATION_LINE',
-    'EXTERNAL_AUTH_NAME',
     'USER_DOCS_URI',
     'USER_DOCS',
-    'DEVELOPER_DOCS',
     'USER_DOCS_TITLE',
     'CALL_MEMBER',
     'CALL_MEMBER_PLURAL',
     'CALL_ORGANIZATION',
     'CALL_ORGANIZATION_PLURAL'
 ]
-
