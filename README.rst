@@ -20,8 +20,8 @@ Getting Started
 
 First clone the repository from Github and switch to the new directory::
 
-    $ git clone git@github.com:TransparentHealth/smh-app
-    $ cd smh-app
+    $ git clone git@github.com:TransparentHealth/smh_app
+    $ cd smh_app
 
 To setup your local environment you can use the quickstart make target `setup`, which will
 install Python (via pip) into a virtualenv named "smh_app",
