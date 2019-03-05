@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<p>
+  Welcome to the homepage{% if request.user.is_authenticated %}, {{ request.user.username }}{% endif %}!
+</p>
+
+{% if not request.user.is_authenticated %}
+  <a href="{% url 'social:begin' SOCIAL_AUTH_NAME %}">Login</a>
+{% else %}
+  <div>
+    <a href="{% url 'member:dashboard' %}"> Member Dashboard </a>
+  </div>
+  <div>
+    <a href="{% url 'org:dashboard' %}"> Organization Dashboard </a> 
+  </div>
+{% endif %}
+
+{% endblock content %}
