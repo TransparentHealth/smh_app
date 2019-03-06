@@ -1,6 +1,8 @@
 # Copyright Videntity Systems, Inc.
 from django.conf.urls import url
-from .views import DashboardView, CreateOrganizationView, UpdateOrganizationView
+from .views import (
+    DashboardView, CreateOrganizationView, DeleteOrganizationView, UpdateOrganizationView
+)
 
 
 # Copyright Videntity Systems Inc.
@@ -16,4 +18,7 @@ urlpatterns = [
     url(r'^organization/new/$',
         CreateOrganizationView.as_view(),
         name='organization-add'),
+    url(r'^organization/(?P<pk>\d)/delete/$',
+        DeleteOrganizationView.as_view(),
+        name='organization-delete'),
 ]

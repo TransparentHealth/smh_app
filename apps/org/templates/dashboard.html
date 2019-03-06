@@ -6,7 +6,11 @@
 
 <ul>
   {% for organization in organizations %}
-    <li><a href="{% url 'org:organization-update' organization.pk %}">{{ organization }}</a></li>
+    <li>
+      <span>{{ organization }}</span>
+      <a href="{% url 'org:organization-update' organization.pk %}">edit</a>
+      <a href="{% url 'org:organization-delete' organization.pk %}">delete</a>
+    </li>
   {% endfor %}
 </ul>
 

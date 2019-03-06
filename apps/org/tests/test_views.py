@@ -119,3 +119,48 @@ class UpdateOrganizationTestCase(TestCase):
             org_not_associated.refresh_from_db()
             self.assertNotEqual(org_not_associated.name, data['name'])
             self.assertNotEqual(org_not_associated.slug, data['slug'])
+
+
+class DeleteOrganizationTestCase(TestCase):
+    def setUp(self):
+        self.user = UserFactory(
+            username='testuser',
+            email='testuser@example.com',
+            first_name='Test',
+            last_name='User'
+        )
+        self.user.set_password('testpassword')
+        self.user.save()
+        self.client.force_login(self.user)
+
+    def test_update_organizations(self):
+        """The user may delete an Organization."""
+        # An Organization associated with the self.user
+        organization = OrganizationFactory()
+        organization.users.add(self.user)
+
+        url = reverse('org:organization-delete', kwargs={'pk': organization.pk})
+
+        response = self.client.post(url)
+
+        self.assertRedirects(response, reverse('org:dashboard'))
+        # The Organization has been deleted
+        self.assertFalse(Organization.objects.filter(pk=organization.pk).exists())
+
+    def test_update_organization_not_associated(self):
+        """A user may not delete an Organization that the user is not associated with."""
+        # An Organization not associated with the self.user
+        org_not_associated = OrganizationFactory()
+
+        url = reverse('org:organization-delete', kwargs={'pk': org_not_associated.pk})
+
+        with self.subTest('GET'):
+            response_get = self.client.get(url)
+            self.assertEqual(response_get.status_code, 404)
+
+        with self.subTest('POST'):
+            response_post = self.client.post(url)
+
+            self.assertEqual(response_post.status_code, 404)
+            # The Organization has not been deleted
+            self.assertTrue(Organization.objects.filter(pk=org_not_associated.pk).exists())

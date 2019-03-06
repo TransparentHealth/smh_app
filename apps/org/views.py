@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from .models import Organization
 
@@ -30,5 +30,17 @@ class UpdateOrganizationView(UpdateView):
 
     def get_queryset(self):
         """A user may only edit Organizations that they are associated with."""
+        qs = super().get_queryset()
+        return qs.filter(users=self.request.user)
+
+
+class DeleteOrganizationView(DeleteView):
+    model = Organization
+    success_url = reverse_lazy('organization-list')
+    template_name = 'organization_confirm_delete.html'
+    success_url = reverse_lazy('org:dashboard')
+
+    def get_queryset(self):
+        """A user may only delete Organizations that they are associated with."""
         qs = super().get_queryset()
         return qs.filter(users=self.request.user)
