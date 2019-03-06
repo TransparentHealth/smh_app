@@ -6,8 +6,10 @@
 
 <ul>
   {% for organization in organizations %}
-    <li>{{ organization }}</li>
+    <li><a href="{% url 'org:organization-update' organization.pk %}">{{ organization }}</a></li>
   {% endfor %}
 </ul>
+
+<a href="{% url 'org:organization-add' %}">Create new organization</a>
 
 {% endblock content %}
