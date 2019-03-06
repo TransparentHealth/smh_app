@@ -98,3 +98,24 @@ class UpdateOrganizationTestCase(TestCase):
         organization.refresh_from_db()
         self.assertEqual(organization.name, data['name'])
         self.assertEqual(organization.slug, data['slug'])
+
+    def test_update_organization_not_associated(self):
+        """A user may not update an Organization that the user is not associated with."""
+        # An Organization not associated with the self.user
+        org_not_associated = OrganizationFactory()
+
+        data = {'name': 'New Name', 'slug': 'new-slug'}
+        url = reverse('org:organization-update', kwargs={'pk': org_not_associated.pk})
+
+        with self.subTest('GET'):
+            response_get = self.client.get(url, data=data)
+            self.assertEqual(response_get.status_code, 404)
+
+        with self.subTest('POST'):
+            response_post = self.client.post(url, data=data)
+
+            self.assertEqual(response_post.status_code, 404)
+            # The Organization has not been updated
+            org_not_associated.refresh_from_db()
+            self.assertNotEqual(org_not_associated.name, data['name'])
+            self.assertNotEqual(org_not_associated.slug, data['slug'])

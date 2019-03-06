@@ -27,3 +27,8 @@ class UpdateOrganizationView(UpdateView):
     fields = ['name', 'slug', 'users']
     template_name = 'organization.html'
     success_url = reverse_lazy('org:dashboard')
+
+    def get_queryset(self):
+        """A user may only edit Organizations that they are associated with."""
+        qs = super().get_queryset()
+        return qs.filter(users=self.request.user)
