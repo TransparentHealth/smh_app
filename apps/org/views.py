@@ -21,6 +21,14 @@ class CreateOrganizationView(LoginRequiredMixin, CreateView):
     template_name = 'organization.html'
     success_url = reverse_lazy('org:dashboard')
 
+    def form_valid(self, form):
+        """Override this method to also associate the creator with the new Organization."""
+        # Now that the form has passed validation, save the object, then add
+        # the request.user to its users.
+        response = super().form_valid(form)
+        form.instance.users.add(self.request.user)
+        return response
+
 
 class UpdateOrganizationView(LoginRequiredMixin, UpdateView):
     model = Organization

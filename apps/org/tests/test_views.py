@@ -78,6 +78,12 @@ class CreateOrganizationTestCase(TestCase):
         self.assertEqual(Organization.objects.count(), 1)
         new_organization = Organization.objects.first()
         self.assertEqual(new_organization.name, data['name'])
+        # The Organization's creator is automatically associated with the new
+        # Organization, even though the user didn't add themselves in the form data.
+        self.assertEqual(
+            set(new_organization.users.values_list('id', flat=True)),
+            set([self.user.id])
+        )
 
     def test_authenticated(self):
         """The user must be authenticated to create an Organization."""
