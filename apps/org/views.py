@@ -15,14 +15,14 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class CreateOrganizationView(CreateView):
+class CreateOrganizationView(LoginRequiredMixin, CreateView):
     model = Organization
     fields = ['name', 'users']
     template_name = 'organization.html'
     success_url = reverse_lazy('org:dashboard')
 
 
-class UpdateOrganizationView(UpdateView):
+class UpdateOrganizationView(LoginRequiredMixin, UpdateView):
     model = Organization
     fields = ['name', 'users']
     template_name = 'organization.html'
@@ -34,7 +34,7 @@ class UpdateOrganizationView(UpdateView):
         return qs.filter(users=self.request.user)
 
 
-class DeleteOrganizationView(DeleteView):
+class DeleteOrganizationView(LoginRequiredMixin, DeleteView):
     model = Organization
     success_url = reverse_lazy('organization-list')
     template_name = 'organization_confirm_delete.html'

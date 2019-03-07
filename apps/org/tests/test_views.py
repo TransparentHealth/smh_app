@@ -34,6 +34,22 @@ class OrganizationDashboardTestCase(TestCase):
             set([organization.id])
         )
 
+    def test_authenticated(self):
+        """The user must be authenticated to see the dashboard."""
+        with self.subTest('Authenticated'):
+            self.client.force_login(self.user)
+            response = self.client.get(reverse(self.url_name))
+            self.assertEqual(response.status_code, 200)
+
+        with self.subTest('Not authenticated'):
+            self.client.logout()
+            response = self.client.get(reverse(self.url_name))
+            expected_redirect = '{}?next={}'.format(
+                reverse('login'),
+                reverse(self.url_name)
+            )
+            self.assertRedirects(response, expected_redirect)
+
 
 class CreateOrganizationTestCase(TestCase):
     url_name = 'org:organization-add'
@@ -62,6 +78,22 @@ class CreateOrganizationTestCase(TestCase):
         self.assertEqual(Organization.objects.count(), 1)
         new_organization = Organization.objects.first()
         self.assertEqual(new_organization.name, data['name'])
+
+    def test_authenticated(self):
+        """The user must be authenticated to create an Organization."""
+        with self.subTest('Authenticated'):
+            self.client.force_login(self.user)
+            response = self.client.post(reverse(self.url_name), data={'name': 'New Org 2'})
+            self.assertRedirects(response, reverse('org:dashboard'))
+
+        with self.subTest('Not authenticated'):
+            self.client.logout()
+            response = self.client.post(reverse(self.url_name), data={'name': 'New Org 3'})
+            expected_redirect = '{}?next={}'.format(
+                reverse('login'),
+                reverse(self.url_name)
+            )
+            self.assertRedirects(response, expected_redirect)
 
 
 class UpdateOrganizationTestCase(TestCase):
@@ -114,6 +146,31 @@ class UpdateOrganizationTestCase(TestCase):
             org_not_associated.refresh_from_db()
             self.assertNotEqual(org_not_associated.name, data['name'])
 
+    def test_authenticated(self):
+        """The user must be authenticated to update an Organization."""
+        # An Organization associated with the self.user
+        organization = OrganizationFactory()
+        organization.users.add(self.user)
+
+        with self.subTest('Authenticated'):
+            self.client.force_login(self.user)
+
+            data = {'name': 'New Name 1'}
+            url = reverse('org:organization-update', kwargs={'pk': organization.pk})
+            response = self.client.post(url, data=data)
+
+            self.assertRedirects(response, reverse('org:dashboard'))
+
+        with self.subTest('Not authenticated'):
+            self.client.logout()
+
+            data = {'name': 'New Name 2'}
+            url = reverse('org:organization-update', kwargs={'pk': organization.pk})
+            response = self.client.post(url, data=data)
+
+            expected_redirect = '{}?next={}'.format(reverse('login'), url)
+            self.assertRedirects(response, expected_redirect)
+
 
 class DeleteOrganizationTestCase(TestCase):
     def setUp(self):
@@ -158,3 +215,26 @@ class DeleteOrganizationTestCase(TestCase):
             self.assertEqual(response_post.status_code, 404)
             # The Organization has not been deleted
             self.assertTrue(Organization.objects.filter(pk=org_not_associated.pk).exists())
+
+    def test_authenticated(self):
+        """The user must be authenticated to update an Organization."""
+        # An Organization associated with the self.user
+        organization = OrganizationFactory()
+        organization.users.add(self.user)
+
+        with self.subTest('Authenticated'):
+            self.client.force_login(self.user)
+
+            url = reverse('org:organization-delete', kwargs={'pk': organization.pk})
+            response = self.client.post(url)
+
+            self.assertRedirects(response, reverse('org:dashboard'))
+
+        with self.subTest('Not authenticated'):
+            self.client.logout()
+
+            url = reverse('org:organization-delete', kwargs={'pk': organization.pk})
+            response = self.client.post(url)
+
+            expected_redirect = '{}?next={}'.format(reverse('login'), url)
+            self.assertRedirects(response, expected_redirect)
