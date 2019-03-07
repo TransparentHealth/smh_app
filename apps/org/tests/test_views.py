@@ -51,10 +51,7 @@ class CreateOrganizationTestCase(TestCase):
 
     def test_create_organizations(self):
         """The user may create an Organization."""
-        data = {
-            'name': 'New Organization',
-            'slug': 'new-organization',
-        }
+        data = {'name': 'New Organization'}
         # Currently, there are no Organizations
         self.assertEqual(Organization.objects.count(), 0)
 
@@ -65,7 +62,6 @@ class CreateOrganizationTestCase(TestCase):
         self.assertEqual(Organization.objects.count(), 1)
         new_organization = Organization.objects.first()
         self.assertEqual(new_organization.name, data['name'])
-        self.assertEqual(new_organization.slug, data['slug'])
 
 
 class UpdateOrganizationTestCase(TestCase):
@@ -83,12 +79,12 @@ class UpdateOrganizationTestCase(TestCase):
         self.client.force_login(self.user)
 
     def test_update_organizations(self):
-        """The user may create an Organization."""
+        """The user may update an Organization."""
         # An Organization associated with the self.user
         organization = OrganizationFactory()
         organization.users.add(self.user)
 
-        data = {'name': 'New Name', 'slug': 'new-slug'}
+        data = {'name': 'New Name'}
         url = reverse('org:organization-update', kwargs={'pk': organization.pk})
 
         response = self.client.post(url, data=data)
@@ -97,14 +93,13 @@ class UpdateOrganizationTestCase(TestCase):
         # The Organization has been updated
         organization.refresh_from_db()
         self.assertEqual(organization.name, data['name'])
-        self.assertEqual(organization.slug, data['slug'])
 
     def test_update_organization_not_associated(self):
         """A user may not update an Organization that the user is not associated with."""
         # An Organization not associated with the self.user
         org_not_associated = OrganizationFactory()
 
-        data = {'name': 'New Name', 'slug': 'new-slug'}
+        data = {'name': 'New Name'}
         url = reverse('org:organization-update', kwargs={'pk': org_not_associated.pk})
 
         with self.subTest('GET'):
@@ -118,7 +113,6 @@ class UpdateOrganizationTestCase(TestCase):
             # The Organization has not been updated
             org_not_associated.refresh_from_db()
             self.assertNotEqual(org_not_associated.name, data['name'])
-            self.assertNotEqual(org_not_associated.slug, data['slug'])
 
 
 class DeleteOrganizationTestCase(TestCase):

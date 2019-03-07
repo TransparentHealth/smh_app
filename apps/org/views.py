@@ -17,14 +17,14 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 class CreateOrganizationView(CreateView):
     model = Organization
-    fields = ['name', 'slug', 'users']
+    fields = ['name', 'users']
     template_name = 'organization.html'
     success_url = reverse_lazy('org:dashboard')
 
 
 class UpdateOrganizationView(UpdateView):
     model = Organization
-    fields = ['name', 'slug', 'users']
+    fields = ['name', 'users']
     template_name = 'organization.html'
     success_url = reverse_lazy('org:dashboard')
 
