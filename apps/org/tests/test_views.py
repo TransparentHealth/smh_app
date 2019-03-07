@@ -1,23 +1,13 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from .factories import OrganizationFactory, UserFactory
+from .base import SMHAppTestMixin
+from .factories import OrganizationFactory
 from ..models import Organization
 
 
-class OrganizationDashboardTestCase(TestCase):
+class OrganizationDashboardTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:dashboard'
-
-    def setUp(self):
-        self.user = UserFactory(
-            username='testuser',
-            email='testuser@example.com',
-            first_name='Test',
-            last_name='User'
-        )
-        self.user.set_password('testpassword')
-        self.user.save()
-        self.client.force_login(self.user)
 
     def test_user_organizations(self):
         """GETting the organization dashboard shows the user's organizations."""
@@ -51,19 +41,8 @@ class OrganizationDashboardTestCase(TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
-class CreateOrganizationTestCase(TestCase):
+class CreateOrganizationTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:organization-add'
-
-    def setUp(self):
-        self.user = UserFactory(
-            username='testuser',
-            email='testuser@example.com',
-            first_name='Test',
-            last_name='User'
-        )
-        self.user.set_password('testpassword')
-        self.user.save()
-        self.client.force_login(self.user)
 
     def test_create_organizations(self):
         """The user may create an Organization."""
@@ -102,20 +81,7 @@ class CreateOrganizationTestCase(TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
-class UpdateOrganizationTestCase(TestCase):
-    url_name = 'org:organization-update'
-
-    def setUp(self):
-        self.user = UserFactory(
-            username='testuser',
-            email='testuser@example.com',
-            first_name='Test',
-            last_name='User'
-        )
-        self.user.set_password('testpassword')
-        self.user.save()
-        self.client.force_login(self.user)
-
+class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
     def test_update_organizations(self):
         """The user may update an Organization."""
         # An Organization associated with the self.user
@@ -178,19 +144,8 @@ class UpdateOrganizationTestCase(TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
-class DeleteOrganizationTestCase(TestCase):
-    def setUp(self):
-        self.user = UserFactory(
-            username='testuser',
-            email='testuser@example.com',
-            first_name='Test',
-            last_name='User'
-        )
-        self.user.set_password('testpassword')
-        self.user.save()
-        self.client.force_login(self.user)
-
-    def test_update_organizations(self):
+class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
+    def test_delete_organization(self):
         """The user may delete an Organization."""
         # An Organization associated with the self.user
         organization = OrganizationFactory()
@@ -204,7 +159,7 @@ class DeleteOrganizationTestCase(TestCase):
         # The Organization has been deleted
         self.assertFalse(Organization.objects.filter(pk=organization.pk).exists())
 
-    def test_update_organization_not_associated(self):
+    def test_delete_organization_not_associated(self):
         """A user may not delete an Organization that the user is not associated with."""
         # An Organization not associated with the self.user
         org_not_associated = OrganizationFactory()
@@ -223,7 +178,7 @@ class DeleteOrganizationTestCase(TestCase):
             self.assertTrue(Organization.objects.filter(pk=org_not_associated.pk).exists())
 
     def test_authenticated(self):
-        """The user must be authenticated to update an Organization."""
+        """The user must be authenticated to delete an Organization."""
         # An Organization associated with the self.user
         organization = OrganizationFactory()
         organization.users.add(self.user)
