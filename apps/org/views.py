@@ -1,9 +1,11 @@
+from collections import defaultdict
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from .models import Organization
+from .models import Organization, OrgResourceAccess
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -11,7 +13,24 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         """Add the user's Organizations to the context."""
-        kwargs.setdefault('organizations', self.request.user.organization_set.all())
+        # kwargs.setdefault('organizations', self.request.user.organization_set.all())
+
+        # All of the user's Organizations
+        organizations = self.request.user.organization_set.all()
+        # Give each of the user's Organizations a 'org_access_to_providers' attribute
+        # which is the name of each resource's provider that the Organization has
+        # access to for the user. It would be faster to do this calculation with
+        # an annotation using something like django.contrib.postgres.aggregates.ArrayAgg,
+        # but since we are not using Postgres, we don't have that ability.
+        org_provider_dict = defaultdict(list)
+        for org_resource_access in OrgResourceAccess.objects.filter(user=self.request.user):
+            org_provider_dict[org_resource_access.organization.id].append(
+                org_resource_access.resource.provider
+            )
+        for organization in organizations:
+            organization.org_access_to_providers = org_provider_dict[organization.id]
+
+        kwargs.setdefault('organizations', organizations)
         return super().get_context_data(**kwargs)
 
 
