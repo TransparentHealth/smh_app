@@ -1,0 +1,7 @@
+<h2>Delete {{ object }}?</h2>
+
+<form method="post">
+  {% csrf_token %}
+  <button type=submit>Yes</button>
+  <a href="{% url 'org:dashboard' %}">No</a>
+</form>

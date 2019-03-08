@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<p>Here are your organizations:</p>
+
+<ul>
+  {% for organization in organizations %}
+    <li>
+      <span>{{ organization }}</span>
+      <a href="{% url 'org:organization-update' organization.pk %}">edit</a>
+      <a href="{% url 'org:organization-delete' organization.pk %}">delete</a>
+    </li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'org:organization-add' %}">Create new organization</a>
+
+{% endblock content %}
