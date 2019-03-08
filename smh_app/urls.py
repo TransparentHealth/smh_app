@@ -34,6 +34,6 @@ urlpatterns = [
     path(r'member/', include('apps.member.urls')),
     path(r'lockbox/', include('apps.lockbox.urls')),
     path(r'affiliations/', include('apps.affiliations.urls')),
-    path('social_auth/', include('social_django.urls', namespace='social')),
+    path('social-auth/', include('social_django.urls', namespace='social')),
     path('admin/', admin.site.urls),
 ]
