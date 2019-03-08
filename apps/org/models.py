@@ -29,3 +29,25 @@ class Organization(models.Model):
             self.slug = slug
 
         super().save(**kwargs)
+
+
+class OrgResourceAccess(models.Model):
+    """A model to track which Organizations have access to which users' resources."""
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    resource = models.ForeignKey(
+        'social_django.UserSocialAuth',
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return "{} access to {} for {}".format(self.organization, self.resource, self.user)
+
+    class Meta:
+        verbose_name_plural = "Organization Resource Access Instances"

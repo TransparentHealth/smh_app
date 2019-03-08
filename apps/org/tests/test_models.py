@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils.text import slugify
 
-from .factories import OrganizationFactory
+from .factories import OrganizationFactory, OrgResourceAccessFactory
 
 
 class OrganizationTestCase(TestCase):
@@ -41,3 +41,17 @@ class OrganizationTestCase(TestCase):
             organization.slug = ''
             organization.save()
             self.assertEqual(organization.slug, '')
+
+
+class OrgResourceAccessTestCase(TestCase):
+    def test_str(self):
+        """Test for string representation."""
+        org_resource_access = OrgResourceAccessFactory()
+        self.assertEqual(
+            str(org_resource_access),
+            "{} access to {} for {}".format(
+                org_resource_access.organization,
+                org_resource_access.resource,
+                org_resource_access.user
+            )
+        )
