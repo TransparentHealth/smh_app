@@ -13,8 +13,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         """Add the user's Organizations to the context."""
-        # kwargs.setdefault('organizations', self.request.user.organization_set.all())
-
         # All of the user's Organizations
         organizations = self.request.user.organization_set.all()
         # Give each of the user's Organizations a 'org_access_to_providers' attribute
