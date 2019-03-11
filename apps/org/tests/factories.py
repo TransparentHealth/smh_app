@@ -2,7 +2,7 @@ from django.conf import settings
 from django.template.defaultfilters import slugify
 from factory import DjangoModelFactory, Faker, LazyAttribute, SubFactory
 
-from ..models import Organization, OrgResourceAccess
+from ..models import Organization, ResourceGrant
 
 
 class OrganizationFactory(DjangoModelFactory):
@@ -30,10 +30,10 @@ class UserSocialAuthFactory(DjangoModelFactory):
         model = 'social_django.UserSocialAuth'
 
 
-class OrgResourceAccessFactory(DjangoModelFactory):
+class ResourceGrantFactory(DjangoModelFactory):
     organization = SubFactory(OrganizationFactory)
     user = SubFactory(UserFactory)
     resource = SubFactory(UserSocialAuthFactory)
 
     class Meta:
-        model = OrgResourceAccess
+        model = ResourceGrant

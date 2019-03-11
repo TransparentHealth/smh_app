@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.db import models
-from django.utils.text import slugify
 
 from .utils import set_unique_slug
+
 
 class Organization(models.Model):
     """An Organization."""
@@ -25,7 +25,7 @@ class Organization(models.Model):
         super().save(**kwargs)
 
 
-class OrgResourceAccess(models.Model):
+class ResourceGrant(models.Model):
     """A model to track which Organizations have access to which users' resources."""
     organization = models.ForeignKey(
         Organization,
@@ -44,4 +44,4 @@ class OrgResourceAccess(models.Model):
         return "{} access to {} for {}".format(self.organization, self.resource, self.user)
 
     class Meta:
-        verbose_name_plural = "Organization Resource Access Instances"
+        verbose_name_plural = "Resource Grants"

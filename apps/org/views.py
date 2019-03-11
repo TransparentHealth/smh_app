@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from .models import Organization, OrgResourceAccess
+from .models import Organization, ResourceGrant
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -21,7 +21,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # an annotation using something like django.contrib.postgres.aggregates.ArrayAgg,
         # but since we are not using Postgres, we don't have that ability.
         org_provider_dict = defaultdict(list)
-        for org_resource_access in OrgResourceAccess.objects.filter(user=self.request.user):
+        for org_resource_access in ResourceGrant.objects.filter(user=self.request.user):
             org_provider_dict[org_resource_access.organization.id].append(
                 org_resource_access.resource.provider
             )
