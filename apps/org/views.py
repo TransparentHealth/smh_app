@@ -15,7 +15,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         """Add the user's Organizations to the context."""
         # All of the user's Organizations
         organizations = self.request.user.organization_set.all()
-        # Give each of the user's Organizations a 'org_access_to_providers' attribute
+        # Give each of the user's Organizations a 'resource_grants_for_user' attribute,
         # which is the name of each resource's provider that the Organization has
         # access to for the user. It would be faster to do this calculation with
         # an annotation using something like django.contrib.postgres.aggregates.ArrayAgg,
@@ -26,7 +26,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 org_resource_access.resource.provider
             )
         for organization in organizations:
-            organization.org_access_to_providers = org_provider_dict[organization.id]
+            organization.resource_grants_for_user = org_provider_dict[organization.id]
 
         kwargs.setdefault('organizations', organizations)
         return super().get_context_data(**kwargs)
