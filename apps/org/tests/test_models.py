@@ -51,7 +51,7 @@ class ResourceGrantTestCase(TestCase):
             str(org_resource_access),
             "{} access to {} for {}".format(
                 org_resource_access.organization,
-                org_resource_access.resource,
+                org_resource_access.provider_name,
                 org_resource_access.user
             )
         )

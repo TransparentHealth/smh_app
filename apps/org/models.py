@@ -4,6 +4,11 @@ from django.db import models
 from .utils import set_unique_slug
 
 
+RESOURCE_CHOICES = [
+    ('apps.sharemyhealth.resources.Resource', 'apps.sharemyhealth.resources.Resource')
+]
+
+
 class Organization(models.Model):
     """An Organization."""
     slug = models.SlugField(unique=True, max_length=255)
@@ -37,13 +42,15 @@ class ResourceGrant(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
-    resource = models.ForeignKey(
-        'social_django.UserSocialAuth',
-        on_delete=models.CASCADE
+    resource_class = models.CharField(
+        max_length=255,
+        choices=RESOURCE_CHOICES,
+        default=RESOURCE_CHOICES[0]
     )
+    provider_name = models.CharField(max_length=255)
 
     def __str__(self):
-        return "{} access to {} for {}".format(self.organization, self.resource, self.user)
+        return "{} access to {} for {}".format(self.organization, self.provider_name, self.user)
 
     class Meta:
         verbose_name_plural = "Resource Grants"

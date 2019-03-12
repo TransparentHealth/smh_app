@@ -33,7 +33,6 @@ class UserSocialAuthFactory(DjangoModelFactory):
 class ResourceGrantFactory(DjangoModelFactory):
     organization = SubFactory(OrganizationFactory)
     user = SubFactory(UserFactory)
-    resource = SubFactory(UserSocialAuthFactory)
 
     class Meta:
         model = ResourceGrant
