@@ -1,4 +1,5 @@
 from collections import defaultdict
+from importlib import import_module
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
@@ -21,10 +22,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # an annotation using something like django.contrib.postgres.aggregates.ArrayAgg,
         # but since we are not using Postgres, we don't have that ability.
         org_provider_dict = defaultdict(list)
-        for org_resource_access in ResourceGrant.objects.filter(user=self.request.user):
-            org_provider_dict[org_resource_access.organization.id].append(
-                org_resource_access.resource.provider
+        for resource_grant in ResourceGrant.objects.filter(user=self.request.user):
+            resource_module = '.'.join(resource_grant.resource_class.split('.')[:-1])
+            resource_class_name = resource_grant.resource_class.split('.')[-1]
+            resource_class = getattr(import_module(resource_module), resource_class_name)
+            provider_names = resource_class().filter_by_user_and_provider(
+                user=self.request.user,
+                provider=resource_grant.provider_name
+            ).values_list(
+                'provider',
+                flat=True
             )
+            org_provider_dict[resource_grant.organization.id] += provider_names
         for organization in organizations:
             organization.resource_grants_for_user = org_provider_dict[organization.id]
 
