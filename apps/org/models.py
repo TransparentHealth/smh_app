@@ -9,6 +9,8 @@ class Organization(models.Model):
     slug = models.SlugField(unique=True, max_length=255)
     name = models.CharField(unique=True, max_length=255)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
