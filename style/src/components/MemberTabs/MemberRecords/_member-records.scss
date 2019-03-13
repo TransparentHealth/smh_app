@@ -1,0 +1,51 @@
+.records-tabs {
+  border-bottom: solid 2px $blue;
+  flex-wrap: wrap;
+  justify-content: space-between;
+
+  @include media-breakpoint-up(md) {
+    flex-wrap: nowrap;
+  }
+
+  .nav-item {
+    background-color: transparentize($gray, .3);
+    border: 0;
+    border-radius: 0;
+    color: $white;
+    letter-spacing: 1px;
+    line-height: 1.7;
+    margin-bottom: 0;
+    padding: .5em 2.5em;
+    text-align: center;
+    width: 100%;
+
+    &.active {
+      background-color: $blue;
+      border-radius: 0;
+      color: $white;
+    }
+
+    @include media-breakpoint-up(md) {
+      border-radius: 100px 100px 0 0;
+      padding: .5em 2em;
+      width: auto;
+
+      &.active {
+        border-radius: 100px 100px 0 0;
+      }
+    }
+
+    @media all and (min-width: 850px) {
+      padding: .5em 2.5em;
+    }
+
+    @include media-breakpoint-up(lg) {
+      padding: .5em 2em;
+    }
+
+    @media all and (min-width: 1200px) {
+      line-height: 1.7;
+      padding: .5em 3em;
+    }
+  }
+}
