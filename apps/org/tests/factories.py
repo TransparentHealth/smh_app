@@ -4,7 +4,7 @@ from django.template.defaultfilters import slugify
 from factory import DjangoModelFactory, Faker, LazyAttribute, SubFactory
 
 from apps.common.tests.factories import UserFactory
-from ..models import Organization, ResourceGrant
+from ..models import Organization, ResourceGrant, ResourceRequest
 
 
 class OrganizationFactory(DjangoModelFactory):
@@ -34,3 +34,12 @@ class ResourceGrantFactory(DjangoModelFactory):
 
     class Meta:
         model = ResourceGrant
+
+
+class ResourceRequestFactory(DjangoModelFactory):
+    organization = SubFactory(OrganizationFactory)
+    member = SubFactory(UserFactory)
+    user = SubFactory(UserFactory)
+
+    class Meta:
+        model = ResourceRequest

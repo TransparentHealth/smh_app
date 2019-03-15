@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Organization, ResourceGrant
+from .models import Organization, ResourceGrant, ResourceRequest
 
 
 @admin.register(Organization)
@@ -12,3 +12,8 @@ class OrganizationAdmin(admin.ModelAdmin):
 @admin.register(ResourceGrant)
 class ResourceGrantAdmin(admin.ModelAdmin):
     search_fields = ('organization__name', 'user__username')
+
+
+@admin.register(ResourceRequest)
+class ResourceRequestAdmin(admin.ModelAdmin):
+    search_fields = ('organization__name', 'member__username', 'user__username')

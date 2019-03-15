@@ -73,3 +73,48 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
 
     class Meta:
         verbose_name_plural = "Resource Grants"
+
+
+class ResourceRequest(CreatedUpdatedModel, models.Model):
+    """A request from an Organization for access to a member's access token."""
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE
+    )
+    member = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='resource_requests_received',
+        help_text='The member who can grant this Organization access to the resource'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='resource_requests_sent',
+        help_text='The user at the Organization who initiated this request'
+    )
+    resource_class = models.CharField(
+        max_length=255,
+        choices=RESOURCE_CHOICES,
+        default=RESOURCE_CHOICES[0][0]
+    )
+
+    def __str__(self):
+        return "Request by {} for access to {} for {}".format(
+            self.organization,
+            self.provider_name,
+            self.member
+        )
+
+    @property
+    def provider_name(self):
+        """Return the 'name' of the resource_class."""
+        # First, import the class
+        resource_module = '.'.join(self.resource_class.split('.')[:-1])
+        resource_class_name = self.resource_class.split('.')[-1]
+        resource_class = getattr(import_module(resource_module), resource_class_name)
+        # Return the class' name
+        return resource_class.name
+
+    class Meta:
+        verbose_name_plural = "Resource Requests"

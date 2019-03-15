@@ -1,7 +1,9 @@
+from unittest import mock
+
 from django.test import TestCase
 from django.utils.text import slugify
 
-from .factories import OrganizationFactory, ResourceGrantFactory
+from .factories import OrganizationFactory, ResourceGrantFactory, ResourceRequestFactory
 
 
 class OrganizationTestCase(TestCase):
@@ -55,3 +57,35 @@ class ResourceGrantTestCase(TestCase):
                 org_resource_access.user
             )
         )
+
+
+class ResourceRequestTestCase(TestCase):
+    def test_str(self):
+        """Test for string representation."""
+        resource_request = ResourceRequestFactory()
+        self.assertEqual(
+            str(resource_request),
+            "Request by {} for access to {} for {}".format(
+                resource_request.organization,
+                resource_request.provider_name,
+                resource_request.member
+            )
+        )
+
+    @mock.patch('apps.sharemyhealth.resources.Resource')
+    def test_provider_name(self, mock_resource_class):
+        """
+        The provider_name property should be the resource_class's name.
+
+        Note: since we mock the apps.sharemyhealth.resources.Resource class, that
+        will be this test's ResourceRequest's resource_class, so we can assert
+        that its name really is returned as the ResourceRequest's provider_name.
+        """
+        test_resource_class_name = 'testclassname'
+        mock_resource_class.name = test_resource_class_name
+
+        resource_request = ResourceRequestFactory(
+            resource_class='apps.sharemyhealth.resources.Resource'
+        )
+
+        self.assertEqual(resource_request.provider_name, test_resource_class_name)
