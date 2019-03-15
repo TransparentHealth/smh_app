@@ -8,6 +8,7 @@ from ..models import Organization, ResourceGrant
 class OrganizationFactory(DjangoModelFactory):
     slug = LazyAttribute(lambda o: slugify(o.name))
     name = Faker('company')
+    phone = Faker('phone_number')
 
     class Meta:
         model = Organization
