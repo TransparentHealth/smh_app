@@ -11,13 +11,20 @@ RESOURCE_CHOICES = [
 ]
 
 
-class Organization(models.Model):
+class CreatedUpdatedModel(models.Model):
+    """An abstract model with fields to keep track of when an object is created and updated."""
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class Organization(CreatedUpdatedModel, models.Model):
     """An Organization."""
     slug = models.SlugField(unique=True, max_length=255)
     name = models.CharField(unique=True, max_length=255)
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -34,7 +41,7 @@ class Organization(models.Model):
         super().save(**kwargs)
 
 
-class ResourceGrant(models.Model):
+class ResourceGrant(CreatedUpdatedModel, models.Model):
     """A model to track which Organizations have access to which users' resources."""
     organization = models.ForeignKey(
         Organization,
@@ -49,8 +56,6 @@ class ResourceGrant(models.Model):
         choices=RESOURCE_CHOICES,
         default=RESOURCE_CHOICES[0][0]
     )
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "{} access to {} for {}".format(self.organization, self.provider_name, self.user)
