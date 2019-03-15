@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'apps.common',
     'apps.resources',
     'apps.sharemyhealth',
     'apps.vmi',
@@ -48,7 +49,7 @@ INSTALLED_APPS = [
     'apps.lockbox',
     'apps.org',
     'apps.member',
-    
+
     'social_django',
 ]
 
