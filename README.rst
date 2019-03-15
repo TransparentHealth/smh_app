@@ -29,3 +29,12 @@ and create a database via Postgres named "smh_app" with all migrations run::
 
     $ make setup
     $ workon smh_app
+
+Development
+------------------------
+
+to setup a watcher on all sass files and compile sass (from main directory)::
+
+    $ npm run sass --prefix style
+
+

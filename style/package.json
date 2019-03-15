@@ -7,6 +7,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.7.2",
     "@fortawesome/react-fontawesome": "^0.1.4",
     "bootstrap": "^4.3.1",
+    "live-server": "^1.2.1",
     "node-sass": "^4.11.0",
     "prop-types": "^15.7.2",
     "react": "^16.8.2",
@@ -16,7 +17,8 @@
     "react-scripts": "2.1.5"
   },
   "scripts": {
-    "build": "node-sass -o dist src/"
+    "build": "node-sass -o dist src/",
+    "sass": "node-sass -w src style/ -o dist"
   },
   "eslintConfig": {
     "extends": "react-app"
