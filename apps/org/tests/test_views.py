@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from .base import SMHAppTestMixin
+from apps.common.tests.base import SMHAppTestMixin
 from .factories import OrganizationFactory
 from ..models import Organization
 
