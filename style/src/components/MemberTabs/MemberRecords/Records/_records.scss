@@ -1,0 +1,48 @@
+.record-heading-wrapper {
+  border-bottom: 2px solid $navy--border;
+  flex-wrap: wrap;
+
+  @include media-breakpoint-up(sm) {
+    flex-wrap: nowrap;
+  }
+
+  p {
+    margin-bottom: 0;
+  }
+
+  button {
+    color: $blue;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+}
+
+.table--records {
+  margin-top: 3em;
+
+  th {
+    border: 0;
+    color: $gray;
+  }
+
+  .modal-link {
+    color: $blue;
+    cursor: pointer;
+    font-weight: 500;
+  }
+}
+
+.modal--records {
+  dl {
+    flex-basis: 100%;
+    padding: 1em .25em;
+
+    @include media-breakpoint-up(sm) {
+      flex-basis: 50%;
+    }
+
+    @include media-breakpoint-up(md) {
+      flex-basis: 33%;
+    }
+  }
+}

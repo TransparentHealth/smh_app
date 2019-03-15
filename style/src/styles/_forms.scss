@@ -1,0 +1,76 @@
+.form-control {
+  border-radius: 40px;
+  padding: .375rem 1rem;
+}
+
+// Just using input as selector doesn't override bootstrap form-control class.
+input,
+input.form-control {
+  background-color: $gray--light;
+  border: 0;
+  color: $navy--dark;
+
+  &::placeholder {
+    color: $gray;
+    font-style: italic;
+  }
+}
+
+textarea {
+  @extend .form-control;
+
+  background-color: $gray--light !important;
+  border: 0 !important;
+  border-radius: .25rem;
+}
+
+select,
+select.form-control {
+  background: $gray--light url("/images/icons/caret.png") 95% center no-repeat;
+  border: 0;
+  border-radius: 40px;
+  color: $navy--dark;
+  padding: .375em 4em .375em 1em;
+  -webkit-appearance: none;
+
+  &.full-width {
+    display: block;
+    width: 100%;
+  }
+}
+
+.form--search {
+  display: flex;
+  position: relative;
+
+  input {
+    padding-right: 2em;
+
+    @extend .form-control;
+  }
+
+  .btn {
+    right: .5em;
+    position: absolute;
+    width: auto;
+  }
+
+  .fa-search {
+    color: $blue;
+  }
+}
+
+.form--limit-width {
+  width: 100%;
+
+  @include media-breakpoint-up(sm) {
+    margin: 0 auto;
+    width: 480px;
+  }
+}
+
+.label--hidden {
+  label {
+    @include sr-only();
+  }
+}
