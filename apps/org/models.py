@@ -49,6 +49,8 @@ class ResourceGrant(models.Model):
         choices=RESOURCE_CHOICES,
         default=RESOURCE_CHOICES[0][0]
     )
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "{} access to {} for {}".format(self.organization, self.provider_name, self.user)
