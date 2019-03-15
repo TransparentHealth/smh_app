@@ -26,9 +26,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             resource_module = '.'.join(resource_grant.resource_class.split('.')[:-1])
             resource_class_name = resource_grant.resource_class.split('.')[-1]
             resource_class = getattr(import_module(resource_module), resource_class_name)
-            provider_names = resource_class().filter_by_user_and_provider(
-                user=self.request.user,
-                provider=resource_grant.provider_name
+            provider_names = resource_class().filter_by_user(
+                user=self.request.user
             ).values_list(
                 'provider',
                 flat=True
