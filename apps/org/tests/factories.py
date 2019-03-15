@@ -1,3 +1,5 @@
+import random
+
 from django.conf import settings
 from django.template.defaultfilters import slugify
 from factory import DjangoModelFactory, Faker, LazyAttribute, SubFactory
@@ -9,6 +11,11 @@ class OrganizationFactory(DjangoModelFactory):
     slug = LazyAttribute(lambda o: slugify(o.name))
     name = Faker('company')
     phone = Faker('phone_number')
+    street_line_1 = Faker('street_address')
+    street_line_2 = 'Room {}'.format(random.randint(0, 1000))
+    city = Faker('city')
+    state = Faker('state_abbr')
+    zipcode = Faker('zipcode')
 
     class Meta:
         model = Organization
