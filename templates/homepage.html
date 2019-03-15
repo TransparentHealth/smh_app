@@ -1,20 +1,33 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
+<header class="header header--anon text-center">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <img src="{% static '/images/logo.svg' %}" alt="Share My Health Home" />
+        </a>
+        <h1 class="header--anon__heading">Login</h1>
+    </div>
+</header>
 
-<p>
-  Welcome to the homepage{% if request.user.is_authenticated %}, {{ request.user.username }}{% endif %}!
-</p>
+<main>
+<div id="root">
+    <div class="app auth--false">
+        <div class="home">
+            <div class="container">
+                <form class="form--login form--limit-width text-center pb-5"
+                      method="GET"
+                      action="{% url 'social:begin' SOCIAL_AUTH_NAME %}">
 
-{% if not request.user.is_authenticated %}
-  <a href="{% url 'social:begin' SOCIAL_AUTH_NAME %}">Login</a>
-{% else %}
-  <div>
-    <a href="{% url 'member:dashboard' %}"> Member Dashboard </a>
-  </div>
-  <div>
-    <a href="{% url 'org:dashboard' %}"> Organization Dashboard </a> 
-  </div>
-{% endif %}
+                    <button type="submit" class="btn btn-primary mb-5">
+                        Sign In
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</main>
 
-{% endblock content %}
+{% endblock content %}"

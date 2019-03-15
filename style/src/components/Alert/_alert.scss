@@ -1,0 +1,32 @@
+.alert-item {
+  display: flex;
+
+  p {
+    margin-bottom: .25em;
+  }
+}
+
+.alert-item__image {
+  height: 40px;
+  margin-right: .75em;
+  width: 40px;
+}
+
+.alert-item__text {
+  color: $navy--dark;
+}
+
+.alert-item__time {
+  color: $gray;
+  font-size: 90%;
+  font-style: italic;
+}
+
+// Mimic a link.
+.alert-item__action {
+  color: $gold;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: right;
+  text-transform: uppercase;
+}
