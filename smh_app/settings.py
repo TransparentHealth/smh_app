@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'apps.lockbox',
     'apps.org',
     'apps.member',
-    
+
     'social_django',
 ]
 
@@ -168,7 +168,7 @@ AUTHENTICATION_BACKENDS = (
     'apps.vmi.backends.VMIOAuth2Backend'
 )
 
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'org:dashboard'
 
 # Settings for social_django
 SOCIAL_AUTH_URL_NAMESPACE = "social"
