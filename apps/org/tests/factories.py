@@ -28,14 +28,6 @@ class UserSocialAuthFactory(DjangoModelFactory):
         model = 'social_django.UserSocialAuth'
 
 
-class ResourceGrantFactory(DjangoModelFactory):
-    organization = SubFactory(OrganizationFactory)
-    user = SubFactory(UserFactory)
-
-    class Meta:
-        model = ResourceGrant
-
-
 class ResourceRequestFactory(DjangoModelFactory):
     organization = SubFactory(OrganizationFactory)
     member = SubFactory(UserFactory)
@@ -43,3 +35,12 @@ class ResourceRequestFactory(DjangoModelFactory):
 
     class Meta:
         model = ResourceRequest
+
+
+class ResourceGrantFactory(DjangoModelFactory):
+    organization = SubFactory(OrganizationFactory)
+    user = SubFactory(UserFactory)
+    resource_request = SubFactory(ResourceRequestFactory)
+
+    class Meta:
+        model = ResourceGrant

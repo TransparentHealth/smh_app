@@ -57,6 +57,12 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
         choices=RESOURCE_CHOICES,
         default=RESOURCE_CHOICES[0][0]
     )
+    resource_request = models.OneToOneField(
+        'org.ResourceRequest',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return "{} access to {} for {}".format(self.organization, self.provider_name, self.user)
