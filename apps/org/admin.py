@@ -12,8 +12,12 @@ class OrganizationAdmin(admin.ModelAdmin):
 @admin.register(ResourceGrant)
 class ResourceGrantAdmin(admin.ModelAdmin):
     search_fields = ('organization__name', 'user__username')
+    list_display = ('id', 'organization', 'user')
+    list_filter = ('organization',)
 
 
 @admin.register(ResourceRequest)
 class ResourceRequestAdmin(admin.ModelAdmin):
     search_fields = ('organization__name', 'member__username', 'user__username')
+    list_display = ('id', 'organization', 'member', 'user', 'status')
+    list_filter = ('organization', 'status',)
