@@ -3,7 +3,9 @@ from django.urls import reverse
 
 from apps.common.tests.base import SMHAppTestMixin
 from apps.org.tests.factories import ResourceGrantFactory, ResourceRequestFactory
-from apps.org.models import REQUEST_APPROVED, REQUEST_REQUESTED
+from apps.org.models import (
+    ResourceGrant, REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED
+)
 
 
 class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
@@ -125,3 +127,88 @@ class ApproveResourceRequestTestCase(SMHAppTestMixin, TestCase):
         self.assertEqual(self.resource_request.status, REQUEST_APPROVED)
         # The self.resource_request now has a ResourceGrant
         self.assertIsNotNone(self.resource_request.resourcegrant)
+
+
+class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
+    url_name = 'member:revoke_resource_request'
+
+    def setUp(self):
+        super().setUp()
+        # A ResourceRequest for the self.user that has been approved
+        self.resource_request = ResourceRequestFactory(
+            member=self.user,
+            resourcegrant=None,
+            status=REQUEST_APPROVED
+        )
+        ResourceGrantFactory(
+            user=self.user,
+            resource_request=self.resource_request,
+            organization=self.resource_request.organization,
+            resource_class=self.resource_request.resource_class
+        )
+
+    def test_methods(self):
+        """Only the POST method is allowed."""
+        url = reverse(self.url_name, kwargs={'pk': self.resource_request.pk})
+
+        with self.subTest('GET'):
+            response_get = self.client.get(url)
+            self.assertEqual(response_get.status_code, 405)
+
+        with self.subTest('PUT'):
+            response_put = self.client.put(url, data={})
+            self.assertEqual(response_put.status_code, 405)
+
+        with self.subTest('PATCH'):
+            response_patch = self.client.patch(url, data={})
+            self.assertEqual(response_patch.status_code, 405)
+
+        with self.subTest('DELETE'):
+            response_delete = self.client.delete(url)
+            self.assertEqual(response_delete.status_code, 405)
+
+    def test_authenticated(self):
+        """The user must be authenticated to approve ResourceRequests."""
+        url = reverse(self.url_name, kwargs={'pk': self.resource_request.pk})
+
+        with self.subTest('Not authenticated'):
+            self.client.logout()
+            response = self.client.post(url)
+            expected_redirect = '{}?next={}'.format(reverse('home'), url)
+            self.assertRedirects(response, expected_redirect)
+
+        with self.subTest('Authenticated'):
+            self.client.force_login(self.user)
+            response = self.client.post(url)
+            self.assertRedirects(response, reverse('member:dashboard'))
+
+    def test_non_user_resource_request(self):
+        """Revoking a ResourceRequest that isn't for the request.user is not allowed."""
+        resource_request_other_user = ResourceRequestFactory(status=REQUEST_APPROVED)
+        ResourceGrantFactory(
+            user=resource_request_other_user.member,
+            organization=resource_request_other_user.organization,
+            resource_class=resource_request_other_user.resource_class
+        )
+
+        url = reverse(self.url_name, kwargs={'pk': resource_request_other_user.pk})
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_revoke_success(self):
+        """A member may revoke a ResourceRequest for them, which updates objects in the db."""
+        # The id of the ResourceGrant for the self.resource_request
+        resource_grant_id = self.resource_request.resourcegrant.id
+
+        url = reverse(self.url_name, kwargs={'pk': self.resource_request.pk})
+        response = self.client.post(url)
+
+        # The user is redirected to the member dashboard
+        self.assertRedirects(response, reverse('member:dashboard'))
+        # The self.resource_request's status is now 'Denied'
+        self.resource_request.refresh_from_db()
+        self.assertEqual(self.resource_request.status, REQUEST_DENIED)
+        # The self.resource_request no longer has a ResourceGrant, since it has been deleted
+        self.assertIsNone(getattr(self.resource_request, 'resourcegrant', None))
+        self.assertFalse(ResourceGrant.objects.filter(id=resource_grant_id).exists())

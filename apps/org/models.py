@@ -13,6 +13,14 @@ from ..common.models import CreatedUpdatedModel
 RESOURCE_CHOICES = [
     ('apps.sharemyhealth.resources.Resource', 'apps.sharemyhealth.resources.Resource')
 ]
+REQUEST_REQUESTED = 'Requested'
+REQUEST_APPROVED = 'Approved'
+REQUEST_DENIED = 'Denied'
+RESOURCE_REQUEST_STATUSES = [
+    (REQUEST_REQUESTED, REQUEST_REQUESTED),
+    (REQUEST_APPROVED, REQUEST_APPROVED),
+    (REQUEST_DENIED, REQUEST_DENIED),
+]
 
 
 class Organization(CreatedUpdatedModel, models.Model):
@@ -103,6 +111,11 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
         max_length=255,
         choices=RESOURCE_CHOICES,
         default=RESOURCE_CHOICES[0][0]
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=RESOURCE_REQUEST_STATUSES,
+        default=REQUEST_REQUESTED
     )
 
     def __str__(self):

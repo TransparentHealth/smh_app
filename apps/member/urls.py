@@ -1,6 +1,6 @@
 # Copyright Videntity Systems, Inc.
 from django.conf.urls import url
-from .views import DashboardView, approve_resource_request
+from .views import DashboardView, approve_resource_request, revoke_resource_request
 
 # Copyright Videntity Systems Inc.
 
@@ -11,4 +11,7 @@ urlpatterns = [
     url(r'^approve_resource_request/(?P<pk>[0-9]+)/$',
         approve_resource_request,
         name='approve_resource_request'),
+    url(r'^revoke_resource_request/(?P<pk>[0-9]+)/$',
+        revoke_resource_request,
+        name='revoke_resource_request')
 ]

@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
 
-from apps.org.models import ResourceGrant, ResourceRequest, REQUEST_APPROVED
+from apps.org.models import ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -51,4 +51,26 @@ def approve_resource_request(request, pk):
         resource_class=resource_request.resource_class,
         resource_request=resource_request
     )
+    return redirect(reverse('member:dashboard'))
+
+
+@require_POST
+@login_required(login_url='home')
+def revoke_resource_request(request, pk):
+    """
+    A view for a member to revoke access to a resource (after an approved ResourceRequest).
+
+    Revoking a ResourceRequest means settings its status to 'Denied', and
+    deleting the related ResourceGrant.
+    """
+    # Is the ResourceRequest for this member?
+    resource_request = get_object_or_404(
+        ResourceRequest.objects.filter(member=request.user),
+        pk=pk
+    )
+    # The ResourceRequest is for this member; set its status to REQUEST_DENIED.
+    resource_request.status = REQUEST_DENIED
+    resource_request.save()
+    # The ResourceRequest is for this member, so delete the relevant ResourceGrant
+    resource_request.resourcegrant.delete()
     return redirect(reverse('member:dashboard'))

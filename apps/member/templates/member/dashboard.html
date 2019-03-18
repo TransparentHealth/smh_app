@@ -18,6 +18,7 @@ The following organizations have been granted access to your data:
   {% for resource_granted in resources_granted %}
     <li>
       <span>{{ resource_granted }}</span>
+      <form action="{% url 'member:revoke_resource_request' resource_granted.id %}" method="post">{% csrf_token %}<button type="submit">revoke</button></form>
     </li>
   {% endfor %}
 </ul>
