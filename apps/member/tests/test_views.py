@@ -224,3 +224,22 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
         # The self.resource_request no longer has a ResourceGrant, since it has been deleted
         self.assertIsNone(getattr(self.resource_request, 'resourcegrant', None))
         self.assertFalse(ResourceGrant.objects.filter(id=resource_grant_id).exists())
+
+    def test_deny(self):
+        """A member make POST to deny a ResourceRequest, which updates objects in the db."""
+        # A ResourceRequest for the self.user, which does not have a ResourceGrant,
+        # which means that it has been requested, but not approved.
+        self.resource_request.status = REQUEST_REQUESTED
+        self.resource_request.resourcegrant.delete()
+        self.resource_request.save()
+
+        url = reverse(self.url_name, kwargs={'pk': self.resource_request.pk})
+        response = self.client.post(url)
+
+        # The user is redirected to the member dashboard
+        self.assertRedirects(response, reverse('member:dashboard'))
+        # The self.resource_request's status is now 'Denied'
+        self.resource_request.refresh_from_db()
+        self.assertEqual(self.resource_request.status, REQUEST_DENIED)
+        # The self.resource_request does not have a ResourceGrant
+        self.assertIsNone(getattr(self.resource_request, 'resourcegrant', None))

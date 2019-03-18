@@ -74,5 +74,6 @@ def revoke_resource_request(request, pk):
     resource_request.status = REQUEST_DENIED
     resource_request.save()
     # The ResourceRequest is for this member, so delete the relevant ResourceGrant
-    resource_request.resourcegrant.delete()
+    if getattr(resource_request, 'resourcegrant', None):
+        resource_request.resourcegrant.delete()
     return redirect(reverse('member:dashboard'))

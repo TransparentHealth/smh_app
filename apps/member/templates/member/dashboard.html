@@ -8,6 +8,7 @@ The following organizations have requested access to your data:
     <li>
       <span>{{ resource_request }}</span>
       <form action="{% url 'member:approve_resource_request' resource_request.id %}" method="post">{% csrf_token %}<button type="submit">approve</button></form>
+      <form action="{% url 'member:revoke_resource_request' resource_request.id %}" method="post">{% csrf_token %}<button type="submit">deny</button></form>
     </li>
   {% endfor %}
 </ul>
