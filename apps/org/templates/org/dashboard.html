@@ -10,16 +10,6 @@
       <span>{{ organization }}</span>
       <a href="{% url 'org:organization-update' organization.pk %}">edit</a>
       <a href="{% url 'org:organization-delete' organization.pk %}">delete</a>
-
-      {% if organization.resource_grants_for_user %}
-        <div>has access to:</div>
-        <ul>
-          {% for provider_name in organization.resource_grants_for_user %}
-            <li>{{ provider_name }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-
     </li>
   {% endfor %}
 </ul>
