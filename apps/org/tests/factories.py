@@ -39,7 +39,7 @@ class ResourceRequestFactory(DjangoModelFactory):
 
 class ResourceGrantFactory(DjangoModelFactory):
     organization = SubFactory(OrganizationFactory)
-    user = SubFactory(UserFactory)
+    member = SubFactory(UserFactory)
     resource_request = SubFactory(ResourceRequestFactory)
 
     class Meta:

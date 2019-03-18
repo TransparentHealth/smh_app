@@ -22,7 +22,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # an annotation using something like django.contrib.postgres.aggregates.ArrayAgg,
         # but since we are not using Postgres, we don't have that ability.
         org_provider_dict = defaultdict(list)
-        for resource_grant in ResourceGrant.objects.filter(user=self.request.user):
+        for resource_grant in ResourceGrant.objects.filter(member=self.request.user):
             resource_module = '.'.join(resource_grant.resource_class.split('.')[:-1])
             resource_class_name = resource_grant.resource_class.split('.')[-1]
             resource_class = getattr(import_module(resource_module), resource_class_name)

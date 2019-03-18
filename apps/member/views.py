@@ -47,7 +47,7 @@ def approve_resource_request(request, pk):
     # The ResourceRequest is for this member, so create a ResourceGrant for it
     ResourceGrant.objects.create(
         organization=resource_request.organization,
-        user=resource_request.member,
+        member=resource_request.member,
         resource_class=resource_request.resource_class,
         resource_request=resource_request
     )

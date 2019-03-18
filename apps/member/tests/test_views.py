@@ -24,7 +24,7 @@ class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
         expected_resources_granted_ids = []
         for i in range(0, 3):
             resource_request = ResourceRequestFactory(member=self.user)
-            ResourceGrantFactory(user=self.user, resource_request=resource_request)
+            ResourceGrantFactory(member=self.user, resource_request=resource_request)
             expected_resources_granted_ids.append(resource_request.id)
         # Some ResourceGrants for other users
         for i in range(0, 2):
@@ -141,7 +141,7 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
             status=REQUEST_APPROVED
         )
         ResourceGrantFactory(
-            user=self.user,
+            member=self.user,
             resource_request=self.resource_request,
             organization=self.resource_request.organization,
             resource_class=self.resource_request.resource_class
@@ -186,7 +186,7 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
         """Revoking a ResourceRequest that isn't for the request.user is not allowed."""
         resource_request_other_user = ResourceRequestFactory(status=REQUEST_APPROVED)
         ResourceGrantFactory(
-            user=resource_request_other_user.member,
+            member=resource_request_other_user.member,
             organization=resource_request_other_user.organization,
             resource_class=resource_request_other_user.resource_class
         )

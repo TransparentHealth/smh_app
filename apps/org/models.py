@@ -56,9 +56,10 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
         Organization,
         on_delete=models.CASCADE
     )
-    user = models.ForeignKey(
+    member = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        help_text='The member who has granted this Organization access to the resource'
     )
     resource_class = models.CharField(
         max_length=255,
@@ -73,7 +74,7 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
     )
 
     def __str__(self):
-        return "{} access to {} for {}".format(self.organization, self.provider_name, self.user)
+        return "{} access to {} for {}".format(self.organization, self.provider_name, self.member)
 
     @property
     def provider_name(self):
