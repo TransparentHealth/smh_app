@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'localflavor',
+    'phonenumber_field',
 
     'apps.common',
     'apps.resources',
@@ -286,3 +288,8 @@ SETTINGS_EXPORT = [
     'CALL_ORGANIZATION',
     'CALL_ORGANIZATION_PLURAL'
 ]
+
+# Django-phonenumber-field settings
+PHONENUMBER_DEFAULT_REGION = 'US'
+PHONENUMBER_DB_FORMAT = 'E164'
+PHONENUMBER_DEFAULT_FORMAT = 'NATIONAL'

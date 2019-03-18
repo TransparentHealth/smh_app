@@ -6,6 +6,8 @@ git+https://github.com/mpdavis/python-jose.git@414e71b77718850e0208fa9f868286767
 dj-database-url==0.5.0
 django-dotenv==1.4.1
 django-getenv==1.3.2
+django-phonenumber-field==2.0.1
+django-localflavor==2.1
 django-settings-export==1.2.1
 
 # for tests
