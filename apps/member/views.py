@@ -4,7 +4,9 @@ from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
 
-from apps.org.models import ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED
+from apps.org.models import (
+    ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED
+)
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -16,12 +18,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         resource_requests = ResourceRequest.objects.filter(
             member=self.request.user
         ).filter(
-            resourcegrant=None
+            status=REQUEST_REQUESTED
         )
         resources_granted = ResourceRequest.objects.filter(
             member=self.request.user
-        ).exclude(
-            resourcegrant=None
+        ).filter(
+            status=REQUEST_APPROVED
         )
         kwargs.setdefault('resource_requests', resource_requests)
         kwargs.setdefault('resources_granted', resources_granted)

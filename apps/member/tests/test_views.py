@@ -15,7 +15,10 @@ class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
         """GETting member dashboard shows ResourceRequests for request.user's resources."""
         # Some ResourceRequests for the request.user that have not yet been granted
         expected_resource_request_ids = [
-            ResourceRequestFactory(member=self.user).id for i in range(0, 3)
+            ResourceRequestFactory(
+                member=self.user,
+                status=REQUEST_REQUESTED
+            ).id for i in range(0, 3)
         ]
         # Some ResourceRequests for other users
         for i in range(0, 2):
@@ -23,12 +26,21 @@ class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
         # Some ResourceRequests for the request.user that have been granted
         expected_resources_granted_ids = []
         for i in range(0, 3):
-            resource_request = ResourceRequestFactory(member=self.user)
-            ResourceGrantFactory(member=self.user, resource_request=resource_request)
+            resource_request = ResourceRequestFactory(
+                member=self.user,
+                status=REQUEST_APPROVED
+            )
+            ResourceGrantFactory(
+                member=self.user,
+                resource_request=resource_request
+            )
             expected_resources_granted_ids.append(resource_request.id)
         # Some ResourceGrants for other users
         for i in range(0, 2):
             ResourceGrantFactory()
+        # Some ResourceRequests for the request.user that have been denied/revoked
+        for i in range(0, 3):
+            ResourceRequestFactory(member=self.user, status=REQUEST_DENIED)
 
         response = self.client.get(reverse(self.url_name))
 
