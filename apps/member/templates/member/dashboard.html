@@ -5,7 +5,10 @@
 The following organizations have requested access to your data:
 <ul>
   {% for resource_request in resource_requests %}
-    <li>{{ resource_request }}</li>
+    <li>
+      <span>{{ resource_request }}</span>
+      <form action="{% url 'member:approve_resource_request' resource_request.id %}" method="post">{% csrf_token %}<button type="submit">approve</button></form>
+    </li>
   {% endfor %}
 </ul>
 {% endblock content %}
