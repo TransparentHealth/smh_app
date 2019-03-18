@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+The following organizations have requested access to your data:
+<ul>
+  {% for resource_request in resource_requests %}
+    <li>{{ resource_request }}</li>
+  {% endfor %}
+</ul>
+{% endblock content %}
