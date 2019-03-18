@@ -11,4 +11,14 @@ The following organizations have requested access to your data:
     </li>
   {% endfor %}
 </ul>
+
+
+The following organizations have been granted access to your data:
+<ul>
+  {% for resource_granted in resources_granted %}
+    <li>
+      <span>{{ resource_granted }}</span>
+    </li>
+  {% endfor %}
+</ul>
 {% endblock content %}

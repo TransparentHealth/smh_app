@@ -18,7 +18,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         ).filter(
             resourcegrant=None
         )
+        resources_granted = ResourceRequest.objects.filter(
+            member=self.request.user
+        ).exclude(
+            resourcegrant=None
+        )
         kwargs.setdefault('resource_requests', resource_requests)
+        kwargs.setdefault('resources_granted', resources_granted)
         return super().get_context_data(**kwargs)
 
 

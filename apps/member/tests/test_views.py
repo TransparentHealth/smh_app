@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.common.tests.base import SMHAppTestMixin
-from apps.org.tests.factories import ResourceRequestFactory
+from apps.org.tests.factories import ResourceGrantFactory, ResourceRequestFactory
 from apps.org.models import REQUEST_APPROVED, REQUEST_REQUESTED
 
 
@@ -11,13 +11,22 @@ class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
 
     def test_member_dashboard(self):
         """GETting member dashboard shows ResourceRequests for request.user's resources."""
-        # Some ResourceRequests for the request.user
+        # Some ResourceRequests for the request.user that have not yet been granted
         expected_resource_request_ids = [
             ResourceRequestFactory(member=self.user).id for i in range(0, 3)
         ]
         # Some ResourceRequests for other users
         for i in range(0, 2):
             ResourceRequestFactory()
+        # Some ResourceRequests for the request.user that have been granted
+        expected_resources_granted_ids = []
+        for i in range(0, 3):
+            resource_request = ResourceRequestFactory(member=self.user)
+            ResourceGrantFactory(user=self.user, resource_request=resource_request)
+            expected_resources_granted_ids.append(resource_request.id)
+        # Some ResourceGrants for other users
+        for i in range(0, 2):
+            ResourceGrantFactory()
 
         response = self.client.get(reverse(self.url_name))
 
@@ -25,6 +34,10 @@ class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
         self.assertEqual(
             set(response.context_data['resource_requests'].values_list('id', flat=True)),
             set(expected_resource_request_ids)
+        )
+        self.assertEqual(
+            set(response.context_data['resources_granted'].values_list('id', flat=True)),
+            set(expected_resources_granted_ids)
         )
 
     def test_authenticated(self):
