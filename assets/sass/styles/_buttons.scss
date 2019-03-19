@@ -22,3 +22,16 @@
     color: $gold;
   }
 }
+
+.btn-secondary {
+  background-color: $gray--light;
+  border-color: $gray--light;
+  color: $gray;
+
+  &:hover,
+  &:focus {
+    background-color: $gray;
+    border-color: $gray;
+    color: $white;
+  }
+}

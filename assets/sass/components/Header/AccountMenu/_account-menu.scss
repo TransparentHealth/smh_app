@@ -1,6 +1,14 @@
 .account-menu {
   padding: 0 1em;
 
+  img{
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    background-color: #dbe1fa; //
+    padding: 4px;
+  }
+
   @include media-breakpoint-up(lg) {
     padding: 0;
   }

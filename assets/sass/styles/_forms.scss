@@ -74,3 +74,8 @@ select.form-control {
     @include sr-only();
   }
 }
+
+.invalid-feedback {
+  display: block;
+  font-size: 60%;
+}

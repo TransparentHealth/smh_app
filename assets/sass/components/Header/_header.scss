@@ -127,5 +127,10 @@
 .nav-item--button {
   .btn {
     padding: .5em 1em;
+    svg {
+      width: 14px;
+      height: 14px;
+      margin-bottom: 4px;
+    }
   }
 }
