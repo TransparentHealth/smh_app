@@ -214,7 +214,7 @@ SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SMH_OAUTH_SECRET')
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'sitestatic'),
-    os.path.join(BASE_DIR, 'style/dist'),
+    os.path.join(BASE_DIR, 'assets/dist'),
 ]
 
 STATIC_URL = '/static/'

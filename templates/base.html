@@ -35,8 +35,13 @@
     </head>
 
     <body>
-        {% block content %}
-        {% endblock content %}
+        {% if request.resolver_match.url_name != 'home' %}
+            {% include 'header.html' %}
+        {% endif %}
+        <main>
+            {% block content %}
+            {% endblock content %}
+        </main>
+        <script src="{% static 'App.js' %}"></script>
     </body>
-
 </html>

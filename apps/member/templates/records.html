@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row mr-0 ml-0">
+    {% include "member_sidebar.html" with member=member %}
+    <div class="member-tabs col-lg-9 p-5">
+        {% include "member_tabbed_nav.html" with member=member %}
+         <div role="tabpanel" aria-hidden="true" class=" tab-pane">
+
+            <!--
+                request data in context but not being shown here:
+                - patient_data
+                - organization_data
+                - medication_request_data
+
+                TODO: Loop through records_options in view instead and return an object that
+                sets record.number and link to detail view specific to
+                to the patient here.
+            -->
+
+            <div class="tile-flex mt-5">
+                {% for record in records_options %}
+                    <div class="tile tile-flex__item {% if record.disabled %} disabled {% endif %}">
+                        {% with "/images/icons/"|add:record.icon|add:".png" as img_src %}
+                        <img src="{% static img_src %}" alt="">
+                        <p>{{ record.name }}
+                            <span> {% if record.number %} ({{ record.number }}) {% endif %}</span>
+                        </p>
+                        {% endwith %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
