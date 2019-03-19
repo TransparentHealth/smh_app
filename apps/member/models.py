@@ -6,13 +6,12 @@ from django.dispatch import receiver
 
 
 class Member(models.Model):
-    org = models.ForeignKey('org.Organization', null=True, blank=True, on_delete=models.SET_NULL)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     birth_date = models.DateField(null=True, blank=True)
     phone_number = PhoneNumberField(null=True, blank=True, unique=False)
     address = models.TextField(null=True, blank=True)
     emergency_contact_name = models.CharField(null=True, blank=True, max_length=40)
-    emergeny_contact_number = PhoneNumberField(null=True, blank=True, unique=False)
+    emergency_contact_number = PhoneNumberField(null=True, blank=True, unique=False)
 
     def __str__(self):
         return self.user.username
