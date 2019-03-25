@@ -1,3 +1,5 @@
+from importlib import import_module
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, reverse
@@ -77,3 +79,24 @@ def revoke_resource_request(request, pk):
     if getattr(resource_request, 'resourcegrant', None):
         resource_request.resourcegrant.delete()
     return redirect(reverse('member:dashboard'))
+
+
+# @login_required(login_url='home')
+def get_member_data(request, pk, resource_name):
+    resource_class_path = 'apps.sharemyhealth.resources.Resource'
+
+    # Does the request.user's Organization have access to this member's resource?
+    resource_grant = get_object_or_404(
+        ResourceGrant.objects.filter(
+            member_id=pk,
+            resource_class=resource_class_path,
+            organization__users=request.user
+        )
+    )
+
+    resource_module = '.'.join(resource_grant.resource_class.split('.')[:-1])
+    resource_class_name = resource_grant.resource_class.split('.')[-1]
+    resource_class = getattr(import_module(resource_module), resource_class_name)
+
+    path = 'https://alpha.sharemy.health/'
+    data = resource_class().get(path, resource_grant.member, requester=request.user)
