@@ -175,13 +175,13 @@ def get_member_data(request, pk, resource_name, record_type):
     resource_grant = get_object_or_404(
         ResourceGrant.objects.filter(
             member_id=pk,
-            resource_class=resource_class_path,
+            resource_class_path=resource_class_path,
             organization__users=request.user
         )
     )
 
-    resource_module = '.'.join(resource_grant.resource_class.split('.')[:-1])
-    resource_class_name = resource_grant.resource_class.split('.')[-1]
+    resource_module = '.'.join(resource_grant.resource_class_path.split('.')[:-1])
+    resource_class_name = resource_grant.resource_class_path.split('.')[-1]
     resource_class = getattr(import_module(resource_module), resource_class_name)
 
     path = 'https://alpha.sharemy.health/'

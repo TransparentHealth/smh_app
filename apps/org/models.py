@@ -79,14 +79,12 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
     @property
     def provider_name(self):
         """Return the 'name' of the resource_class."""
-        return self.resource_class.name
-
-    @property
-    def resource_class(self):
-        """Return the class that the resource_class_path refers to."""
+        # First, import the class
         resource_module = '.'.join(self.resource_class_path.split('.')[:-1])
         resource_class_name = self.resource_class_path.split('.')[-1]
-        return getattr(import_module(resource_module), resource_class_name)
+        resource_class = getattr(import_module(resource_module), resource_class_name)
+        # Return the class' name
+        return resource_class.name
 
     class Meta:
         verbose_name_plural = "Resource Grants"
@@ -131,14 +129,12 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
     @property
     def provider_name(self):
         """Return the 'name' of the resource_class."""
-        return self.resource_class.name
-
-    @property
-    def resource_class(self):
-        """Return the class that the resource_class_path refers to."""
+        # First, import the class
         resource_module = '.'.join(self.resource_class_path.split('.')[:-1])
         resource_class_name = self.resource_class_path.split('.')[-1]
-        return getattr(import_module(resource_module), resource_class_name)
+        resource_class = getattr(import_module(resource_module), resource_class_name)
+        # Return the class' name
+        return resource_class.name
 
     class Meta:
         verbose_name_plural = "Resource Requests"
