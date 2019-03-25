@@ -85,7 +85,7 @@ class ResourceRequestTestCase(TestCase):
         mock_resource_class.name = test_resource_class_name
 
         resource_request = ResourceRequestFactory(
-            resource_class='apps.sharemyhealth.resources.Resource'
+            resource_class_path='apps.sharemyhealth.resources.Resource'
         )
 
         self.assertEqual(resource_request.provider_name, test_resource_class_name)

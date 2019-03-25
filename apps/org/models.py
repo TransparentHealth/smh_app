@@ -61,7 +61,7 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
         on_delete=models.CASCADE,
         help_text='The member who has granted this Organization access to the resource'
     )
-    resource_class = models.CharField(
+    resource_class_path = models.CharField(
         max_length=255,
         choices=RESOURCE_CHOICES,
         default=RESOURCE_CHOICES[0][0]
@@ -80,8 +80,8 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
     def provider_name(self):
         """Return the 'name' of the resource_class."""
         # First, import the class
-        resource_module = '.'.join(self.resource_class.split('.')[:-1])
-        resource_class_name = self.resource_class.split('.')[-1]
+        resource_module = '.'.join(self.resource_class_path.split('.')[:-1])
+        resource_class_name = self.resource_class_path.split('.')[-1]
         resource_class = getattr(import_module(resource_module), resource_class_name)
         # Return the class' name
         return resource_class.name
@@ -108,7 +108,7 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
         related_name='resource_requests_sent',
         help_text='The user at the Organization who initiated this request'
     )
-    resource_class = models.CharField(
+    resource_class_path = models.CharField(
         max_length=255,
         choices=RESOURCE_CHOICES,
         default=RESOURCE_CHOICES[0][0]
@@ -130,8 +130,8 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
     def provider_name(self):
         """Return the 'name' of the resource_class."""
         # First, import the class
-        resource_module = '.'.join(self.resource_class.split('.')[:-1])
-        resource_class_name = self.resource_class.split('.')[-1]
+        resource_module = '.'.join(self.resource_class_path.split('.')[:-1])
+        resource_class_name = self.resource_class_path.split('.')[-1]
         resource_class = getattr(import_module(resource_module), resource_class_name)
         # Return the class' name
         return resource_class.name

@@ -156,7 +156,7 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
             member=self.user,
             resource_request=self.resource_request,
             organization=self.resource_request.organization,
-            resource_class=self.resource_request.resource_class
+            resource_class_path=self.resource_request.resource_class_path
         )
 
     def test_methods(self):
@@ -200,7 +200,7 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
         ResourceGrantFactory(
             member=resource_request_other_user.member,
             organization=resource_request_other_user.organization,
-            resource_class=resource_request_other_user.resource_class
+            resource_class_path=resource_request_other_user.resource_class_path
         )
 
         url = reverse(self.url_name, kwargs={'pk': resource_request_other_user.pk})
