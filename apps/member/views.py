@@ -160,7 +160,15 @@ def revoke_resource_request(request, pk):
 
 
 # @login_required(login_url='home')
-def get_member_data(request, pk, resource_name):
+def get_member_data(request, pk, resource_name, record_type):
+    valid_record_types = [
+        'prescriptions', 'diagnoses', 'allergies', 'procedures', 'ed_reports',
+        'family_history', 'demographics', 'discharge_summaries', 'immunizations',
+        'lab_results', 'progress_notes', 'vital_signs'
+    ]
+    if record_type not in valid_record_types:
+        raise Http404
+
     resource_class_path = 'apps.sharemyhealth.resources.Resource'
 
     # Does the request.user's Organization have access to this member's resource?
