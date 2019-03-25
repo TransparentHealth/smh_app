@@ -26,37 +26,27 @@ class Resource(object):
         # to the member.
         self.db_object = self.filter_by_user(member).first()
 
-    def filter_by_user(self, member):
-        return self.model_class.objects.filter(user=member, provider=self.name)
+    def filter_by_user(self, user):
+        return self.model_class.objects.filter(user=user, provider=self.name)
 
-    def get(self, record_type):
-        """GET the data from the self.url_for_data."""
-        # A dictioary of token data for this resource
-        token_dict = {
-            'access_token': self.db_object.access_token,
-            'refresh_token': self.db_object.extra_data['refresh_token'],
-            'token_type': 'Bearer',
-            'expires_in': '3600',
-        }
-        # Other data sent as a part of the request
+    def get(self, path, user, requester=None):
+        # get token info for this resource for given user
+        client_id = settings.SOCIAL_AUTH_SHAREMYHEALTH_KEY
+        client_secret = settings.SOCIAL_AUTH_SHAREMYHEALTH_SECRET
+
+        db_object = self.filter_by_user(user).first()
+        token = db_object.access_token
+        refresh_url = 'https://alpha.sharemy.health'
         extra = {
-            'client_id': self.client_id,
-            'client_secret': self.client_secret
+            'client_id': client_id,
+            'client_secret': client_secret
         }
-        # The URL for the request
-        url = '{}/{}'.format(self.url_for_data, record_type)
 
-        client = OAuth2Session(
-            self.client_id,
-            token=token_dict,
-            auto_refresh_url=self.url_token_refresh,
-            auto_refresh_kwargs=extra,
-            token_updater=self.token_saver
-        )
-        response = client.get(url)
+        def token_saver(token):
+            db_object.access_token = token
+            db_object.save()
+
+        client = OAuth2Session(client_id, token=token, auto_refresh_url=refresh_url,
+                                                 auto_refresh_kwargs=extra, token_updater=token_saver)
+        response = client.get(path)
         return response
-
-    def token_saver(self, token):
-        """Save the token to the self.db_object."""
-        self.db_object.access_token = token
-        self.db_object.save()

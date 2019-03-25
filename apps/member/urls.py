@@ -2,8 +2,8 @@
 from django.conf.urls import url
 
 from .views import (
-    RecordsView, DataSourcesView, CreateMemberView, UpdateMemberView, DeleteMemberView,
-    DashboardView, approve_resource_request, get_member_data, revoke_resource_request
+    CreateMemberView, DataSourcesView, DashboardView, DeleteMemberView, RecordsView,
+    UpdateMemberView, approve_resource_request, get_member_data, revoke_resource_request
 )
 
 # Copyright Videntity Systems Inc.
@@ -33,7 +33,7 @@ urlpatterns = [
     url(r'^revoke_resource_request/(?P<pk>[0-9]+)/$',
         revoke_resource_request,
         name='revoke_resource_request'),
-    url(r'^(?P<pk>[0-9]+)/get_data/(?P<resource_name>[\w]+)/(?P<record_type>[\w]+)/$',
+    url(r'^(?P<pk>[0-9]+)/get_data/(?P<resource_name>[\w]+)/$',
         get_member_data,
         name='get_member_data'),
 ]
