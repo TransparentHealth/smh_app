@@ -9,6 +9,9 @@ class Resource(object):
     model_class = UserSocialAuth
     # The name matches the model_class's 'provider' field value
     name = 'sharemyhealth'
+    # The settings for this resource
+    client_id = settings.SOCIAL_AUTH_SHAREMYHEALTH_KEY
+    client_secret = settings.SOCIAL_AUTH_SHAREMYHEALTH_SECRET
 
     def __init__(self, user, *args, **kwargs):
         """Set a 'user' and a 'db_object' on the Resource instance."""
@@ -24,21 +27,19 @@ class Resource(object):
 
     def get(self, path, user, requester=None):
         # get token info for this resource for given user
-        client_id = settings.SOCIAL_AUTH_SHAREMYHEALTH_KEY
-        client_secret = settings.SOCIAL_AUTH_SHAREMYHEALTH_SECRET
 
         token = self.db_object.access_token
         refresh_url = 'https://alpha.sharemy.health'
         extra = {
-            'client_id': client_id,
-            'client_secret': client_secret
+            'client_id': self.client_id,
+            'client_secret': self.client_secret
         }
 
         def token_saver(token):
             self.db_object.access_token = token
             self.db_object.save()
 
-        client = OAuth2Session(client_id, token=token, auto_refresh_url=refresh_url,
+        client = OAuth2Session(self.client_id, token=token, auto_refresh_url=refresh_url,
                                                  auto_refresh_kwargs=extra, token_updater=token_saver)
         response = client.get(path)
         return response
