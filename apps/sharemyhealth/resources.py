@@ -26,9 +26,14 @@ class Resource(object):
         return self.model_class.objects.filter(user=user, provider=self.name)
 
     def get(self, path, user, requester=None):
-        # get token info for this resource for given user
-
-        token = self.db_object.access_token
+        # A dictioary of token data for this resource
+        token_dict = {
+            'access_token': self.db_object.access_token,
+            'refresh_token': self.db_object.extra_data['refresh_token'],
+            'token_type': 'Bearer',
+            'expires_in': '3600',
+        }
+        # Other data sent as a part of the request
         refresh_url = 'https://alpha.sharemy.health'
         extra = {
             'client_id': self.client_id,
@@ -37,7 +42,7 @@ class Resource(object):
 
         client = OAuth2Session(
             self.client_id,
-            token=token,
+            token=token_dict,
             auto_refresh_url=refresh_url,
             auto_refresh_kwargs=extra,
             token_updater=self.token_saver
