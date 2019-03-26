@@ -102,5 +102,4 @@ def get_member_data(request, pk, resource_name, record_type):
         )
     )
 
-    path = 'https://alpha.sharemy.health/'
-    data = resource_grant.resource_class(request.user).get(path, resource_grant.member)
+    data = resource_grant.resource_class(request.user).get(resource_grant.member)
