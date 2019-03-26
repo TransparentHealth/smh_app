@@ -212,6 +212,11 @@ SOCIAL_AUTH_SHAREMYHEALTH_HOST = env('SMH_OAUTH_HOST')
 SOCIAL_AUTH_SHAREMYHEALTH_KEY = env('SMH_OAUTH_KEY')
 SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SMH_OAUTH_SECRET')
 
+# A mapping of resource names to the path for their class
+RESOURCE_NAME_AND_CLASS_MAPPING = {
+    'sharemyhealth': 'apps.sharemyhealth.resources.Resource'
+}
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/

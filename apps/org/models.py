@@ -11,7 +11,7 @@ from ..common.models import CreatedUpdatedModel
 
 
 RESOURCE_CHOICES = [
-    ('apps.sharemyhealth.resources.Resource', 'apps.sharemyhealth.resources.Resource')
+    (value, value) for value in settings.RESOURCE_NAME_AND_CLASS_MAPPING.values()
 ]
 REQUEST_REQUESTED = 'Requested'
 REQUEST_APPROVED = 'Approved'
