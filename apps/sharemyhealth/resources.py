@@ -26,6 +26,15 @@ class Resource(object):
         # to the member.
         self.db_object = self.filter_by_user(member).first()
 
+    def __init__(self, user, *args, **kwargs):
+        """Set a 'user' and a 'db_object' on the Resource instance."""
+        super().__init__(*args, **kwargs)
+        # The User who is accessing the self.model_class to get data.
+        self.user = user
+        # The object in the database that holds the access_token, and the relation
+        # to the member.
+        self.db_object = self.filter_by_user(user).first()
+
     def filter_by_user(self, user):
         return self.model_class.objects.filter(user=user, provider=self.name)
 
@@ -34,8 +43,7 @@ class Resource(object):
         client_id = settings.SOCIAL_AUTH_SHAREMYHEALTH_KEY
         client_secret = settings.SOCIAL_AUTH_SHAREMYHEALTH_SECRET
 
-        db_object = self.filter_by_user(user).first()
-        token = db_object.access_token
+        token = self.db_object.access_token
         refresh_url = 'https://alpha.sharemy.health'
         extra = {
             'client_id': client_id,
@@ -43,8 +51,8 @@ class Resource(object):
         }
 
         def token_saver(token):
-            db_object.access_token = token
-            db_object.save()
+            self.db_object.access_token = token
+            self.db_object.save()
 
         client = OAuth2Session(client_id, token=token, auto_refresh_url=refresh_url,
                                                  auto_refresh_kwargs=extra, token_updater=token_saver)
