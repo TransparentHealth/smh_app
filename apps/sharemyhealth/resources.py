@@ -12,19 +12,6 @@ class Resource(object):
     # The settings for this resource
     client_id = settings.SOCIAL_AUTH_SHAREMYHEALTH_KEY
     client_secret = settings.SOCIAL_AUTH_SHAREMYHEALTH_SECRET
-    # The URL to use when GETting the data
-    url_for_data = 'https://alpha.sharemy.health/'
-    # The URL to refresh the token
-    url_token_refresh = 'https://alpha.sharemy.health'
-
-    def __init__(self, member, *args, **kwargs):
-        """Set a 'member' and a 'db_object' on the Resource instance."""
-        super().__init__(*args, **kwargs)
-        # The member whose token from the self.model_class will be used to get data.
-        self.member = member
-        # The object in the database that holds the access_token, and the relation
-        # to the member.
-        self.db_object = self.filter_by_user(member).first()
 
     def __init__(self, user, *args, **kwargs):
         """Set a 'user' and a 'db_object' on the Resource instance."""
@@ -40,21 +27,19 @@ class Resource(object):
 
     def get(self, path, user, requester=None):
         # get token info for this resource for given user
-        client_id = settings.SOCIAL_AUTH_SHAREMYHEALTH_KEY
-        client_secret = settings.SOCIAL_AUTH_SHAREMYHEALTH_SECRET
 
         token = self.db_object.access_token
         refresh_url = 'https://alpha.sharemy.health'
         extra = {
-            'client_id': client_id,
-            'client_secret': client_secret
+            'client_id': self.client_id,
+            'client_secret': self.client_secret
         }
 
         def token_saver(token):
             self.db_object.access_token = token
             self.db_object.save()
 
-        client = OAuth2Session(client_id, token=token, auto_refresh_url=refresh_url,
+        client = OAuth2Session(self.client_id, token=token, auto_refresh_url=refresh_url,
                                                  auto_refresh_kwargs=extra, token_updater=token_saver)
         response = client.get(path)
         return response
