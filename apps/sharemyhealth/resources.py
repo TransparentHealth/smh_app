@@ -25,7 +25,7 @@ class Resource(object):
     def filter_by_user(self, user):
         return self.model_class.objects.filter(user=user, provider=self.name)
 
-    def get(self, path, user, requester=None):
+    def get(self, path, user):
         # A dictioary of token data for this resource
         token_dict = {
             'access_token': self.db_object.access_token,
