@@ -102,9 +102,5 @@ def get_member_data(request, pk, resource_name, record_type):
         )
     )
 
-    resource_module = '.'.join(resource_grant.resource_class_path.split('.')[:-1])
-    resource_class_name = resource_grant.resource_class_path.split('.')[-1]
-    resource_class = getattr(import_module(resource_module), resource_class_name)
-
     path = 'https://alpha.sharemy.health/'
-    data = resource_class().get(path, resource_grant.member, requester=request.user)
+    data = resource_grant.resource_class().get(path, resource_grant.member, requester=request.user)
