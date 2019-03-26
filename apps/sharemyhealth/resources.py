@@ -35,11 +35,17 @@ class Resource(object):
             'client_secret': self.client_secret
         }
 
-        def token_saver(token):
-            self.db_object.access_token = token
-            self.db_object.save()
-
-        client = OAuth2Session(self.client_id, token=token, auto_refresh_url=refresh_url,
-                                                 auto_refresh_kwargs=extra, token_updater=token_saver)
+        client = OAuth2Session(
+            self.client_id,
+            token=token,
+            auto_refresh_url=refresh_url,
+            auto_refresh_kwargs=extra,
+            token_updater=self.token_saver
+        )
         response = client.get(path)
         return response
+
+    def token_saver(self, token):
+        """Save the token to the self.db_object."""
+        self.db_object.access_token = token
+        self.db_object.save()
