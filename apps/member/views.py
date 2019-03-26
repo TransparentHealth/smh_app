@@ -169,7 +169,10 @@ def get_member_data(request, pk, resource_name, record_type):
     if record_type not in valid_record_types:
         raise Http404
 
-    resource_class_path = 'apps.sharemyhealth.resources.Resource'
+    # Get the path to the resource class from the settings, based on the resource_name.
+    resource_class_path = settings.RESOURCE_NAME_AND_CLASS_MAPPING.get(resource_name, None)
+    if not resource_class_path:
+        raise Http404('Invalid resource_name')
 
     # Does the request.user's Organization have access to this member's resource?
     resource_grant = get_object_or_404(
