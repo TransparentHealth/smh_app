@@ -17,19 +17,20 @@ class Resource(object):
     # The URL to refresh the token
     url_token_refresh = 'https://alpha.sharemy.health'
 
-    def __init__(self, user, *args, **kwargs):
-        """Set a 'user' and a 'db_object' on the Resource instance."""
+    def __init__(self, member, *args, **kwargs):
+        """Set a 'member' and a 'db_object' on the Resource instance."""
         super().__init__(*args, **kwargs)
-        # The User who is accessing the self.model_class to get data.
-        self.user = user
+        # The member whose token from the self.model_class will be used to get data.
+        self.member = member
         # The object in the database that holds the access_token, and the relation
         # to the member.
-        self.db_object = self.filter_by_user(user).first()
+        self.db_object = self.filter_by_user(member).first()
 
-    def filter_by_user(self, user):
-        return self.model_class.objects.filter(user=user, provider=self.name)
+    def filter_by_user(self, member):
+        return self.model_class.objects.filter(user=member, provider=self.name)
 
-    def get(self, user):
+    def get(self):
+        """GET the data from the self.url_for_data."""
         # A dictioary of token data for this resource
         token_dict = {
             'access_token': self.db_object.access_token,

@@ -106,4 +106,4 @@ def get_member_data(request, pk, resource_name, record_type):
         )
     )
 
-    data = resource_grant.resource_class(request.user).get(resource_grant.member)
+    data = resource_grant.resource_class(resource_grant.member).get()
