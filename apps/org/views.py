@@ -13,16 +13,10 @@ from .models import Organization, ResourceGrant
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "org/dashboard.html"
 
-
     def get_context_data(self, **kwargs):
-        """Add the user's Organizations, and their members, to the context."""
+        """Add the user's Organizations, to the context."""
         # All of the Organizations that the request.user is a part of
         organizations = self.request.user.organization_set.all()
-        # All of the members for each Organization
-        for organization in organizations:
-            organization.members = User.objects.filter(
-                resourcegrant__organization=organization
-            )
 
         kwargs.setdefault('organizations', organizations)
 

@@ -32,7 +32,7 @@
         <div class="recent-members col-md-6 pr-4 pl-4">
             <h2 class="text-center mb-3 pb-3">Recently Viewed Members</h2>
               <ul class="list--formatted">
-                  {% for member in organization.members %}
+                  {% for member in organization.members.all %}
                       <li class="user-link">
                           <a href="/member/{{ member.id }}">
                               <img src="{% static '/images/icons/avatar_default.png' %}" alt="Abbey Lender" class="mr-3">
