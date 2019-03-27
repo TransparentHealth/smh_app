@@ -1,0 +1,15 @@
+.form--med-id {
+  .col:first-child {
+    flex-basis: 60%;
+  }
+
+  .col:last-child {
+    flex-basis: 40%;
+  }
+
+  .form--med-id__ssn {
+    @include media-breakpoint-up(sm) {
+      width: 60%;
+    }
+  }
+}

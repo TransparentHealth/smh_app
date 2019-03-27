@@ -26,4 +26,4 @@ def resources_page(request):
         }
         for resource_name in resource_provider_names
     ]
-    return render(request, 'resources.html', context={'resources': resources})
+    return render(request, 'resources/resources.html', context={'resources': resources})
