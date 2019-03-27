@@ -1,5 +1,3 @@
-from importlib import import_module
-
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -172,7 +170,7 @@ def get_member_data(request, pk, resource_name, record_type):
     # Get the path to the resource class from the settings, based on the resource_name.
     resource_class_path = settings.RESOURCE_NAME_AND_CLASS_MAPPING.get(resource_name, None)
     if not resource_class_path:
-        raise Http404('Invalid resource_name')
+        raise Http404
 
     # Does the request.user's Organization have access to this member's resource?
     resource_grant = get_object_or_404(
@@ -184,3 +182,4 @@ def get_member_data(request, pk, resource_name, record_type):
     )
 
     data = resource_grant.resource_class(resource_grant.member).get()
+    return render(request, 'member/data.html', context={'data': data})
