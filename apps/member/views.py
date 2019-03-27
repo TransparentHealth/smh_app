@@ -159,17 +159,14 @@ def revoke_resource_request(request, pk):
 
 @login_required(login_url='home')
 def get_member_data(request, pk, resource_name, record_type):
-    valid_record_types = [
-        'prescriptions', 'diagnoses', 'allergies', 'procedures', 'ed_reports',
-        'family_history', 'demographics', 'discharge_summaries', 'immunizations',
-        'lab_results', 'progress_notes', 'vital_signs'
-    ]
-    if record_type not in valid_record_types:
-        raise Http404
-
     # Get the path to the resource class from the settings, based on the resource_name.
     resource_class_path = settings.RESOURCE_NAME_AND_CLASS_MAPPING.get(resource_name, None)
+    # If there is not a path for the resource_name, raise an error
     if not resource_class_path:
+        raise Http404
+
+    # Is the record_type is not valid, raise an error
+    if record_type not in settings.VALID_MEMBER_DATA_RECORD_TYPES:
         raise Http404
 
     # Does the request.user's Organization have access to this member's resource?

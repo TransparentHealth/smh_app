@@ -214,6 +214,12 @@ RESOURCE_NAME_AND_CLASS_MAPPING = {
     'sharemyhealth': 'apps.sharemyhealth.resources.Resource'
 }
 
+# Valid record types for member data
+VALID_MEMBER_DATA_RECORD_TYPES = [
+    'prescriptions', 'diagnoses', 'allergies', 'procedures', 'ed_reports',
+    'family_history', 'demographics', 'discharge_summaries', 'immunizations',
+    'lab_results', 'progress_notes', 'vital_signs'
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
