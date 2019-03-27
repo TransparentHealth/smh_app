@@ -80,7 +80,7 @@ def revoke_resource_request(request, pk):
     return redirect(reverse('member:dashboard'))
 
 
-# @login_required(login_url='home')
+@login_required(login_url='home')
 def get_member_data(request, pk, resource_name, record_type):
     valid_record_types = [
         'prescriptions', 'diagnoses', 'allergies', 'procedures', 'ed_reports',
