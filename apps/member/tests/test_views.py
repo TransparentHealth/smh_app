@@ -335,7 +335,6 @@ class GetMemberDataTestCase(SMHAppTestMixin, TestCase):
         )
         self.assertTemplateUsed(response, 'member/data.html')
 
-
     def test_authenticated(self):
         """The user must be authenticated to get a member's data."""
         # Create a member
@@ -416,11 +415,7 @@ class GetMemberDataTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 404)
 
         for valid_resource_name in settings.RESOURCE_NAME_AND_CLASS_MAPPING.keys():
-            for valid_record_type in [
-                'prescriptions', 'diagnoses', 'allergies', 'procedures', 'ed_reports',
-                'family_history', 'demographics', 'discharge_summaries', 'immunizations',
-                'lab_results', 'progress_notes', 'vital_signs'
-            ]:
+            for valid_record_type in settings.VALID_MEMBER_DATA_RECORD_TYPES:
                 with self.subTest(
                     resource_name=valid_resource_name,
                     record_type=valid_record_type
