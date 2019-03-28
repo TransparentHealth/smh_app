@@ -9,8 +9,9 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
 
-from .models import Member
 from .constants import RECORDS
+from .models import Member
+from .utils import get_member_data
 from apps.org.models import (
     ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED
 )
@@ -54,10 +55,26 @@ class RecordsView(LoginRequiredMixin, DetailView):
 class DataSourcesView(LoginRequiredMixin, DetailView):
     model = Member
     template_name = "data_sources.html"
+    default_record_type = 'all'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.resource_name = kwargs.get('resource_name')
+        self.record_type = kwargs.get('record_type') or self.default_record_type
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return get_fake_context_data(context)
+        # Get the data for this member
+        if self.resource_name and self.record_type:
+            data = get_member_data(
+                self.request.user,
+                kwargs.get('object'),
+                self.resource_name,
+                self.record_type
+            )
+
+            kwargs.setdefault('data', data)
+
+        return super().get_context_data(**kwargs)
 
 
 class CreateMemberView(LoginRequiredMixin, CreateView):
