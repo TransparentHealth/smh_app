@@ -1,7 +1,7 @@
 # Copyright Videntity Systems, Inc.
 from django.conf.urls import url
 from .views import (
-    approve_resource_request, get_member_data, revoke_resource_request,
+    approve_resource_request, revoke_resource_request,
     CreateMemberView, DashboardView, DataSourcesView, DeleteMemberView, RecordsView,
     UpdateMemberView
 )
@@ -34,7 +34,4 @@ urlpatterns = [
     url(r'^revoke_resource_request/(?P<pk>[0-9]+)/$',
         revoke_resource_request,
         name='revoke_resource_request'),
-    url(r'^(?P<pk>[0-9]+)/get_data/(?P<resource_name>[\w]+)/(?P<record_type>[\w]+)/$',
-        get_member_data,
-        name='get_member_data'),
 ]
