@@ -47,10 +47,25 @@ def get_fake_context_data(context):
 class RecordsView(LoginRequiredMixin, DetailView):
     model = Member
     template_name = "records.html"
+    default_resource_name = 'sharemyhealth'
+    default_record_type = 'all'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return get_fake_context_data(context)
+        """Add records data into the context."""
+        # Get the data for the member, and set it in the context
+        data = get_member_data(
+            self.request.user,
+            kwargs.get('object'),
+            self.default_resource_name,
+            self.default_record_type
+        )
+        kwargs.setdefault('data', data)
+
+        # TODO: remove this line, but keep it here for now until get_member_data()
+        # returns meaningful data, so the template doesn't look blank.
+        kwargs.setdefault('records_options', RECORDS)
+
+        return super().get_context_data(**kwargs)
 
 
 class DataSourcesView(LoginRequiredMixin, DetailView):
