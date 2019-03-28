@@ -2,6 +2,7 @@ import requests
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
@@ -63,6 +64,16 @@ class DataSourcesView(LoginRequiredMixin, DetailView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        """Add current data sources and data into the context."""
+        # Add current data sources into context
+        current_data_sources = [
+            {
+                'resource_name': 'sharemyhealth',
+                'image_url': static('images/icons/hixny.png')
+            }
+        ]
+        kwargs.setdefault('current_data_sources', current_data_sources)
+
         # Get the data for this member
         if self.resource_name and self.record_type:
             data = get_member_data(
