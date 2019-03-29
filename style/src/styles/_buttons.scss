@@ -1,0 +1,24 @@
+.btn {
+  border-radius: 40px;
+  font-weight: 500;
+  padding: .5rem 3rem;
+  text-transform: uppercase;
+  width: 100%;
+
+  @include media-breakpoint-up(sm) {
+    width: auto;
+  }
+}
+
+.btn-primary {
+  background-color: $gold;
+  border-color: $gold;
+  color: $navy--dark;
+
+  &:hover,
+  &:focus {
+    background-color: $navy--dark;
+    border-color: $navy--dark;
+    color: $gold;
+  }
+}

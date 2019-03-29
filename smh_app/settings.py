@@ -40,7 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'localflavor',
+    'phonenumber_field',
 
+    'apps.common',
     'apps.resources',
     'apps.sharemyhealth',
     'apps.vmi',
@@ -209,12 +212,24 @@ SOCIAL_AUTH_SHAREMYHEALTH_HOST = env('SMH_OAUTH_HOST')
 SOCIAL_AUTH_SHAREMYHEALTH_KEY = env('SMH_OAUTH_KEY')
 SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SMH_OAUTH_SECRET')
 
+# A mapping of resource names to the path for their class
+RESOURCE_NAME_AND_CLASS_MAPPING = {
+    'sharemyhealth': 'apps.sharemyhealth.resources.Resource'
+}
+
+# Valid record types for member data
+VALID_MEMBER_DATA_RECORD_TYPES = [
+    'all', 'prescriptions', 'diagnoses', 'allergies', 'procedures', 'ed_reports',
+    'family_history', 'demographics', 'discharge_summaries', 'immunizations',
+    'lab_results', 'progress_notes', 'vital_signs'
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'sitestatic'),
     os.path.join(BASE_DIR, 'assets/dist'),
+    os.path.join(BASE_DIR, 'style/dist'),
 ]
 
 STATIC_URL = '/static/'
@@ -285,3 +300,8 @@ SETTINGS_EXPORT = [
     'CALL_ORGANIZATION',
     'CALL_ORGANIZATION_PLURAL'
 ]
+
+# Django-phonenumber-field settings
+PHONENUMBER_DEFAULT_REGION = 'US'
+PHONENUMBER_DB_FORMAT = 'E164'
+PHONENUMBER_DEFAULT_FORMAT = 'NATIONAL'

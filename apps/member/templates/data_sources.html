@@ -8,24 +8,32 @@
         {% include "member_tabbed_nav.html" with member=member %}
         <div>
             <h2 class="member-tabs__title d-flex justify-content-between">Data Sources</h2>
-            <p>{{ member }}</p>
-            <div>{{ patient_data }}</div>
-            <hr />
-            <div>{{ organization_data }}</div>
-            <hr />
-            <div>{{ medication_request_data }}</div>
-            <hr />
+            {% if data %}
+              <p>{{ member }}</p>
+              <div>{{ patient_data }}</div>
+              <hr />
+              <div>{{ organization_data }}</div>
+              <hr />
+              <div>{{ medication_request_data }}</div>
+              <hr />
+            {% endif %}
         </div>
-         <div class="data-sources">
-            <div class="mt-5">
-                <h2>Current Data Sources</h2>
-                <div class="tile-flex">
-                    <div class="tile tile-flex__item">
-                        <img src="{% static '/images/icons/hixny.png' %}" alt="">
-                        <p>Hixny</p>
+        <div class="data-sources">
+          {% if current_data_sources %}
+            {% for data_source in current_data_sources %}
+              <div class="mt-5">
+                  <h2>Current Data Sources</h2>
+                  <a href="{% url 'member:data-sources' pk=member.pk resource_name=data_source.resource_name %}">
+                    <div class="tile-flex">
+                        <div class="tile tile-flex__item">
+                            <img src="{{ data_source.image_url }}" alt="">
+                            <p>Hixny</p>
+                        </div>
                     </div>
-                </div>
-            </div>
+                  </a>
+              </div>
+            {% endfor %}
+          {% endif %}
             <div class="mt-5 pt-5">
                 <h2>Available Data Sources</h2>
                 <div class="tile-flex">

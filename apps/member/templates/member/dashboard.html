@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+The following organizations have requested access to your data:
+<ul>
+  {% for resource_request in resource_requests %}
+    <li>
+      <span>{{ resource_request }}</span>
+      <form action="{% url 'member:approve_resource_request' resource_request.id %}" method="post">{% csrf_token %}<button type="submit">approve</button></form>
+      <form action="{% url 'member:revoke_resource_request' resource_request.id %}" method="post">{% csrf_token %}<button type="submit">deny</button></form>
+    </li>
+  {% endfor %}
+</ul>
+
+
+The following organizations have been granted access to your data:
+<ul>
+  {% for resource_granted in resources_granted %}
+    <li>
+      <span>{{ resource_granted }}</span>
+      <form action="{% url 'member:revoke_resource_request' resource_granted.id %}" method="post">{% csrf_token %}<button type="submit">revoke</button></form>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock content %}

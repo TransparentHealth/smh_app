@@ -1,0 +1,18 @@
+.member-tabs {
+  background-color: $white;
+
+  .member-tabs__title {
+    @extend .heading-border;
+
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  ul {
+    padding-left: 0;
+  }
+
+  li {
+    list-style-type: none;
+  }
+}

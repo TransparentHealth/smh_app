@@ -1,0 +1,39 @@
+.modal-dialog {
+  max-width: 800px;
+}
+
+.modal-header {
+  background-color: $blue;
+  border: 0;
+
+  .modal-title {
+    @extend .heading;
+
+    color: $white;
+    font-size: $h3-font-size;
+  }
+
+  .close {
+    color: $white;
+    opacity: 1;
+    text-shadow: none;
+  }
+}
+
+.modal__heading {
+  border-bottom: 2px solid $navy--border;
+  flex-wrap: wrap;
+
+  @include media-breakpoint-up(sm) {
+    flex-wrap: nowrap;
+  }
+
+  p {
+    margin-bottom: 0;
+  }
+}
+
+.modal__heading__links {
+  cursor: pointer;
+  font-weight: 500;
+}
