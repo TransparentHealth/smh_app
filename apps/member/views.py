@@ -101,5 +101,5 @@ def get_member_data(request, pk, resource_name, record_type):
         )
     )
 
-    data = resource_grant.resource_class(resource_grant.member).get()
+    data = resource_grant.resource_class(resource_grant.member).get(record_type)
     return render(request, 'member/data.html', context={'data': data})
