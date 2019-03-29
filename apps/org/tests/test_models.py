@@ -58,6 +58,38 @@ class ResourceGrantTestCase(TestCase):
             )
         )
 
+    @mock.patch('apps.sharemyhealth.resources.Resource')
+    def test_resource_class(self, mock_resource_class):
+        """
+        The resource_class property is the class that the resource_class_path refers to.
+
+        Note: since we mock the apps.sharemyhealth.resources.Resource class, that
+        will be this test's ResourceGrant's resource_class_path.
+        """
+        resource_grant = ResourceGrantFactory(
+            resource_class_path='apps.sharemyhealth.resources.Resource'
+        )
+
+        self.assertEqual(resource_grant.resource_class, mock_resource_class)
+
+    @mock.patch('apps.sharemyhealth.resources.Resource')
+    def test_provider_name(self, mock_resource_class):
+        """
+        The provider_name property should be the resource_class's name.
+
+        Note: since we mock the apps.sharemyhealth.resources.Resource class, that
+        will be this test's ResourceGrant's resource_class_path, so we can assert
+        that its name really is returned as the ResourceRequest's provider_name.
+        """
+        test_resource_class_name = 'testclassname'
+        mock_resource_class.name = test_resource_class_name
+
+        resource_grant = ResourceGrantFactory(
+            resource_class_path='apps.sharemyhealth.resources.Resource'
+        )
+
+        self.assertEqual(resource_grant .provider_name, test_resource_class_name)
+
 
 class ResourceRequestTestCase(TestCase):
     def test_str(self):
@@ -73,6 +105,20 @@ class ResourceRequestTestCase(TestCase):
         )
 
     @mock.patch('apps.sharemyhealth.resources.Resource')
+    def test_resource_class(self, mock_resource_class):
+        """
+        The resource_class property is the class that the resource_class_path refers to.
+
+        Note: since we mock the apps.sharemyhealth.resources.Resource class, that
+        will be this test's ResourceGrant's resource_class_path.
+        """
+        resource_request = ResourceRequestFactory(
+            resource_class_path='apps.sharemyhealth.resources.Resource'
+        )
+
+        self.assertEqual(resource_request.resource_class, mock_resource_class)
+
+    @mock.patch('apps.sharemyhealth.resources.Resource')
     def test_provider_name(self, mock_resource_class):
         """
         The provider_name property should be the resource_class's name.
@@ -85,7 +131,7 @@ class ResourceRequestTestCase(TestCase):
         mock_resource_class.name = test_resource_class_name
 
         resource_request = ResourceRequestFactory(
-            resource_class='apps.sharemyhealth.resources.Resource'
+            resource_class_path='apps.sharemyhealth.resources.Resource'
         )
 
         self.assertEqual(resource_request.provider_name, test_resource_class_name)
