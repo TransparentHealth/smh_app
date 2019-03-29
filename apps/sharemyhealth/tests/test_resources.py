@@ -91,18 +91,21 @@ class ResourceTestCase(TestCase):
             extra_data={'refresh_token': refresh_token, 'access_token': access_token}
         )
         resource = Resource(self.member)
+        requested_record_type = 'prescriptions'
 
         # GET the data for the member.
         # Note: we mock the use of the requests library, so we don't make requests
         # from within the test.
         with HTTMock(self.response_content_success):
-            data = resource.get()
+            data = resource.get(requested_record_type)
 
         # The response matches the self.response_content_success
         self.assertEqual(data.status_code, self.expected_response_success['status_code'])
         self.assertEqual(data.json(), self.expected_response_success['content'])
-        # The request was made to the Resource's url_for_data
-        self.assertEqual(data.request.url, Resource.url_for_data)
+        # The request was made to a URL built from the Resource's url_for_data,
+        # and the requested_record_type.
+        expected_url = '{}/{}'.format(Resource.url_for_data, requested_record_type)
+        self.assertEqual(data.request.url, expected_url)
         # The request was made with a 'Bearer' Authorization header that includes
         # the access_token.
         self.assertEqual(

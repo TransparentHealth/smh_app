@@ -29,7 +29,7 @@ class Resource(object):
     def filter_by_user(self, member):
         return self.model_class.objects.filter(user=member, provider=self.name)
 
-    def get(self):
+    def get(self, record_type):
         """GET the data from the self.url_for_data."""
         # A dictioary of token data for this resource
         token_dict = {
@@ -43,6 +43,8 @@ class Resource(object):
             'client_id': self.client_id,
             'client_secret': self.client_secret
         }
+        # The URL for the request
+        url = '{}/{}'.format(self.url_for_data, record_type)
 
         client = OAuth2Session(
             self.client_id,
@@ -51,7 +53,7 @@ class Resource(object):
             auto_refresh_kwargs=extra,
             token_updater=self.token_saver
         )
-        response = client.get(self.url_for_data)
+        response = client.get(url)
         return response
 
     def token_saver(self, token):
