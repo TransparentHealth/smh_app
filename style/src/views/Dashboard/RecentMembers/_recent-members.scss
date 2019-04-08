@@ -1,0 +1,11 @@
+.recent-members {
+  margin-top: 3em;
+
+  @include media-breakpoint-up(sm) {
+    margin-top: 0;
+  }
+
+  h2 {
+    @extend .heading-border;
+  }
+}
