@@ -30,5 +30,5 @@ and create a database via Postgres named "smh_app" with all migrations run::
     $ make setup
     $ workon smh_app
 
-.. |build-status| image:: https://travis-ci.org/whytheplatypus/smh_app.svg?branch=master
-    :target: https://travis-ci.org/whytheplatypus/smh_app
+.. |build-status| image:: https://travis-ci.org/TransparentHealth/smh_app.svg?branch=master
+    :target: https://travis-ci.org/TransparentHealth/smh_app
