@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'apps.resources',
     'apps.sharemyhealth',
     'apps.vmi',
-    'apps.affiliations',
     'apps.lockbox',
     'apps.org',
     'apps.member',
