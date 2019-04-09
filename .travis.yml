@@ -43,5 +43,6 @@ jobs:
 
 stages:
   - test
-  - build
+  - name: build
+    if: branch = master AND type = push 
   - plan

@@ -71,10 +71,6 @@ data "aws_db_instance" "database" {
   db_instance_identifier = "${var.dbname}"
 }
 
-resource "aws_ecr_repository" "smhapp" {
-  name = "smhapp"
-}
-
 resource "aws_s3_bucket" "default" {
   bucket = "smhapp.${var.environment}.bucket"
   acl    = "private"
@@ -342,8 +338,8 @@ resource "aws_iam_instance_profile" "ec2" {
 }
 
 resource "aws_elastic_beanstalk_application" "default" {
-  name        = "smhapp-${var.environment}"
-  description = "smhapp-${var.environment}-desc"
+  name        = "smhapp"
+  description = "smhapp-desc"
 }
 
 resource "aws_elastic_beanstalk_environment" "default" {
