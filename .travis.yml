@@ -40,6 +40,22 @@ jobs:
         - AWS_ACCESS_KEY_ID=$CI_AWS_ACCESS_KEY_ID
         - AWS_SECRET_ACCESS_KEY=$CI_AWS_SECRET_ACCESS_KEY
       script: make plan
+    - stage: infrastructure
+      install: pip install awscli # install aws cli w/o sudo
+      env:
+        - ENVIRONMENT=dev # put aws in the path
+        - PATH=$PATH:$HOME/.local/bin # put aws in the path
+        - AWS_ACCESS_KEY_ID=$CI_AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY=$CI_AWS_SECRET_ACCESS_KEY
+      script: make infrastructure
+    - stage: deploy
+      install: pip install awscli # install aws cli w/o sudo
+      env:
+        - ENVIRONMENT=dev # put aws in the path
+        - PATH=$PATH:$HOME/.local/bin # put aws in the path
+        - AWS_ACCESS_KEY_ID=$CI_AWS_ACCESS_KEY_ID
+        - AWS_SECRET_ACCESS_KEY=$CI_AWS_SECRET_ACCESS_KEY
+      script: make deploy
 
 stages:
   - test
@@ -47,4 +63,7 @@ stages:
     if: branch = master AND type = push 
   - name: plan
     if: fork == false
-    
+  - name: infrastructure
+    if: branch = master AND type = push 
+  - name: deploy
+    if: branch = master AND type = push 
