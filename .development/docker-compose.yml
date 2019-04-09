@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+            - POSTGRES_DB=smh_app
+            - POSTGRES_PASSWORD=toor
+    ports:
+            - "5432:5432"
+  web:
+    build:
+            context: ../
+            dockerfile: .development/Dockerfile
+    command: python3 manage.py runserver 0.0.0.0:8000
+    environment:
+      - DATABASES_CUSTOM=postgres://postgres:toor@db:5432/smh_app
+      - OAUTHLIB_INSECURE_TRANSPORT=true
+      - OIDC_ISSUER=http://localhost:8000
+      - ALLOWED_HOSTS=localhost
+      - ROOT_USER=root
+      - ROOT_PASSWORD=password
+    volumes:
+      - ../:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db

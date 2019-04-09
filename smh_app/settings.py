@@ -14,7 +14,6 @@ import os
 import dj_database_url
 from django.contrib.messages import constants as messages
 from getenv import env
-from django.utils.translation import ugettext_lazy as _
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -47,8 +46,6 @@ INSTALLED_APPS = [
     'apps.resources',
     'apps.sharemyhealth',
     'apps.vmi',
-    'apps.affiliations',
-    'apps.lockbox',
     'apps.org',
     'apps.member',
 
