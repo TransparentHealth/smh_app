@@ -45,4 +45,6 @@ stages:
   - test
   - name: build
     if: branch = master AND type = push 
-  - plan
+  - name: plan
+    if: fork == false
+    

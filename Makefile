@@ -37,5 +37,5 @@ init:
 plan: init
 	.deployment/terraform plan -var 'environment=$(ENVIRONMENT)' -var 'version=$(GIT_HASH)' -var 'db_username=$(DB_USER)' .deployment/
 
-infrastructure: plan
+infrastructure: init
 	.deployment/terraform apply -auto-approve -var 'environment=$(ENVIRONMENT)' -var 'version=$(GIT_HASH)' -var 'db_username=$(DB_USER)' .deployment/
