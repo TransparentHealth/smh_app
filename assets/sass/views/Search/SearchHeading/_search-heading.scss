@@ -1,0 +1,13 @@
+.heading-with-sort {
+  @extend .heading-border;
+
+  flex-wrap: wrap;
+
+  @include media-breakpoint-up(md) {
+    flex-wrap: nowrap;
+  }
+
+  .form-inline {
+    flex-wrap: nowrap;
+  }
+}

@@ -1,0 +1,33 @@
+{% load static %}
+<div class="member-sidebar col-lg-3 pl-0 pb-5 pr-0">
+    <div class="member-sidebar__image">
+        <img src="{% static '/images/icons/avatar_default.png' %}" alt="Stephanie McNabb" class="member-avatar">
+        <p class="member-avatar__overlay mb-0"><img src="/images/icons/star.png" alt="">ID Verified</p>
+    </div>
+    <div class="member-sidebar__nav">
+        <div class="member-sidebar__heading">
+            <h1>{{ member.user.first_name }} {{ member.user.last_name }}</h1>
+            <p>Gender <span class="mr-2 ml-2">·</span> Age ??</p>
+        </div>
+        {% with request.resolver_match.url_name as url %}
+            <div class="flex-column nav">
+                {% if member.id %}
+                    <a href="{% url 'member:member-update' member.id %}" class="nav-link {% if url == 'member-update' %}active{% endif %}" role="button">Basic Information</a>
+                {% else %}
+                    <a href="{% url 'member:member-create' %}" class="nav-link {% if url == 'member-create' %}active{% endif %}" role="button">Basic Information</a>
+                {% endif %}
+
+                {% if member.id %}
+                    <a href="#" data-rb-event-key="memberId" class="nav-link" role="button">Identification</a>
+                    <div>
+                        {# TODO: Change this link to 'member:summary' after url/view is created #}
+                        <a href="{% url 'member:data-sources' member.id %}" class="nav-link {% if url == 'data-sources' %}active{% endif %}" role="button">Medical Data</a>
+                        <a href="#" data-rb-event-key="memberNotes" class="nav-link" role="button">Notes</a>
+                        <a href="#" data-rb-event-key="memberLockbox" class="nav-link" role="button">Lockbox</a>
+                        <a href="#" data-rb-event-key="memberOrgs" class="nav-link" role="button">Organizations</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endwith %}
+    </div>
+</div>

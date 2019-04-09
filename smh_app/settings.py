@@ -168,7 +168,7 @@ AUTHENTICATION_BACKENDS = (
     'apps.vmi.backends.VMIOAuth2Backend'
 )
 
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'org:dashboard'
 
 # Settings for social_django
 SOCIAL_AUTH_URL_NAMESPACE = "social"
@@ -225,7 +225,7 @@ VALID_MEMBER_DATA_RECORD_TYPES = [
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'sitestatic'),
-    os.path.join(BASE_DIR, 'style/dist'),
+    os.path.join(BASE_DIR, 'assets/dist'),
 ]
 
 STATIC_URL = '/static/'

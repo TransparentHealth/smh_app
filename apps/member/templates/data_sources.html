@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row mr-0 ml-0">
+    {% include "member_sidebar.html" with member=member %}
+    <div class="member-tabs col-lg-9 p-5">
+        {% include "member_tabbed_nav.html" with member=member %}
+        <div>
+            <h2 class="member-tabs__title d-flex justify-content-between">Data Sources</h2>
+            <p>{{ member }}</p>
+            <div>{{ patient_data }}</div>
+            <hr />
+            <div>{{ organization_data }}</div>
+            <hr />
+            <div>{{ medication_request_data }}</div>
+            <hr />
+        </div>
+         <div class="data-sources">
+            <div class="mt-5">
+                <h2>Current Data Sources</h2>
+                <div class="tile-flex">
+                    <div class="tile tile-flex__item">
+                        <img src="{% static '/images/icons/hixny.png' %}" alt="">
+                        <p>Hixny</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 pt-5">
+                <h2>Available Data Sources</h2>
+                <div class="tile-flex">
+                    <div class="tile tile-flex__item tile-flex__item--add">
+                        <img src="{% static '/images/icons/add.png' %}" alt="">
+                        <p>Data Source 1</p>
+                    </div>
+                    <div class="tile tile-flex__item tile-flex__item--add">
+                        <img src="{% static '/images/icons/add.png' %}" alt="">
+                        <p>Data Source 2</p>
+                    </div>
+                    <div class="tile tile-flex__item tile-flex__item--add">
+                        <img src="{% static '/images/icons/add.png' %}" alt="">
+                        <p>Data Source 3</p>
+                    </div>
+                    <div class="tile tile-flex__item tile-flex__item--add">
+                        <img src="{% static '/images/icons/add.png' %}" alt="">
+                        <p>Data Source 4</p>
+                    </div>
+                    <div class="tile tile-flex__item tile-flex__item--add">
+                        <img src="{% static '/images/icons/add.png' %}" alt="">
+                        <p>Data Source 5</p>
+                    </div>
+                    <div class="tile tile-flex__item tile-flex__item--add">
+                        <img src="{% static '/images/icons/add.png' %}" alt="">
+                        <p>Data Source 6</p>
+                    </div>
+                    <div class="tile tile-flex__item tile-flex__item--add">
+                        <img src="{% static '/images/icons/add.png' %}" alt="">
+                        <p>Data Source 7</p>
+                    </div>
+                    <div class="tile tile-flex__item tile-flex__item--add">
+                        <img src="{% static '/images/icons/add.png' %}" alt="">
+                        <p>Data Source 8</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock content %}
