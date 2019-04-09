@@ -21,6 +21,8 @@ docker-login:
 
 build: docker-login
 	docker build -t smhapp:latest -f .docker/Dockerfile .
+
+push: build
 	docker tag smhapp "$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_DEFAULT_REGION).amazonaws.com/smhapp:$(GIT_HASH)"
 	docker push "$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_DEFAULT_REGION).amazonaws.com/smhapp:$(GIT_HASH)"
 
