@@ -23,10 +23,10 @@ build: docker-login
 	docker build -t smhapp:latest -f .docker/Dockerfile .
 	docker tag smhapp "$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_DEFAULT_REGION).amazonaws.com/smhapp:$(GIT_HASH)"
 	docker push "$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_DEFAULT_REGION).amazonaws.com/smhapp:$(GIT_HASH)"
-	.deployment/Dockerrun.aws.json.sh $(GIT_HASH) | aws s3 cp - s3://smhapp.$(ENVIRONMENT).bucket/$(GIT_HASH)/Dockerrun.aws.json
-	aws elasticbeanstalk create-application-version --application-name smhapp-dev --version-label $(GIT_HASH) --description "Version created from gitlab ci" --source-bundle S3Bucket="smhapp.$(ENVIRONMENT).bucket",S3Key="$(GIT_HASH)/Dockerrun.aws.json"
 
 deploy:
+	.deployment/Dockerrun.aws.json.sh $(GIT_HASH) | aws s3 cp - s3://smhapp.$(ENVIRONMENT).bucket/$(GIT_HASH)/Dockerrun.aws.json
+	aws elasticbeanstalk create-application-version --application-name smhapp-dev --version-label $(GIT_HASH) --description "Version created from gitlab ci" --source-bundle S3Bucket="smhapp.$(ENVIRONMENT).bucket",S3Key="$(GIT_HASH)/Dockerrun.aws.json"
 	aws elasticbeanstalk update-environment --environment-name smhapp-$(ENVIRONMENT)-env --version-label $(GIT_HASH)
 
 init:
