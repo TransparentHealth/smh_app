@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, Http404, render, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
 
@@ -63,22 +63,22 @@ class DataSourcesView(LoginRequiredMixin, DetailView):
 
 class CreateMemberView(LoginRequiredMixin, CreateView):
     model = Member
-    fields = ['user', 'birth_date', 'phone_number', 'address', 'emergency_contact_name', 'emergency_contact_number' ]
+    fields = ['user', 'birth_date', 'phone_number', 'address', 'emergency_contact_name', 'emergency_contact_number']
     template_name = 'member.html'
-    # success_url = reverse_lazy('org:dashboard')
+
     def get_success_url(self):
         member_id = self.object.id
-        return reverse_lazy( 'member:member-update', kwargs={'pk': member_id})
+        return reverse_lazy('member:member-update', kwargs={'pk': member_id})
 
 
 class UpdateMemberView(LoginRequiredMixin, UpdateView):
     model = Member
-    fields = ['birth_date', 'phone_number', 'address', 'emergency_contact_name', 'emergency_contact_number' ]
+    fields = ['birth_date', 'phone_number', 'address', 'emergency_contact_name', 'emergency_contact_number']
     template_name = 'member.html'
 
     def get_success_url(self):
         member_id = self.object.id
-        return reverse_lazy( 'member:member-update', kwargs={'pk': member_id})
+        return reverse_lazy('member:member-update', kwargs={'pk': member_id})
 
 
 class DeleteMemberView(LoginRequiredMixin, DeleteView):

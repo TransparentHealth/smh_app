@@ -10,13 +10,12 @@ from .models import Organization
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "org/dashboard.html"
 
-
     def get_context_data(self, **kwargs):
         """Add the user's Organization and members of that organization to the context."""
         org = self.request.user.organization_set.all()
         members = User.objects.all() if org is not None else None
         kwargs.setdefault('organization', org)
-        kwargs.setdefault('members', members )
+        kwargs.setdefault('members', members)
         return super().get_context_data(**kwargs)
 
 
