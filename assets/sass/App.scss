@@ -3,6 +3,8 @@
 
 // Import Bootstrap and its default variables.
 @import 'node_modules/bootstrap/scss/bootstrap.scss';
+@import 'node_modules/@fortawesome/fontawesome-free/scss/fontawesome.scss';
+@import 'node_modules/@fortawesome/fontawesome-svg-core/styles';
 
 // Import global styles.
 @import 'styles/buttons';
