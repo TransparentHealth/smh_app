@@ -2,8 +2,9 @@
 from django.conf.urls import url
 
 from .views import (
-    RecordsView, DataSourcesView, CreateMemberView, UpdateMemberView, DeleteMemberView,
-    DashboardView, approve_resource_request, get_member_data, revoke_resource_request
+    approve_resource_request, revoke_resource_request,
+    CreateMemberView, DashboardView, DataSourcesView, DeleteMemberView, RecordsView,
+    UpdateMemberView
 )
 
 # Copyright Videntity Systems Inc.
@@ -14,6 +15,12 @@ urlpatterns = [
         RecordsView.as_view(),
         name='records'),
     url(r'^(?P<pk>\d)/data-sources/$',
+        DataSourcesView.as_view(),
+        name='data-sources'),
+    url(r'^(?P<pk>\d)/data-sources/(?P<resource_name>[\w]+)/$',
+        DataSourcesView.as_view(),
+        name='data-sources'),
+    url(r'^(?P<pk>\d)/data-sources/(?P<resource_name>[\w]+)/(?P<record_type>[\w]+)/$',
         DataSourcesView.as_view(),
         name='data-sources'),
     url(r'^new/$',
@@ -33,7 +40,4 @@ urlpatterns = [
     url(r'^revoke_resource_request/(?P<pk>[0-9]+)/$',
         revoke_resource_request,
         name='revoke_resource_request'),
-    url(r'^(?P<pk>[0-9]+)/get_data/(?P<resource_name>[\w]+)/(?P<record_type>[\w]+)/$',
-        get_member_data,
-        name='get_member_data'),
 ]
