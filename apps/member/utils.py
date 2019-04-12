@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.shortcuts import get_object_or_404, Http404
+from django.shortcuts import Http404
 
 from apps.org.models import ResourceGrant
 
@@ -18,13 +18,15 @@ def get_member_data(requesting_user, member, resource_name, record_type):
         raise Http404
 
     # Does the requesting_user's Organization have access to this member's resource?
-    resource_grant = get_object_or_404(
-        ResourceGrant.objects.filter(
-            member=member.user,
-            resource_class_path=resource_class_path,
-            organization__users=requesting_user
-        )
+    resource_grants = ResourceGrant.objects.filter(
+        member=member.user,
+        resource_class_path=resource_class_path,
+        organization__users=requesting_user
     )
+    if not resource_grants.exists():
+        raise Http404
+    else:
+        resource_grant = resource_grants.first()
 
     data = resource_grant.resource_class(resource_grant.member).get(record_type)
     return data
