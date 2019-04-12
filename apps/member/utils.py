@@ -26,5 +26,5 @@ def get_member_data(requesting_user, member, resource_name, record_type):
         )
     )
 
-    data = resource_grant.resource_class(resource_grant.member).get()
+    data = resource_grant.resource_class(resource_grant.member).get(record_type)
     return data
