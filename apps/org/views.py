@@ -3,8 +3,14 @@ from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.models import User
+from django.views import View
+from django.http import JsonResponse
+
+import requests
 
 from .models import Organization
+from apps.member.models import Member
+from smh_app.utils import get_vmi_user_data
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -56,3 +62,27 @@ class DeleteOrganizationView(LoginRequiredMixin, DeleteView):
         """A user may only delete Organizations that they are associated with."""
         qs = super().get_queryset()
         return qs.filter(users=self.request.user)
+
+
+class LocalUserAPI(LoginRequiredMixin, View):
+    ''' Setting up a local endpoint that talks to the VMI endpoint and filters to
+        only include users with user social auth uids that match '''
+    def get(self, request, *args, **kwargs):
+        response = get_vmi_user_data(request)
+        user_data = []
+
+        if isinstance(response.json(), list):
+            for i, user in enumerate(response.json(), 0):
+                # we only choose users/members with valid user social auth uids that match a field from VMI called 'sub'
+                member = User.social_auth.rel.related_model.objects.filter(uid=user['sub']).first()
+                if member:
+                    # add id so we can use in template (main.js)
+                    user['id'] = member.user.id
+                    user_data.append(user)
+
+        return JsonResponse(user_data, safe=False)
+
+
+class SearchView(LoginRequiredMixin, TemplateView):
+    """template view that mostly uses javascript to render content"""
+    template_name = "org/search.html"
