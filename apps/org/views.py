@@ -6,10 +6,7 @@ from django.contrib.auth.models import User
 from django.views import View
 from django.http import JsonResponse
 
-import requests
-
 from .models import Organization
-from apps.member.models import Member
 from smh_app.utils import get_vmi_user_data
 
 
