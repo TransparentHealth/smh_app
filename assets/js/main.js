@@ -49,20 +49,8 @@ function submitMemberSearchForm () {
 	memberSearchForm.submit()
 }
 
-if (memberSearch) {
-	memberSearch.onkeyup = showMemberResults
-	memberSearch.onblur = hideMemberResults
-	memberResults.querySelector('.all-results').onclick = submitMemberSearchForm
-	memberSearch.name = utils.generateRandomString()
-}
-
-
 // ------------------------- member toggle ------------------------- //
 const editMember = document.getElementById('edit_member')
-if (editMember) {
-  // if member template is loaded add listener to edit_member element
-  editMember.onclick = member.toggleEditMember
-}
 
 
 // ------------------------- search page results ------------------------- //
@@ -82,7 +70,26 @@ function populateSearchPage () {
 	})
 }
 
-if (searchContainer) {
-	populateSearchPage()
-	sortOption.onchange = populateSearchPage
+window.onload = function() {
+
+	// ------------------------- search functionality in the header ------------------------- //
+	if (memberSearch) {
+		memberSearch.onkeyup = showMemberResults
+		memberSearch.onblur = hideMemberResults
+		memberResults.querySelector('.all-results').onclick = submitMemberSearchForm
+		memberSearch.name = utils.generateRandomString()
+	}
+
+	// ------------------------- member toggle ------------------------- //
+	if (editMember) {
+	  // if member template is loaded add listener to edit_member element
+	  editMember.onclick = member.toggleEditMember
+	}
+
+	// ------------------------- search page results ------------------------- //
+	if (searchContainer) {
+		populateSearchPage()
+		sortOption.onchange = populateSearchPage
+	}
+
 }
