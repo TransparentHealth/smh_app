@@ -1,17 +1,18 @@
-from django.conf import settings
+import requests
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, Http404, render, redirect, reverse
+from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
 
-import requests
-
-from .models import Member
 from .constants import RECORDS
+from .models import Member
+from .utils import get_member_data
 from apps.org.models import (
     ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED
 )
@@ -46,19 +47,60 @@ def get_fake_context_data(context):
 class RecordsView(LoginRequiredMixin, DetailView):
     model = Member
     template_name = "records.html"
+    default_resource_name = 'sharemyhealth'
+    default_record_type = 'all'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return get_fake_context_data(context)
+        """Add records data into the context."""
+        # Get the data for the member, and set it in the context
+        data = get_member_data(
+            self.request.user,
+            kwargs.get('object'),
+            self.default_resource_name,
+            self.default_record_type
+        )
+        kwargs.setdefault('data', data)
+
+        # TODO: remove this line, but keep it here for now until get_member_data()
+        # returns meaningful data, so the template doesn't look blank.
+        kwargs.setdefault('records_options', RECORDS)
+
+        return super().get_context_data(**kwargs)
 
 
 class DataSourcesView(LoginRequiredMixin, DetailView):
     model = Member
     template_name = "data_sources.html"
+    default_record_type = 'all'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.resource_name = kwargs.get('resource_name')
+        self.record_type = kwargs.get('record_type') or self.default_record_type
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return get_fake_context_data(context)
+        """Add current data sources and data into the context."""
+        # Add current data sources into context
+        current_data_sources = [
+            {
+                'resource_name': 'sharemyhealth',
+                'image_url': static('images/icons/hixny.png')
+            }
+        ]
+        kwargs.setdefault('current_data_sources', current_data_sources)
+
+        # Get the data for this member
+        if self.resource_name and self.record_type:
+            data = get_member_data(
+                self.request.user,
+                kwargs.get('object'),
+                self.resource_name,
+                self.record_type
+            )
+
+            kwargs.setdefault('data', data)
+
+        return super().get_context_data(**kwargs)
 
 
 class CreateMemberView(LoginRequiredMixin, CreateView):
@@ -114,7 +156,7 @@ def approve_resource_request(request, pk):
     """
     A view for a member to approve a ResourceRequest.
 
-    Approving a ResourceRequest means settings its status to 'Approved', and
+    Approving a ResourceRequest means setting its status to 'Approved', and
     creating a ResourceGrant.
     """
     # Is the ResourceRequest for this member?
@@ -140,7 +182,7 @@ def revoke_resource_request(request, pk):
     """
     A view for a member to revoke access to a resource (after an approved ResourceRequest).
 
-    Revoking a ResourceRequest means settings its status to 'Denied', and
+    Revoking a ResourceRequest means setting its status to 'Denied', and
     deleting the related ResourceGrant.
     """
     # Is the ResourceRequest for this member?
@@ -155,28 +197,3 @@ def revoke_resource_request(request, pk):
     if getattr(resource_request, 'resourcegrant', None):
         resource_request.resourcegrant.delete()
     return redirect(reverse('member:dashboard'))
-
-
-@login_required(login_url='home')
-def get_member_data(request, pk, resource_name, record_type):
-    # Get the path to the resource class from the settings, based on the resource_name.
-    resource_class_path = settings.RESOURCE_NAME_AND_CLASS_MAPPING.get(resource_name, None)
-    # If there is not a path for the resource_name, raise an error
-    if not resource_class_path:
-        raise Http404
-
-    # Is the record_type is not valid, raise an error
-    if record_type not in settings.VALID_MEMBER_DATA_RECORD_TYPES:
-        raise Http404
-
-    # Does the request.user's Organization have access to this member's resource?
-    resource_grant = get_object_or_404(
-        ResourceGrant.objects.filter(
-            member_id=pk,
-            resource_class_path=resource_class_path,
-            organization__users=request.user
-        )
-    )
-
-    data = resource_grant.resource_class(resource_grant.member).get(record_type)
-    return render(request, 'member/data.html', context={'data': data})

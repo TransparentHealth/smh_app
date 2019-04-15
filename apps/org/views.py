@@ -2,7 +2,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.contrib.auth.models import User
 
 from .models import Organization
 
@@ -11,11 +10,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "org/dashboard.html"
 
     def get_context_data(self, **kwargs):
-        """Add the user's Organization and members of that organization to the context."""
-        org = self.request.user.organization_set.all()
-        members = User.objects.all() if org is not None else None
-        kwargs.setdefault('organization', org)
-        kwargs.setdefault('members', members)
+        """Add the user's Organizations, to the context."""
+        # All of the Organizations that the request.user is a part of
+        organizations = self.request.user.organization_set.all()
+
+        kwargs.setdefault('organizations', organizations)
+
         return super().get_context_data(**kwargs)
 
 
