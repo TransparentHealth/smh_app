@@ -106,3 +106,33 @@ class GetMemberDataTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
                 # for the member's access_token, the an Http404 is raised.
                 with self.assertRaises(Http404):
                     get_member_data(self.user, member.member, provider_name, 'all')
+
+    def test_own_data(self):
+        """Requesting to GET the member's own data is ok, even without a ResourceGrant."""
+        # Create a member
+        member = UserFactory()
+        # Give the self.user access to the member's access_token. This creates a
+        # ResourceGrant for the member's access_token to the request.user's Organization.
+        provider_name = Resource.name
+        self.give_user_access_to_member_token(self.user, member, provider_name)
+
+        with self.subTest('with ResourceGrant'):
+            # We mock the use of the requests library, so we don't make real requests
+            # from within the test.
+            with HTTMock(self.response_content_success):
+                # The member (not the self.user) requests access to the member's data.
+                response = get_member_data(member, member.member, provider_name, 'all')
+
+            self.assertEqual(response.status_code, 200)
+
+        with self.subTest('without ResourceGrant'):
+            # Remove the ResourceGrant for the member's access_token.
+            ResourceGrant.objects.filter(member=member).delete()
+
+            # We mock the use of the requests library, so we don't make real requests
+            # from within the test.
+            with HTTMock(self.response_content_success):
+                # The member (not the self.user) requests access to the member's data.
+                response = get_member_data(member, member.member, provider_name, 'all')
+
+            self.assertEqual(response.status_code, 200)

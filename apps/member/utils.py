@@ -1,3 +1,5 @@
+from importlib import import_module
+
 from django.conf import settings
 from django.shortcuts import Http404
 
@@ -17,16 +19,25 @@ def get_member_data(requesting_user, member, resource_name, record_type):
     if record_type not in settings.VALID_MEMBER_DATA_RECORD_TYPES:
         raise Http404
 
-    # Does the requesting_user's Organization have access to this member's resource?
-    resource_grants = ResourceGrant.objects.filter(
-        member=member.user,
-        resource_class_path=resource_class_path,
-        organization__users=requesting_user
-    )
-    if not resource_grants.exists():
-        raise Http404
-    else:
-        resource_grant = resource_grants.first()
+    # Users are allowed to request their own data. If the requesting_user is not
+    # the member, then check if the requesting_user's Organization has access
+    # to this member's resource.
+    if requesting_user == member.user:
+        resource_module = '.'.join(resource_class_path.split('.')[:-1])
+        resource_class_name = resource_class_path.split('.')[-1]
+        resource_class = getattr(import_module(resource_module), resource_class_name)
 
-    data = resource_grant.resource_class(resource_grant.member).get(record_type)
+        data = resource_class(member.user).get(record_type)
+    else:
+        resource_grants = ResourceGrant.objects.filter(
+            member=member.user,
+            resource_class_path=resource_class_path,
+            organization__users=requesting_user
+        )
+        if not resource_grants.exists():
+            raise Http404
+        else:
+            resource_grant = resource_grants.first()
+        data = resource_grant.resource_class(resource_grant.member).get(record_type)
+
     return data

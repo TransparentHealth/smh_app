@@ -9,7 +9,10 @@ from apps.common.tests.factories import UserFactory
 from apps.org.models import (
     ResourceGrant, REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED
 )
-from apps.org.tests.factories import ResourceGrantFactory, ResourceRequestFactory
+from apps.org.tests.factories import (
+    OrganizationFactory, ResourceGrantFactory, ResourceRequestFactory,
+    UserSocialAuthFactory
+)
 from apps.sharemyhealth.resources import Resource
 
 
@@ -400,3 +403,102 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             response = self.client.get(url)
             expected_redirect = '{}?next={}'.format(reverse('login'), url)
             self.assertRedirects(response, expected_redirect)
+
+    def test_permissions(self):
+        """
+        A user may see a member's data, if the user has access to it:
+          - if the request.user is the member, or
+          - if the request.user is in an Organization that has an approved
+            ResourceRequest for the member's data
+        """
+        # Create a member
+        member = UserFactory()
+        # The member has received an access_token to get their own data.
+        provider_name = Resource.name
+        access_token = 'accessTOKENhere'
+        UserSocialAuthFactory(
+            user=member,
+            provider=provider_name,
+            extra_data={'refresh_token': 'refreshTOKEN', 'access_token': access_token}
+        )
+
+        # The URLs that will be used in this test
+        member_data_url = reverse(
+            self.url_name,
+            kwargs={
+                'pk': member.pk,
+                'resource_name': provider_name,
+                'record_type': 'all'
+            }
+        )
+
+        with self.subTest("A member's data without an approved ResourceRequest"):
+
+            # We mock the use of the requests library, so we don't make real
+            # requests from within the test.
+            with HTTMock(self.response_content_success):
+                response = self.client.get(member_data_url)
+
+            # The request.user does not have access to the member's data
+            self.assertEqual(response.status_code, 404)
+
+        with self.subTest("A member's data with an approved ResourceRequest, other Organization"):
+            # The member has approved some Organization's request for the member's data
+            organization = OrganizationFactory()
+            resource_request = ResourceRequestFactory(
+                member=member,
+                organization=organization,
+                resourcegrant=None,
+                status=REQUEST_APPROVED
+            )
+            resource_grant = ResourceGrantFactory(
+                member=resource_request.member,
+                organization=resource_request.organization,
+                resource_class_path=resource_request.resource_class_path,
+                resource_request=resource_request
+            )
+
+            # We mock the use of the requests library, so we don't make real
+            # requests from within the test.
+            with HTTMock(self.response_content_success):
+                response = self.client.get(member_data_url)
+
+            # The request.user now has access to the member's data
+            self.assertEqual(response.status_code, 404)
+
+        with self.subTest(
+            "A member's data with an approved ResourceRequest from request.user's Organization"
+        ):
+            # The request.user is now in the organization
+            organization.users.add(self.user)
+
+            # We mock the use of the requests library, so we don't make real
+            # requests from within the test.
+            with HTTMock(self.response_content_success):
+                response = self.client.get(member_data_url)
+
+            # The request.user does not have access to the member's data, since
+            # the request.user is not in the organization.
+            self.assertEqual(response.status_code, 200)
+
+        with self.subTest('A member requesting their own data'):
+            # import ipdb; ipdb.set_trace()
+            self.client.logout()
+            self.client.force_login(member)
+
+            # We mock the use of the requests library, so we don't make real
+            # requests from within the test.
+            with HTTMock(self.response_content_success):
+                response = self.client.get(member_data_url)
+
+            # The request.user has access to their own data, regardless of their
+            # Organization.
+            self.assertEqual(response.status_code, 200)
+
+            # Even if we remove the ResourceRequest and ResourceGrant objects,
+            # the member is allowed to see their own data.
+            resource_request.delete()
+            resource_grant.delete()
+            with HTTMock(self.response_content_success):
+                response = self.client.get(member_data_url)
+            self.assertEqual(response.status_code, 200)
