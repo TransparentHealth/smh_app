@@ -1,4 +1,6 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
@@ -56,3 +58,14 @@ class DeleteOrganizationView(LoginRequiredMixin, DeleteView):
         """A user may only delete Organizations that they are associated with."""
         qs = super().get_queryset()
         return qs.filter(users=self.request.user)
+
+
+@login_required(login_url='home')
+def org_create_member_view(request, org_slug):
+    """A view for allowing a User at an Organization to create a Member for that Organization."""
+    organization = get_object_or_404(
+        Organization.objects.filter(users=request.user),
+        slug=org_slug
+    )
+
+    return render(request, 'org/org_create_member.html', context={'organization': organization})

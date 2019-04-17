@@ -1,7 +1,8 @@
 # Copyright Videntity Systems, Inc.
 from django.conf.urls import url
 from .views import (
-    DashboardView, CreateOrganizationView, DeleteOrganizationView, UpdateOrganizationView
+    org_create_member_view,
+    DashboardView, CreateOrganizationView, DeleteOrganizationView, UpdateOrganizationView,
 )
 
 
@@ -21,4 +22,7 @@ urlpatterns = [
     url(r'^organization/(?P<pk>[0-9]+)/delete/$',
         DeleteOrganizationView.as_view(),
         name='organization-delete'),
+    url(r'(?P<org_slug>[-\w]+)/create_member/create',
+        org_create_member_view,
+        name='org_create_member',)
 ]

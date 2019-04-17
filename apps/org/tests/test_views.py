@@ -199,3 +199,48 @@ class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
 
             expected_redirect = '{}?next={}'.format(reverse('login'), url)
             self.assertRedirects(response, expected_redirect)
+
+
+class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
+    url_name = 'org:org_create_member'
+
+    def setUp(self):
+        super().setUp()
+        # An Organization associated with the self.user
+        self.organization = OrganizationFactory()
+        self.organization.users.add(self.user)
+        # The URL for creating a Member associated with the self.organization
+        self.url = reverse(self.url_name, kwargs={'org_slug': self.organization.slug})
+
+    def test_get(self):
+        """GETting the org_create_member view shows a form to create a new Member."""
+        with self.subTest('An Organization that request.user is associated with'):
+            response = self.client.get(self.url)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.context['organization'], self.organization)
+
+        with self.subTest('An Organization that request.user is not associated with'):
+            # An Organization not associated with the self.user
+            organization2 = OrganizationFactory()
+            # The URL for creating a Member associated with the organization2
+            url_organization2 = reverse(self.url_name, kwargs={'org_slug': organization2.slug})
+
+            response = self.client.get(url_organization2)
+
+            self.assertEqual(response.status_code, 404)
+
+    def test_authenticated(self):
+        """The user must be authenticated to use the org_create_member view."""
+        with self.subTest('Authenticated'):
+            self.client.force_login(self.user)
+            response = self.client.get(self.url)
+            self.assertEqual(response.status_code, 200)
+
+        with self.subTest('Not authenticated'):
+            self.client.logout()
+
+            response = self.client.get(self.url)
+
+            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
+            self.assertRedirects(response, expected_redirect)
