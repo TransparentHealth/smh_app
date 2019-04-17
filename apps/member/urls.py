@@ -2,7 +2,7 @@
 from django.conf.urls import url
 
 from .views import (
-    RecordsView, DataSourcesView, CreateMemberView, UpdateMemberView, DeleteMemberView,
+    RecordsView, DataSourcesView, CreateMemberView, MemberDetailView, DeleteMemberView,
     DashboardView, approve_resource_request, get_member_data, revoke_resource_request
 )
 
@@ -20,8 +20,8 @@ urlpatterns = [
         CreateMemberView.as_view(),
         name='member-create'),
     url(r'^(?P<pk>\d)/$',
-        UpdateMemberView.as_view(),
-        name='member-update'),
+        MemberDetailView.as_view(),
+        name='member-detail'),
     url(r'^(?P<pk>\d)/delete/$',
         DeleteMemberView.as_view(),
         name='member-delete'),

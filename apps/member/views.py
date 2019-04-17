@@ -9,12 +9,14 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
 
 import requests
+import json
 
 from .models import Member
 from .constants import RECORDS
 from apps.org.models import (
     ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED
 )
+from smh_app.utils import get_vmi_user_detail, update_vmi_user_detail
 
 
 def get_fake_context_data(context):
@@ -68,17 +70,36 @@ class CreateMemberView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         member_id = self.object.id
-        return reverse_lazy('member:member-update', kwargs={'pk': member_id})
+        return reverse_lazy('member:member-detail', kwargs={'pk': member_id})
 
 
-class UpdateMemberView(LoginRequiredMixin, UpdateView):
+class MemberDetailView(LoginRequiredMixin, DetailView):
     model = Member
-    fields = []
     template_name = 'member.html'
 
-    def get_success_url(self):
-        member_id = self.object.id
-        return reverse_lazy('member:member-update', kwargs={'pk': member_id})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        member_uid = context['member'].social_auth.values().first()['uid']
+        context['user_data'] = get_vmi_user_detail(context['view'].request, member_uid).json()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        member_uid = Member.objects.get(pk=kwargs['pk']).social_auth.values().first()['uid']
+        response = update_vmi_user_detail(request, member_uid)
+        self.object = self.get_object()
+        context = super().get_context_data(**kwargs)
+
+        if response.status_code == 200:
+            context['user_data'] = json.loads(response.content)
+
+        if response.status_code == 400:
+            # setting the posted data as default 'user_data' in the context
+            context['user_data'] = {key: value[0] for (key, value) in dict(request.POST).items()}
+            context['errors'] = json.loads(response.content)
+
+        # TODO: Add other response types: 403, 500
+
+        return self.render_to_response(context=context)
 
 
 class DeleteMemberView(LoginRequiredMixin, DeleteView):

@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="row mr-0 ml-0">
-    {% include "member_sidebar.html" with member=member %}
+    {% include "member_sidebar.html" with member=member user_data=user_data %}
     <div class="member-tabs col-lg-9 p-5">
         <div>
             <h2 class="member-tabs__title d-flex justify-content-between">
@@ -19,60 +19,55 @@
                     {% endif %}
                 </span>
             </h2>
-            <form method="post">
+            {# TODO: Add bootstrap sucess and error messages #}
+            <form id="member-update" method="post" data-errors="{% if errors %}true{% else%}{% endif %}">
                 {% csrf_token %}
                 <dl>
-                    {% if not member.id %}
-                        <dt>{{ form.user.label_tag|title }}</dt>
-                        <dd>{{ form.user }}</dd>
-                        <dd class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.user.errors }}</dd>
-                    {% endif %}
+                    <dt>Birthdate</dt>
+                    <dd class="form_element hide">
+                        <input class="form-control" name="birthdate" value="{{ user_data.birthdate }}" />
+                        {% if errors.birthdate %}
+                            <span class="invalid-feedback">{{ errors.birthdate.0 }}</span>
+                        {% endif %}
+                    </dd>
+                    {# TODO: template tag to format birthdate #}
+                    <dd class="read_only_element">{{ user_data.birthdate }}</dd>
 
-                    <dt>{{ form.birth_date.label_tag|title }}</dt>
-                    <dd class="form_element {% if member.id %}hide{% endif %}">{{ form.birth_date }}</dd>
-                    <dd class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.birth_date.errors }}</dd>
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.birth_date|date:"d/m/Y"|default:"" }}</dd>
+                    <dt>Email</dt>
+                    <dd class="form_element hide">
+                        <input class="form-control" name="email" value="{{ user_data.email }}" />
+                        {% if errors.email %}
+                            <span class="invalid-feedback">{{ errors.email.0 }}</span>
+                        {% endif %}
+                    </dd>
+                    <dd class="read_only_element">{{ user_data.email }}</dd>
 
-                    <dt>Email:</dt>
-                    <dd>{{ member.user.email }}</dd>
-
-                    <dt>{{ form.phone_number.label_tag|title }}</dt>
+                    <dt>Phone Number</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
-                        {{ form.phone_number }}
-                        <span class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.phone_number.errors }}</span>
+                        <input class="form-control" name="phone_number" value="{{ user_data.phone_number }}" />
+                        {% if errors.phone_number %}
+                            <span class="invalid-feedback">{{ errors.phone_number.0 }}</span>
+                        {% endif %}
                     </dd>
 
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.phone_number|default:"" }}</dd>
+                    {# TODO: template tag to format phone_number #}
+                    <dd class="read_only_element">{{ user_data.phone_number }}</dd>
 
-                    <dt>{{ form.address.label_tag|title }}</dt>
+                    <dt>Address</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
-                        {{ form.address }}
-                        <span class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.address.errors }}</span>
+                        {# TODO: understand address fields and loop through #}
+                        <input class="form-control" name="address" value="{{ user_data.address }}" />
+                        {% if errors.address %}
+                            <span class="form_element invalid-feedback">{{ errors.address.0 }}</span>
+                        {% endif %}
                     </dd>
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.address|default:"" }}</dd>
-
-                    <dt class="read_only_element {% if not member.id %}hide{% endif %}">Emergency Contact:</dt>
-                    <dt class="form_element {% if member.id %}hide{% endif %}">{{ form.emergency_contact_name.label_tag|title }}</dt>
-                    <dd class="form_element {% if member.id %}hide{% endif %}">
-                        {{ form.emergency_contact_name }}
-                        <span class="invalid-feedback">{{ form.emergency_contact_name.errors }}</span>
-                    </dd>
-
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.emergency_contact_name|default:"" }}</dd>
-
-                    <dt class="form_element {% if member.id %}hide{% endif %}">{{ form.emergency_contact_number.label_tag|title }}</dt>
-                    <dd class="form_element {% if member.id %}hide{% endif %}">
-                        {{ form.emergency_contact_number }}
-                         <span class="invalid-feedback">{{ form.emergency_contact_number.errors }}</span>
-                    </dd>
-
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.emergency_contact_number|default:"" }}</dd>
+                    <dd class="read_only_element">{{ user_data.address }}</dd>
 
                     <dt>Member since:</dt>
-                    <dd>{{ member.user.date_joined|date:"d/m/Y" }}</dd>
+                    <dd>{{ member.date_joined|date:"d/m/Y" }}</dd>
                 </dl>
                 <div class="d-flex justify-content-end">
-                    <button class="btn btn-primary form_element {% if member.id %}hide{% endif %}" type="submit">Save Changes</button>
+                    <button class="btn btn-primary form_element hide" type="submit">Save Changes</button>
                 </div>
             </form>
         </div>

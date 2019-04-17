@@ -6,13 +6,14 @@
     </div>
     <div class="member-sidebar__nav">
         <div class="member-sidebar__heading">
-            <h1>{{ member.user.first_name }} {{ member.user.last_name }}</h1>
-            <p>Gender <span class="mr-2 ml-2">·</span> Age ??</p>
+            <h1>{{ user_data.name }}</h1>
+            {# TODO: make template tag to accept birthdate and return age #}
+            <p>{{ user_data.gender }} <span class="mr-2 ml-2">·</span> {{ user_data.birthdate }}</p>
         </div>
         {% with request.resolver_match.url_name as url %}
             <div class="flex-column nav">
                 {% if member.id %}
-                    <a href="{% url 'member:member-update' member.id %}" class="nav-link {% if url == 'member-update' %}active{% endif %}" role="button">Basic Information</a>
+                    <a href="{% url 'member:member-detail' member.id %}" class="nav-link {% if url == 'member-detail' %}active{% endif %}" role="button">Basic Information</a>
                 {% else %}
                     <a href="{% url 'member:member-create' %}" class="nav-link {% if url == 'member-create' %}active{% endif %}" role="button">Basic Information</a>
                 {% endif %}

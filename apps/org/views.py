@@ -7,7 +7,7 @@ from django.views import View
 from django.http import JsonResponse
 
 from .models import Organization
-from smh_app.utils import get_vmi_user_data
+from smh_app.utils import get_vmi_user_list
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -65,7 +65,7 @@ class LocalUserAPI(LoginRequiredMixin, View):
     ''' Setting up a local endpoint that talks to the VMI endpoint and filters to
         only include users with user social auth uids that match '''
     def get(self, request, *args, **kwargs):
-        response = get_vmi_user_data(request)
+        response = get_vmi_user_list(request)
         user_data = []
 
         if isinstance(response.json(), list):

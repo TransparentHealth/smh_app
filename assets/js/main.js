@@ -84,6 +84,11 @@ window.onload = function() {
 	if (editMember) {
 	  // if member template is loaded add listener to edit_member element
 	  editMember.onclick = member.toggleEditMember
+
+	  // if errors while posting, show form
+	  if (document.getElementById('member-update').dataset.errors === 'true') {
+	  	member.toggleEditMember()
+	  }
 	}
 
 	// ------------------------- search page results ------------------------- //
