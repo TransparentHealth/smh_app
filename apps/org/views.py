@@ -1,10 +1,18 @@
+import json
+import requests
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
+from social_django.models import UserSocialAuth
+
+from .forms import CreateNewMemberAtOrgForm
 from .models import Organization
 
 
@@ -68,4 +76,109 @@ def org_create_member_view(request, org_slug):
         slug=org_slug
     )
 
-    return render(request, 'org/org_create_member.html', context={'organization': organization})
+    # If the user is GETting the page, then render the template.
+    if request.method == 'GET':
+        context = {'organization': organization, 'form': CreateNewMemberAtOrgForm()}
+        return render(request, 'org/org_create_member.html', context=context)
+    else:
+        # The user is POSTing to create a new Member at the organization, so we:
+        #   1.) validate the input
+        #   2.) make a request to VMI to create the new user
+        #   3.) create a new Member with the response from VMI
+
+        # 1.) Validate the input. If the form is not valid, then return the errors
+        # to the user.
+        form = CreateNewMemberAtOrgForm(request.POST)
+        if not form.is_valid():
+            return render(
+                request,
+                'org/org_create_member.html',
+                context={'organization': organization, 'form': form}
+            )
+
+        # 2.) Make a request to VMI to create the new user
+        request_user_social_auth = request.user.social_auth.filter(
+            provider=settings.SOCIAL_AUTH_NAME
+        ).first()
+        # If the request.user does not have a UserSocialAuth for VMI, then
+        # return the error to the user.
+        if not request_user_social_auth:
+            errors = {'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+            return render(
+                request,
+                'org/org_create_member.html',
+                context={'organization': organization, 'form': form, 'errors': errors}
+            )
+        # The data to be POSTed to VMI
+        data = {
+            'given_name': request.POST.get('first_name'),
+            'family_name': request.POST.get('last_name'),
+            'preferred_username': request.POST.get('username'),
+            'phone_number': request.POST.get('phone_number', '').strip() or 'none',
+            # The following fields are required by VMI, but we don't have values
+            # for them yet, so we make up some data now, and require the user
+            # to fill them in during the next steps of the Member creation process.
+            'gender': '',
+            'password': 'abcde12345',
+            'birthdate': '2000-01-01',
+            'nickname': request.POST.get('first_name'),
+            'email': 'test_{}_{}@example.com'.format(
+                request.POST.get('first_name'),
+                request.POST.get('last_name'),
+            ),
+        }
+        # POST the data to VMI
+        response = requests.post(
+            url=settings.SOCIAL_AUTH_VMI_HOST + '/api/v1/user/',
+            data=data,
+            headers={'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+        )
+
+        # 3.) Create a new Member with the response from VMI.
+        # If the request successfully created a user in VMI, then use that data
+        # to create a Member that is linked to the VMI user through a UserSocialAuth.
+        if response.status_code == 201:
+            response_data_dict = json.loads(response.content)
+            # Create the Member
+            member = get_user_model().objects.create(
+                first_name=response_data_dict['given_name'],
+                last_name=response_data_dict['family_name'],
+                username=response_data_dict['preferred_username'],
+            )
+            # Create a UserSocialAuth for the new Member
+            UserSocialAuth.objects.create(
+                user_id=member.id,
+                provider='vmi',
+                uid=response_data_dict['sub']
+            )
+            # Redirect the user to the next step for creating a new Member
+            return redirect(
+                reverse(
+                    'org:org_create_member_basic_info',
+                    kwargs={'org_slug': org_slug, 'username': member.username}
+                )
+            )
+        else:
+            # The request to create a user in VMI did not succeed. Show the errors
+            # to the user.
+            errors = json.loads(response.content)
+            return render(
+                request,
+                'org/org_create_member.html',
+                context={'organization': organization, 'form': form, 'errors': errors}
+            )
+
+
+@login_required(login_url='home')
+def org_create_member_basic_info_view(request, org_slug, username):
+    """View to fill in basic info about a Member that was just created at an Organization."""
+    organization = get_object_or_404(
+        Organization.objects.filter(users=request.user),
+        slug=org_slug
+    )
+    member = get_user_model().objects.get(username=username)
+    return render(
+        request,
+        'org/member_basic_info.html',
+        context={'organization': organization, 'member': member}
+    )

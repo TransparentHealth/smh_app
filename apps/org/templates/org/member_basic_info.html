@@ -2,13 +2,10 @@
 {% load static %}
 
 {% block content %}
-Create a member at {{ organization }}.
-
-{{ errors }}
+Fill in the following data for new member {{ member }} at {{ organization }}.
 
 <form method="POST">
   {% csrf_token %}
-  {{ form }}
-<button type="submit">Create Member</button>
+<button type="submit">Submit</button>
 
 {% endblock content %}
