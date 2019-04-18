@@ -178,7 +178,11 @@ def org_create_member_basic_info_view(request, org_slug, username):
         Organization.objects.filter(users=request.user),
         slug=org_slug
     )
-    member = get_user_model().objects.get(username=username)
+    user = get_object_or_404(
+        get_user_model().objects.filter(member__organizations=organization),
+        username=username
+    )
+    member = user.member
     return render(
         request,
         'org/member_basic_info.html',
