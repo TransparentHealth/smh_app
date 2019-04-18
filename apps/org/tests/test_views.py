@@ -384,6 +384,9 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
                 1
             )
             self.assertEqual(UserSocialAuth.objects.count(), expected_num_user_social_auths)
+            # The new Member is associated with the relevant Organization
+            new_member = Member.objects.get(user__username=data['username'])
+            self.assertTrue(self.organization in new_member.organizations.all())
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member view."""
