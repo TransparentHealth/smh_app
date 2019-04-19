@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+Verify identity for new member {{ member }} at {{ organization }}.
+
+<form method="POST">
+  {% csrf_token %}
+<button type="submit">Submit</button>
+
+{% endblock content %}

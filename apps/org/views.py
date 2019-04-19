@@ -188,3 +188,23 @@ def org_create_member_basic_info_view(request, org_slug, username):
         'org/member_basic_info.html',
         context={'organization': organization, 'member': member}
     )
+
+
+@login_required(login_url='home')
+def org_create_member_verify_identity_view(request, org_slug, username):
+    """View to verify identity for a Member that was just created at an Organization."""
+    organization = get_object_or_404(
+        Organization.objects.filter(users=request.user),
+        slug=org_slug
+    )
+    user = get_object_or_404(
+        get_user_model().objects.filter(member__organizations=organization),
+        username=username
+    )
+    member = user.member
+
+    return render(
+        request,
+        'org/member_verify_identity.html',
+        context={'organization': organization, 'member': member}
+    )

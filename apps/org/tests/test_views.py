@@ -502,3 +502,89 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
 
             expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
             self.assertRedirects(response, expected_redirect)
+
+
+class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
+    url_name = 'org:org_create_member_verify_identity'
+
+    def setUp(self):
+        super().setUp()
+        # An Organization associated with the self.user
+        self.organization = OrganizationFactory()
+        self.organization.users.add(self.user)
+        # A Member at the Organization
+        self.member = UserFactory().member
+        self.organization.members.add(self.member)
+        # The URL for verifying the identity of a Member associated with the self.organization
+        self.url = reverse(
+            self.url_name,
+            kwargs={
+                'org_slug': self.organization.slug,
+                'username': self.member.user.username
+            }
+        )
+
+    def test_get(self):
+        """GETting org_create_member_verify_identity view shows form to verify Member's identity."""
+        subtests = (
+            # user_at_org:         |  member_at_org:    | expected_success:
+            # Is the request.user  | Is the Member      |  Should the
+            # associated with the  | associated with    |  request
+            # Organization?        | the Organization?  |  succeed?
+            (True,                     True,                True),
+            (False,                    True,                False),
+            (True,                     False,               False),
+            (False,                    False,               False),
+        )
+        for (user_at_org, member_at_org, expected_success) in subtests:
+            organization = OrganizationFactory()
+            if user_at_org:
+                organization.users.add(self.user)
+            member = UserFactory().member
+            if member_at_org:
+                organization.members.add(member)
+            url = reverse(
+                self.url_name,
+                kwargs={'org_slug': organization.slug, 'username': member.user.username}
+            )
+            with self.subTest(
+                user_at_org=user_at_org,
+                member_at_org=member_at_org,
+                expected_success=expected_success
+            ):
+                response = self.client.get(url)
+
+                if expected_success:
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response.context['organization'], organization)
+                    self.assertEqual(response.context['member'], member)
+                else:
+                    self.assertEqual(response.status_code, 404)
+
+    def test_authenticated(self):
+        """The user must be authenticated to use the org_create_member_verify_identity view."""
+        with self.subTest('Authenticated GET'):
+            self.client.force_login(self.user)
+            response = self.client.get(self.url)
+            self.assertEqual(response.status_code, 200)
+
+        with self.subTest('Authenticated POST'):
+            self.client.force_login(self.user)
+            response = self.client.post(self.url, data={})
+            self.assertEqual(response.status_code, 200)
+
+        with self.subTest('Not authenticated GET'):
+            self.client.logout()
+
+            response = self.client.get(self.url)
+
+            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
+            self.assertRedirects(response, expected_redirect)
+
+        with self.subTest('Not authenticated POST'):
+            self.client.logout()
+
+            response = self.client.post(self.url, data={})
+
+            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
+            self.assertRedirects(response, expected_redirect)
