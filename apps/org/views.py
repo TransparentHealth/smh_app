@@ -139,15 +139,17 @@ def org_create_member_view(request, org_slug):
         # to create a Member that is linked to the VMI user through a UserSocialAuth.
         if response.status_code == 201:
             response_data_dict = json.loads(response.content)
-            # Create the Member
-            member = get_user_model().objects.create(
+            # Create the Member, and associate with this Organization
+            new_user = get_user_model().objects.create(
                 first_name=response_data_dict['given_name'],
                 last_name=response_data_dict['family_name'],
                 username=response_data_dict['preferred_username'],
             )
+            new_member = new_user.member
+            new_member.organizations.add(organization)
             # Create a UserSocialAuth for the new Member
             UserSocialAuth.objects.create(
-                user_id=member.id,
+                user_id=new_user.id,
                 provider='vmi',
                 uid=response_data_dict['sub']
             )
@@ -155,7 +157,7 @@ def org_create_member_view(request, org_slug):
             return redirect(
                 reverse(
                     'org:org_create_member_basic_info',
-                    kwargs={'org_slug': org_slug, 'username': member.username}
+                    kwargs={'org_slug': org_slug, 'username': new_user.username}
                 )
             )
         else:
