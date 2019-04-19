@@ -427,7 +427,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
         self.organization = OrganizationFactory()
         self.organization.users.add(self.user)
         # A Member at the Organization
-        self.member = UserFactory().member
+        self.member = UserFactory(email='test_{}@example.com'.format(random.random())).member
         self.organization.members.add(self.member)
         # The URL for creating a Member associated with the self.organization
         self.url = reverse(
@@ -437,6 +437,61 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
                 'username': self.member.user.username
             }
         )
+
+    @all_requests
+    def response_content_success(self, url, request):
+        """The response for a successful PUT to update a user in VMI."""
+        # Get the UserSocialAuth based on the uid from the URL
+        uid = request.original.url.split('/')[-2]
+        user_social_auth = UserSocialAuth.objects.get(uid=uid)
+        content = self.get_successful_response_data_from_vmi(
+            user_social_auth.user.first_name,
+            user_social_auth.user.last_name,
+            user_social_auth.user.username,
+            request.original.data.get('birthdate'),
+            request.original.data.get('nickname'),
+            request.original.data.get('gender'),
+            request.original.data.get('email'),
+        )
+        return {
+            'status_code': 200,
+            'content': content
+        }
+
+    def get_successful_response_data_from_vmi(
+        self,
+        first_name,
+        last_name,
+        username,
+        birthdate,
+        nickname,
+        gender,
+        email
+    ):
+        """The expected content of a response for a successful PUT to update a VMI user."""
+        return {
+            'email': email,
+            'exp': 1555518026.550254,
+            'iat': 1555514426.5502696,
+            'iss': settings.SOCIAL_AUTH_VMI_HOST,
+            'sub': random.randint(100000000000000, 999999999999999),
+            'aal': '1',
+            'birthdate': birthdate,
+            'email_verified': False,
+            'family_name': last_name,
+            'given_name': first_name,
+            'ial': '1',
+            'name': '{} {}'.format(first_name, last_name),
+            'nickname': nickname,
+            'phone_number': '+NoneNone',
+            'phone_verified': False,
+            'picture': 'http://localhost:8000/media/profile-picture/None/no-img.jpg',
+            'preferred_username': username,
+            'vot': 'P0.Cc',
+            'website': '',
+            'address': [],
+            'document': []
+        }
 
     def test_get(self):
         """GETting the org_create_member_basic_info view shows a form to update a Member."""
@@ -474,6 +529,146 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
                     self.assertEqual(response.context['member'], member)
                 else:
                     self.assertEqual(response.status_code, 404)
+
+    def test_post(self):
+        """POSTing to the org_create_member_basic_info view can update a Member."""
+        with self.subTest('no data'):
+            data = {}
+            response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['form'].errors,
+                {
+                    'birthdate': ['This field is required.'],
+                    'nickname': ['This field is required.'],
+                    'email': ['This field is required.'],
+                }
+            )
+            # The self.member was not updated
+            self.member.user.refresh_from_db()
+            self.assertNotEqual(self.member.user.email, data.get('email', ''))
+
+        with self.subTest('incomplete data'):
+            data = {'birthdate': '2000-01-01', 'gender': ''}
+            response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['form'].errors,
+                {'nickname': ['This field is required.'], 'email': ['This field is required.']}
+            )
+            # The self.member was not updated
+            self.member.user.refresh_from_db()
+            self.assertNotEqual(self.member.user.email, data.get('email', ''))
+
+        with self.subTest('invalid data'):
+            data = {
+                'birthdate': 'January 1, 2000',
+                'nickname': 'Nickname',
+                'gender': '',
+                'email': 'new_email@example.com'
+            }
+            response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['form'].errors,
+                {'birthdate': ['Enter a valid date.']}
+            )
+            # The self.member was not updated
+            self.member.user.refresh_from_db()
+            self.assertNotEqual(self.member.user.email, data.get('email', ''))
+
+        with self.subTest('valid data, no request.user UserSocialAuth object'):
+            # If the request.user does not have a UserSocialAuth object for VMI,
+            # then the response is an error.
+            data = {
+                'birthdate': '2000-01-01',
+                'nickname': 'Nickname',
+                'gender': '',
+                'email': 'new_email@example.com'
+            }
+
+            response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['errors'],
+                {'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+            )
+
+            # The self.member was not updated
+            self.member.user.refresh_from_db()
+            self.assertNotEqual(self.member.user.email, data.get('email', ''))
+
+        with self.subTest('valid data, no UserSocialAuth object for Member'):
+            # If the Member does not have a UserSocialAuth object for VMI,
+            # then the response is an error. In reality, this shouldn't happen,
+            # since the UserSocialAuth object should get created for the new Member
+            # during step 1 of the member creation process (the org_create_member_view),
+            # but we handle the case that the UserSocialAuth object no longer exists.
+            data = {
+                'birthdate': '2000-01-01',
+                'nickname': 'Nickname',
+                'gender': '',
+                'email': 'new_email@example.com'
+            }
+            # Create a UserSocialAuth object for the self.user for VMI
+            UserSocialAuthFactory(
+                user=self.user,
+                provider=settings.SOCIAL_AUTH_NAME,
+                extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'accessTOKENhere'},
+                uid=random.randint(100000000000000, 999999999999999),
+            )
+
+            response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['errors'],
+                {'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+            )
+
+            # The self.member was not updated
+            self.member.user.refresh_from_db()
+            self.assertNotEqual(self.member.user.email, data.get('email', ''))
+
+        with self.subTest('valid data, request.user & member have a UserSocialAuth object'):
+            # Create a UserSocialAuth object for the Member for VMI
+            UserSocialAuthFactory(
+                user=self.member.user,
+                provider=settings.SOCIAL_AUTH_NAME,
+                extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'MeMbEraccessTOKEN'},
+                uid=random.randint(100000000000000, 999999999999999),
+            )
+
+            # The data POSTed to the org_create_member_basic_info view
+            data = {
+                'birthdate': '2000-01-01',
+                'nickname': 'Nickname',
+                'gender': '',
+                'email': 'new_email@example.com'
+            }
+
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_content_success):
+                response = self.client.post(self.url, data=data)
+
+            # A successful create redirects to the next page of the creation process.
+            expected_url_next_page = reverse(
+                'org:org_create_member_verify_identity',
+                kwargs={
+                    'org_slug': self.organization.slug,
+                    'username': self.member.user.username
+                }
+            )
+            self.assertRedirects(response, expected_url_next_page)
+            # The self.member was updated
+            self.member.user.refresh_from_db()
+            self.assertEqual(self.member.user.email, data.get('email', ''))
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_basic_info view."""

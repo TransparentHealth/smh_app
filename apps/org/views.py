@@ -12,7 +12,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from social_django.models import UserSocialAuth
 
-from .forms import CreateNewMemberAtOrgForm
+from .forms import CreateNewMemberAtOrgForm, UpdateNewMemberAtOrgBasicInfoForm
 from .models import Organization
 
 
@@ -183,11 +183,79 @@ def org_create_member_basic_info_view(request, org_slug, username):
         username=username
     )
     member = user.member
-    return render(
-        request,
-        'org/member_basic_info.html',
-        context={'organization': organization, 'member': member}
-    )
+
+    # The context to be used in the template
+    context = {'organization': organization, 'member': member}
+
+    # If the user is GETting the page, then render the template.
+    if request.method == 'GET':
+        context['form'] = UpdateNewMemberAtOrgBasicInfoForm()
+        return render(request, 'org/member_basic_info.html', context=context)
+    else:
+        # The user is POSTing to update a Member at the organization, so we:
+        #   1.) validate the input
+        #   2.) make a request to VMI to update the user
+        #   3.) update the Member with the response from VMI
+
+        # 1.) Validate the input. If the form is not valid, then return the errors
+        # to the user.
+        form = UpdateNewMemberAtOrgBasicInfoForm(request.POST)
+        if not form.is_valid():
+            context['form'] = form
+            return render(request, 'org/member_basic_info.html', context=context)
+
+        # 2.) Make a request to VMI to update the new user
+        request_user_social_auth = request.user.social_auth.filter(
+            provider=settings.SOCIAL_AUTH_NAME
+        ).first()
+        # If the request.user does not have a UserSocialAuth for VMI, return an error to the user.
+        if not request_user_social_auth:
+            errors = {'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+            context['form'] = form
+            context['errors'] = errors
+            return render(request, 'org/member_basic_info.html', context=context)
+        # The data to be PUT to VMI
+        data = {
+            'gender': request.POST.get('gender'),
+            'birthdate': request.POST.get('birthdate'),
+            'nickname': request.POST.get('nickname'),
+            'email': request.POST.get('email'),
+        }
+        # Get the Member's UserSocialAuth object
+        member_social_auth = member.user.social_auth.filter(
+            provider=settings.SOCIAL_AUTH_NAME
+        ).first()
+        # If the Member does not have a UserSocialAuth for VMI, return an error to the user.
+        if not member_social_auth:
+            errors = {'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+            context['form'] = form
+            context['errors'] = errors
+            return render(request, 'org/member_basic_info.html', context=context)
+        # PUT the data to VMI
+        url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST, member_social_auth.uid)
+        headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+        response = requests.put(url=url, data=data, headers=headers)
+
+        # 3.) Update a new Member with the response from VMI.
+        # If the request successfully updated a user in VMI, then use that data
+        # to update the Member in smh_app. If not, then show the error to the user.
+        if response.status_code == 200:
+            response_data_dict = json.loads(response.content)
+            # Update the Member
+            member.user.email = response_data_dict['email']
+            member.user.save()
+            # Redirect the user to the next step for creating a new Member
+            return redirect(
+                reverse(
+                    'org:org_create_member_verify_identity',
+                    kwargs={'org_slug': org_slug, 'username': user.username}
+                )
+            )
+        else:
+            # The request to update a user in VMI did not succeed, so show errors to the user.
+            errors = json.loads(response.content)
+            context['errors'] = errors
+            return render(request, 'org/member_basic_info.html', context=context)
 
 
 @login_required(login_url='home')
