@@ -4,7 +4,9 @@
 {% block content %}
 Create a member at {{ organization }}.
 
-{{ errors }}
+{% if errors %}
+  {{ errors }}
+{% endif %}
 
 <form method="POST">
   {% csrf_token %}
