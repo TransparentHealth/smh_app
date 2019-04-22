@@ -189,7 +189,7 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, FormView):
     errors = {}
 
     def get_success_url(self, org_slug, username):
-        """A successful creation redirects to the next step in the process."""
+        """A successful update redirects to the next step in the process."""
         return reverse(
             'org:org_create_member_verify_identity',
             kwargs={'org_slug': org_slug, 'username': username}
@@ -293,59 +293,89 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, FormView):
             return self.render_to_response(self.get_context_data())
 
 
-@login_required(login_url='home')
-def org_create_member_verify_identity_view(request, org_slug, username):
+class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, FormView):
     """View to verify identity for a Member that was just created at an Organization."""
-    organization = get_object_or_404(
-        Organization.objects.filter(users=request.user),
-        slug=org_slug
-    )
-    user = get_object_or_404(
-        get_user_model().objects.filter(member__organizations=organization),
-        username=username
-    )
-    member = user.member
+    template_name = 'org/member_verify_identity.html'
+    form_class = VerifyMemberIdentityForm
+    login_url = 'home'
+    # If there are any non-form errors, they can be stored in self.errors, and
+    # will be displayed in the template.
+    errors = {}
 
-    # The context to be used in the template
-    context = {'organization': organization, 'member': member}
+    def get_success_url(self, org_slug, username):
+        """A successful verification redirects to the next step in the process."""
+        return reverse(
+            'org:org_create_member_additional_info',
+            kwargs={'org_slug': org_slug, 'username': username}
+        )
 
-    # If the user is GETting the page, then render the template.
-    if request.method == 'GET':
-        context['form'] = VerifyMemberIdentityForm()
-        return render(request, 'org/member_verify_identity.html', context=context)
-    else:
-        # The user is POSTing to update a Member at the organization, so we:
-        #   1.) validate the input
-        #   2.) make a request to VMI to get the user's identity assurance uuid
-        #   3.) make a request to VMI to update the user's identity assurance
+    def get_organization(self, request, org_slug):
+        """Get the Organization object that the org_slug refers to, or return a 404 response."""
+        return get_object_or_404(
+            Organization.objects.filter(users=request.user),
+            slug=org_slug
+        )
 
-        # 1.) Validate the input. If form is not valid, then return the errors to the user.
-        form = VerifyMemberIdentityForm(request.POST)
-        if not form.is_valid():
-            context['form'] = form
-            return render(request, 'org/member_verify_identity.html', context=context)
+    def get_member(self, organization, username):
+        """Get the Member object that the username refers to, or return a 404 response."""
+        user = get_object_or_404(
+            get_user_model().objects.filter(member__organizations=organization),
+            username=username
+        )
+        return user.member
 
-        # 2.) Make a request to VMI to get the user's identity assurance uuid
-        request_user_social_auth = request.user.social_auth.filter(
+    def get_context_data(self, **kwargs):
+        """Get the context data for the template."""
+        kwargs.setdefault('organization', self.organization)
+        kwargs.setdefault('member', self.member)
+        kwargs.setdefault('errors', self.errors)
+        return super().get_context_data(**kwargs)
+
+    def get(self, request, *args, **kwargs):
+        """Set the self.organization and self.member."""
+        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        """Set the self.organization and self.member."""
+        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        """
+        If the form is valid, then update the user in VMI:
+         1.) verify that the request.user has a UserSocialAuth object for VMI
+         2.) verify that the Member has a UserSocialAuth object for VMI
+         3.) make a request to VMI to get the user's identity assurance uuid
+         4.) make a request to VMI to update the user's identity assurance
+         5.) redirect the user to the next step in the Member-creation process
+        """
+        # 1.) Verify that the request.user has a UserSocialAuth object for VMI
+        request_user_social_auth = self.request.user.social_auth.filter(
             provider=settings.SOCIAL_AUTH_NAME
         ).first()
-        # If the request.user does not have a UserSocialAuth for VMI, return an error to the user.
+        # If the request.user does not have a UserSocialAuth for VMI, then
+        # return the error to the user.
         if not request_user_social_auth:
-            errors = {'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
-            context['form'] = form
-            context['errors'] = errors
-            return render(request, 'org/member_verify_identity.html', context=context)
-        # Get the Member's UserSocialAuth object
-        member_social_auth = member.user.social_auth.filter(
+            self.errors = {
+                'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
+            }
+            return self.render_to_response(self.get_context_data())
+
+        # 2.) Verify that the Member has a UserSocialAuth object for VMI
+        member_social_auth = self.member.user.social_auth.filter(
             provider=settings.SOCIAL_AUTH_NAME
         ).first()
         # If the Member does not have a UserSocialAuth for VMI, return an error to the user.
         if not member_social_auth:
-            errors = {'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
-            context['form'] = form
-            context['errors'] = errors
-            return render(request, 'org/member_verify_identity.html', context=context)
-        # Get the member's identity assurance uuid
+            self.errors = {
+                'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
+            }
+            return self.render_to_response(self.get_context_data())
+
+        # 3.) Make a request to VMI to get the user's identity assurance uuid
         url = '{}/api/v1/user/{}/id-assurance/'.format(
             settings.SOCIAL_AUTH_VMI_HOST,
             member_social_auth.uid,
@@ -355,12 +385,12 @@ def org_create_member_verify_identity_view(request, org_slug, username):
         # If the request to get the Member's identity assurance uuid from VMI fails,
         # display the error to the user.
         if response.status_code != 200:
-            context['errors'] = json.loads(response.content)
-            return render(request, 'org/member_verify_identity.html', context=context)
+            self.errors = json.loads(response.content)
+            return self.render_to_response(self.get_context_data())
         else:
             identity_assurance_uuid = json.loads(response.content)[0].get('uuid')
 
-        # 3.) Make a request to VMI to update the user's identity assurance
+        # 4.) Make a request to VMI to update the user's identity assurance
         url = '{}/api/v1/user/{}/id-assurance/{}/'.format(
             settings.SOCIAL_AUTH_VMI_HOST,
             member_social_auth.uid,
@@ -368,26 +398,22 @@ def org_create_member_verify_identity_view(request, org_slug, username):
         )
         data = {
             'subject_user': member_social_auth.uid,
-            'classification': request.POST.get('classification'),
-            'description': request.POST.get('description'),
-            'exp': request.POST.get('expiration_date'),
+            'classification': self.request.POST.get('classification'),
+            'description': self.request.POST.get('description'),
+            'exp': self.request.POST.get('expiration_date'),
         }
         # PUT the data to the VMI endpoint for identity verification
         response = requests.put(url=url, data=data, headers=headers)
 
         if response.status_code == 200:
-            # Redirect the user to the next step for creating a new Member
-            return redirect(
-                reverse(
-                    'org:org_create_member_additional_info',
-                    kwargs={'org_slug': org_slug, 'username': user.username}
-                )
+            # Redirect the user to the next step in the Member-creation process
+            return HttpResponseRedirect(
+                self.get_success_url(self.organization.slug, self.member.user.username)
             )
         else:
             # The request to update a user in VMI did not succeed, so show errors to the user.
-            errors = json.loads(response.content)
-            context['errors'] = errors
-            return render(request, 'org/member_verify_identity.html', context=context)
+            self.errors = json.loads(response.content)
+            return self.render_to_response(self.get_context_data())
 
 
 @login_required(login_url='home')

@@ -729,6 +729,16 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             'content': content
         }
 
+    @urlmatch(path=r'^/api/v1/user/([0-9]+)?/id-assurance/$')
+    @remember_called
+    def response_id_assurance_list_fail(self, url, request):
+        """The response for an unsuccessful GET for a user's id assurances in VMI."""
+        content = {'test_key': 'Error here'}
+        return {
+            'status_code': 400,
+            'content': content
+        }
+
     @urlmatch(path=r'^/api/v1/user/([0-9]+)?/id-assurance/([0-9a-zA-Z\-]+)?/$')
     @remember_called
     def response_id_assurance_detail(self, url, request):
@@ -967,6 +977,34 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             # assurance uuid, and another to update the member's identity assurance.
             self.assertEqual(self.response_id_assurance_list.call['count'], 1)
             self.assertEqual(self.response_id_assurance_detail.call['count'], 1)
+
+        with self.subTest('valid data, but request to VMI is not successful'):
+            # The view makes a request to VMI to get the member's identity assurance
+            # uuid. In case this request returns unsuccessfully, the error is
+            # shown to the user.
+
+            # The data POSTed to the org_create_member_basic_info view
+            data = {
+                'description': 'description',
+                'expiration_date': '2099-01-01',
+                'classification': 'ONE-SUPERIOR-OR-STRONG+',
+            }
+
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_id_assurance_list_fail, self.response_id_assurance_detail):
+                response = self.client.post(self.url, data=data)
+
+            # Since the GET to VMI returned as a non-successful response, the
+            # error is shown to the user.
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.context['errors'], {'test_key': 'Error here'})
+            # Only 1 request was made to VMI: to get the member's identity assurance
+            # uuid. Since this request was not successful, no more requests to
+            # VMI were made.
+            self.assertEqual(self.response_id_assurance_list_fail.call['count'], 1)
+            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_verify_identity view."""
