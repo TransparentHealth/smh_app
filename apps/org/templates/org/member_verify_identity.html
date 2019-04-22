@@ -4,8 +4,11 @@
 {% block content %}
 Verify identity for new member {{ member }} at {{ organization }}.
 
+{{ errors }}
+
 <form method="POST">
   {% csrf_token %}
+  {{ form }}
 <button type="submit">Submit</button>
 
 {% endblock content %}

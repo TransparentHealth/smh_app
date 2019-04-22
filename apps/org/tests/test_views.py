@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from httmock import all_requests, HTTMock
+from httmock import all_requests, remember_called, urlmatch, HTTMock
 from social_django.models import UserSocialAuth
 
 from apps.common.tests.base import SMHAppTestMixin
@@ -719,6 +719,59 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             }
         )
 
+    @urlmatch(path=r'^/api/v1/user/([0-9]+)?/id-assurance/$')
+    @remember_called
+    def response_id_assurance_list(self, url, request):
+        """The response for a successful GET for a user's id assurances in VMI."""
+        content = [self.sample_identity_assurance_response()]
+        return {
+            'status_code': 200,
+            'content': content
+        }
+
+    @urlmatch(path=r'^/api/v1/user/([0-9]+)?/id-assurance/([0-9a-zA-Z\-]+)?/$')
+    @remember_called
+    def response_id_assurance_detail(self, url, request):
+        """The response for a successful GET for a user's id assurances in VMI."""
+        return {
+            'status_code': 200,
+            'content': self.sample_identity_assurance_response()
+        }
+
+    def sample_identity_assurance_response(self):
+        """The sample response from the VMI API for an identity assurance."""
+        return {
+            'id': 1,
+            'classification': '',
+            'description': 'This is the description',
+            'exp': '2001-01-01',
+            'verifier_subject': '997275294527729',
+            'uuid': 'bc6b23c9-8a4e-40b8-a567-a31db5572ed8',
+            'identity_proofing_mode': '',
+            'action': '',
+            'evidence': '',
+            'id_verify_description': 'This is the description',
+            'id_assurance_downgrade_description': '',
+            'note': None,
+            'metadata': {
+                "subject_user": "member_username",
+                "history": [
+                    {
+                        "verifying_user": "None",
+                        "actions": "",
+                        "updated_at": "None"
+                    }
+                ]
+            },
+            'type': '',
+            'expires_at': '2001-01-01',
+            'verification_date': None,
+            'created_at': '2000-01-01T12:00:00.000000Z',
+            'updated_at': '2000-01-01T12:00:00.000000Z',
+            'subject_user': 2,  # The member's id in VMI
+            'verifying_user': 1  # The request.user's id in VMI
+        }
+
     def test_get(self):
         """GETting org_create_member_verify_identity view shows form to verify Member's identity."""
         subtests = (
@@ -755,6 +808,165 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
                     self.assertEqual(response.context['member'], member)
                 else:
                     self.assertEqual(response.status_code, 404)
+
+    def test_post(self):
+        """POSTing to org_create_member_verify_identity view updates Member's identity assurance."""
+        with self.subTest('no data'):
+            data = {}
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_id_assurance_list, self.response_id_assurance_detail):
+                response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['form'].errors,
+                {
+                    'classification': ['This field is required.'],
+                    'description': ['This field is required.'],
+                    'expiration_date': ['This field is required.'],
+                }
+            )
+            # No requests were made to VMI
+            self.assertEqual(self.response_id_assurance_list.call['count'], 0)
+            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+
+        with self.subTest('incomplete data'):
+            data = {'description': 'description here', 'expiration_date': '2020-01-01'}
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_id_assurance_list, self.response_id_assurance_detail):
+                response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['form'].errors,
+                {'classification': ['This field is required.']}
+            )
+            # No requests were made to VMI
+            self.assertEqual(self.response_id_assurance_list.call['count'], 0)
+            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+
+        with self.subTest('invalid data'):
+            data = {
+                'description': 'description',
+                'expiration_date': '2020-13-100',
+                'classification': 'invalid classification',
+            }
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_id_assurance_list, self.response_id_assurance_detail):
+                response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            expected_errors = {
+                'expiration_date': ['Enter a valid date.'],
+                'classification': [
+                    'Select a valid choice. {} is not one of the available choices.'.format(
+                        data['classification']
+                    )
+                ]
+            }
+            self.assertEqual(response.context['form'].errors, expected_errors)
+            # No requests were made to VMI
+            self.assertEqual(self.response_id_assurance_list.call['count'], 0)
+            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+
+        with self.subTest('valid data, no request.user UserSocialAuth object'):
+            # If the request.user does not have a UserSocialAuth object for VMI,
+            # then the response is an error.
+            data = {
+                'description': 'description',
+                'expiration_date': '2099-01-01',
+                'classification': 'ONE-SUPERIOR-OR-STRONG+',
+            }
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_id_assurance_list, self.response_id_assurance_detail):
+                response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['errors'],
+                {'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+            )
+            # No requests were made to VMI
+            self.assertEqual(self.response_id_assurance_list.call['count'], 0)
+            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+
+        with self.subTest('valid data, no UserSocialAuth object for Member'):
+            # If the Member does not have a UserSocialAuth object for VMI,
+            # then the response is an error. In reality, this shouldn't happen,
+            # since the UserSocialAuth object should get created for the new Member
+            # during step 1 of the member creation process (the org_create_member_view),
+            # but we handle the case that the UserSocialAuth object no longer exists.
+            data = {
+                'description': 'description',
+                'expiration_date': '2099-01-01',
+                'classification': 'ONE-SUPERIOR-OR-STRONG+',
+            }
+            # Create a UserSocialAuth object for the self.user for VMI
+            UserSocialAuthFactory(
+                user=self.user,
+                provider=settings.SOCIAL_AUTH_NAME,
+                extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'accessTOKENhere'},
+                uid=random.randint(100000000000000, 999999999999999),
+            )
+
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_id_assurance_list, self.response_id_assurance_detail):
+                response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['errors'],
+                {'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+            )
+            # No requests were made to VMI
+            self.assertEqual(self.response_id_assurance_list.call['count'], 0)
+            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+
+        with self.subTest('valid data, request.user & member have a UserSocialAuth object'):
+            # Create a UserSocialAuth object for the Member for VMI
+            UserSocialAuthFactory(
+                user=self.member.user,
+                provider=settings.SOCIAL_AUTH_NAME,
+                extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'MeMbEraccessTOKEN'},
+                uid=random.randint(100000000000000, 999999999999999),
+            )
+
+            # The data POSTed to the org_create_member_basic_info view
+            data = {
+                'description': 'description',
+                'expiration_date': '2099-01-01',
+                'classification': 'ONE-SUPERIOR-OR-STRONG+',
+            }
+
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_id_assurance_list, self.response_id_assurance_detail):
+                response = self.client.post(self.url, data=data)
+
+            # A successful create redirects to the next page of the creation process.
+            expected_url_next_page = reverse(
+                'org:org_create_member_additional_info',
+                kwargs={
+                    'org_slug': self.organization.slug,
+                    'username': self.member.user.username
+                }
+            )
+            self.assertRedirects(response, expected_url_next_page)
+            # Several requests were made to VMI: 1 to get the member's identity
+            # assurance uuid, and another to update the member's identity assurance.
+            self.assertEqual(self.response_id_assurance_list.call['count'], 1)
+            self.assertEqual(self.response_id_assurance_detail.call['count'], 1)
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_verify_identity view."""
