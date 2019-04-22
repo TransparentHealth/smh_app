@@ -69,7 +69,33 @@ class DeleteOrganizationView(LoginRequiredMixin, DeleteView):
         return qs.filter(users=self.request.user)
 
 
-class OrgCreateMemberView(LoginRequiredMixin, FormView):
+class OrgCreateMemberMixin:
+    """A mixin for the create member views."""
+    def get_organization(self, request, org_slug):
+        """Get the Organization object that the org_slug refers to, or return a 404 response."""
+        return get_object_or_404(
+            Organization.objects.filter(users=request.user),
+            slug=org_slug
+        )
+
+    def get_context_data(self, **kwargs):
+        """Get the context data for the template."""
+        kwargs.setdefault('organization', self.organization)
+        kwargs.setdefault('errors', self.errors)
+        return super().get_context_data(**kwargs)
+
+    def get(self, request, *args, **kwargs):
+        """Set the self.organization."""
+        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        """Set the self.organization."""
+        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
+        return super().post(request, *args, **kwargs)
+
+
+class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
     """A view for allowing a User at an Organization to create a Member for that Organization."""
     template_name = 'org/org_create_member.html'
     form_class = CreateNewMemberAtOrgForm
@@ -84,22 +110,6 @@ class OrgCreateMemberView(LoginRequiredMixin, FormView):
             'org:org_create_member_basic_info',
             kwargs={'org_slug': org_slug, 'username': username}
         )
-
-    def get_organization(self, request, org_slug):
-        """Get the Organization object that the org_slug refers to, or return a 404 response."""
-        return get_object_or_404(
-            Organization.objects.filter(users=request.user),
-            slug=org_slug
-        )
-
-    def get_context_data(self, **kwargs):
-        """Get the context data for the template."""
-        kwargs.setdefault(
-            'organization',
-            self.get_organization(self.request, self.kwargs.get('org_slug'))
-        )
-        kwargs.setdefault('errors', self.errors)
-        return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
         """
