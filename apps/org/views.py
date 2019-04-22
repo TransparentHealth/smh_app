@@ -276,3 +276,22 @@ def org_create_member_verify_identity_view(request, org_slug, username):
         'org/member_verify_identity.html',
         context={'organization': organization, 'member': member}
     )
+
+
+@login_required(login_url='home')
+def org_create_member_additional_info_view(request, org_slug, username):
+    """View to fill in additional info about a Member that was just created at an Organization."""
+    organization = get_object_or_404(
+        Organization.objects.filter(users=request.user),
+        slug=org_slug
+    )
+    user = get_object_or_404(
+        get_user_model().objects.filter(member__organizations=organization),
+        username=username
+    )
+    member = user.member
+
+    # The context to be used in the template
+    context = {'organization': organization, 'member': member}
+
+    return render(request, 'org/member_additional_info.html', context=context)
