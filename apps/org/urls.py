@@ -1,10 +1,10 @@
 # Copyright Videntity Systems, Inc.
 from django.conf.urls import url
 from .views import (
-    org_create_member_almost_done_view, org_create_member_complete_view,
     CreateOrganizationView, DashboardView, DeleteOrganizationView, OrgCreateMemberView,
-    OrgCreateMemberAdditionalInfoInfoView, OrgCreateMemberBasicInfoView,
-    OrgCreateMemberVerifyIdentityView, UpdateOrganizationView,
+    OrgCreateMemberAdditionalInfoInfoView, OrgCreateMemberAlmostDoneView,
+    OrgCreateMemberBasicInfoView, OrgCreateMemberCompleteView, OrgCreateMemberVerifyIdentityView,
+    UpdateOrganizationView,
 )
 
 
@@ -39,9 +39,9 @@ urlpatterns = [
         OrgCreateMemberAdditionalInfoInfoView.as_view(),
         name='org_create_member_additional_info'),
     url(r'(?P<org_slug>[-\w]+)/create_member/(?P<username>[-\w]+)/almost_done',
-        org_create_member_almost_done_view,
+        OrgCreateMemberAlmostDoneView.as_view(),
         name='org_create_member_almost_done'),
     url(r'(?P<org_slug>[-\w]+)/create_member/(?P<username>[-\w]+)/complete',
-        org_create_member_complete_view,
+        OrgCreateMemberCompleteView.as_view(),
         name='org_create_member_complete'),
 ]

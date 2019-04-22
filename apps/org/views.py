@@ -3,10 +3,9 @@ import requests
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render, reverse
+from django.shortcuts import get_object_or_404, reverse
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
@@ -475,41 +474,59 @@ class OrgCreateMemberAdditionalInfoInfoView(LoginRequiredMixin, FormView):
         )
 
 
-@login_required(login_url='home')
-def org_create_member_almost_done_view(request, org_slug, username):
-    """View to open a page for the new Member to complete account creation at an Organization."""
-    organization = get_object_or_404(
-        Organization.objects.filter(users=request.user),
-        slug=org_slug
-    )
-    user = get_object_or_404(
-        get_user_model().objects.filter(member__organizations=organization),
-        username=username
-    )
-    member = user.member
+class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
+    template_name = "org/member_almost_done.html"
+    login_url = 'home'
 
-    return render(
-        request,
-        'org/member_almost_done.html',
-        context={'organization': organization, 'member': member}
-    )
+    def get_organization(self, request, org_slug):
+        """Get the Organization object that the org_slug refers to, or return a 404 response."""
+        return get_object_or_404(
+            Organization.objects.filter(users=request.user),
+            slug=org_slug
+        )
+
+    def get_member(self, organization, username):
+        """Get the Member object that the username refers to, or return a 404 response."""
+        user = get_object_or_404(
+            get_user_model().objects.filter(member__organizations=organization),
+            username=username
+        )
+        return user.member
+
+    def get_context_data(self, **kwargs):
+        """Add the Organization and Member to the context."""
+        organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
+        kwargs.setdefault('organization', organization)
+        member = self.get_member(organization, self.kwargs.get('username'))
+        kwargs.setdefault('member', member)
+
+        return super().get_context_data(**kwargs)
 
 
-@login_required(login_url='home')
-def org_create_member_complete_view(request, org_slug, username):
-    """View to allow the new Member to complete account creation at an Organization."""
-    organization = get_object_or_404(
-        Organization.objects.filter(users=request.user),
-        slug=org_slug
-    )
-    user = get_object_or_404(
-        get_user_model().objects.filter(member__organizations=organization),
-        username=username
-    )
-    member = user.member
+class OrgCreateMemberCompleteView(LoginRequiredMixin, TemplateView):
+    template_name = "org/member_complete.html"
+    login_url = 'home'
 
-    return render(
-        request,
-        'org/member_complete.html',
-        context={'organization': organization, 'member': member}
-    )
+    def get_organization(self, request, org_slug):
+        """Get the Organization object that the org_slug refers to, or return a 404 response."""
+        return get_object_or_404(
+            Organization.objects.filter(users=request.user),
+            slug=org_slug
+        )
+
+    def get_member(self, organization, username):
+        """Get the Member object that the username refers to, or return a 404 response."""
+        user = get_object_or_404(
+            get_user_model().objects.filter(member__organizations=organization),
+            username=username
+        )
+        return user.member
+
+    def get_context_data(self, **kwargs):
+        """Add the Organization and Member to the context."""
+        organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
+        kwargs.setdefault('organization', organization)
+        member = self.get_member(organization, self.kwargs.get('username'))
+        kwargs.setdefault('member', member)
+
+        return super().get_context_data(**kwargs)

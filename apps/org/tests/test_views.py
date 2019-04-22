@@ -1203,7 +1203,7 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('Authenticated POST'):
             self.client.force_login(self.user)
             response = self.client.post(self.url, data={})
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, 405)
 
         with self.subTest('Not authenticated GET'):
             self.client.logout()
@@ -1289,7 +1289,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('Authenticated POST'):
             self.client.force_login(self.user)
             response = self.client.post(self.url, data={})
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, 405)
 
         with self.subTest('Not authenticated GET'):
             self.client.logout()
