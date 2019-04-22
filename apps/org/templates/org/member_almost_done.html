@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+You're almost done!
+Click on the button below to open a window for {{ member }} to complete setup on your device.
+
+<a href="{% url 'org:org_create_member_complete' organization.slug member.user.username %}" target="_blank">New window</a>
+
+{% endblock content %}

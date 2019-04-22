@@ -374,3 +374,43 @@ def org_create_member_additional_info_view(request, org_slug, username):
     context = {'organization': organization, 'member': member}
 
     return render(request, 'org/member_additional_info.html', context=context)
+
+
+@login_required(login_url='home')
+def org_create_member_almost_done_view(request, org_slug, username):
+    """View to open a page for the new Member to complete account creation at an Organization."""
+    organization = get_object_or_404(
+        Organization.objects.filter(users=request.user),
+        slug=org_slug
+    )
+    user = get_object_or_404(
+        get_user_model().objects.filter(member__organizations=organization),
+        username=username
+    )
+    member = user.member
+
+    return render(
+        request,
+        'org/member_almost_done.html',
+        context={'organization': organization, 'member': member}
+    )
+
+
+@login_required(login_url='home')
+def org_create_member_complete_view(request, org_slug, username):
+    """View to allow the new Member to complete account creation at an Organization."""
+    organization = get_object_or_404(
+        Organization.objects.filter(users=request.user),
+        slug=org_slug
+    )
+    user = get_object_or_404(
+        get_user_model().objects.filter(member__organizations=organization),
+        username=username
+    )
+    member = user.member
+
+    return render(
+        request,
+        'org/member_complete.html',
+        context={'organization': organization, 'member': member}
+    )
