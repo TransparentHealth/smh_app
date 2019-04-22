@@ -14,7 +14,8 @@ from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateVi
 from social_django.models import UserSocialAuth
 
 from .forms import (
-    CreateNewMemberAtOrgForm, UpdateNewMemberAtOrgBasicInfoForm, VerifyMemberIdentityForm
+    CreateNewMemberAtOrgForm, UpdateNewMemberAtOrgBasicInfoForm,
+    UpdateNewMemberAtOrgAdditionalInfoForm, VerifyMemberIdentityForm
 )
 from .models import Organization
 
@@ -416,23 +417,62 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, FormView):
             return self.render_to_response(self.get_context_data())
 
 
-@login_required(login_url='home')
-def org_create_member_additional_info_view(request, org_slug, username):
+class OrgCreateMemberAdditionalInfoInfoView(LoginRequiredMixin, FormView):
     """View to fill in additional info about a Member that was just created at an Organization."""
-    organization = get_object_or_404(
-        Organization.objects.filter(users=request.user),
-        slug=org_slug
-    )
-    user = get_object_or_404(
-        get_user_model().objects.filter(member__organizations=organization),
-        username=username
-    )
-    member = user.member
+    template_name = 'org/member_additional_info.html'
+    form_class = UpdateNewMemberAtOrgAdditionalInfoForm
+    login_url = 'home'
+    # If there are any non-form errors, they can be stored in self.errors, and
+    # will be displayed in the template.
+    errors = {}
 
-    # The context to be used in the template
-    context = {'organization': organization, 'member': member}
+    def get_success_url(self, org_slug, username):
+        """A successful verification redirects to the next step in the process."""
+        return reverse(
+            'org:org_create_member_almost_done',
+            kwargs={'org_slug': org_slug, 'username': username}
+        )
 
-    return render(request, 'org/member_additional_info.html', context=context)
+    def get_organization(self, request, org_slug):
+        """Get the Organization object that the org_slug refers to, or return a 404 response."""
+        return get_object_or_404(
+            Organization.objects.filter(users=request.user),
+            slug=org_slug
+        )
+
+    def get_member(self, organization, username):
+        """Get the Member object that the username refers to, or return a 404 response."""
+        user = get_object_or_404(
+            get_user_model().objects.filter(member__organizations=organization),
+            username=username
+        )
+        return user.member
+
+    def get_context_data(self, **kwargs):
+        """Get the context data for the template."""
+        kwargs.setdefault('organization', self.organization)
+        kwargs.setdefault('member', self.member)
+        kwargs.setdefault('errors', self.errors)
+        return super().get_context_data(**kwargs)
+
+    def get(self, request, *args, **kwargs):
+        """Set the self.organization and self.member."""
+        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        """Set the self.organization and self.member."""
+        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        """If form is valid, then redirect user to the next step in the Member-creation process."""
+        # Redirect the user to the next step in the Member-creation process
+        return HttpResponseRedirect(
+            self.get_success_url(self.organization.slug, self.member.user.username)
+        )
 
 
 @login_required(login_url='home')

@@ -54,3 +54,13 @@ class VerifyMemberIdentityForm(Form):
     classification = ChoiceField(choices=IDENTITY_VERIFICATION_CLASSIFICATIONS, required=True)
     description = CharField(required=True)
     expiration_date = DateField(required=True)
+
+
+class UpdateNewMemberAtOrgAdditionalInfoForm(Form):
+    """
+    A form for updating user information for a new Member at an Organization.
+
+    This form is used in the fourth step of the process for an Organization user
+    to help a person become a Member at that Organization.
+    """
+    pass

@@ -1092,6 +1092,21 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
                 else:
                     self.assertEqual(response.status_code, 404)
 
+    def test_post(self):
+        """POSTing to org_create_member_additional_info redirects the user to the next step."""
+        with self.subTest('no data'):
+            data = {}
+            response = self.client.post(self.url, data=data)
+
+            expected_url_next_page = reverse(
+                'org:org_create_member_almost_done',
+                kwargs={
+                    'org_slug': self.organization.slug,
+                    'username': self.member.user.username
+                }
+            )
+            self.assertRedirects(response, expected_url_next_page)
+
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_additional_info view."""
         with self.subTest('Authenticated GET'):
@@ -1102,7 +1117,7 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('Authenticated POST'):
             self.client.force_login(self.user)
             response = self.client.post(self.url, data={})
-            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.status_code, 302)
 
         with self.subTest('Not authenticated GET'):
             self.client.logout()

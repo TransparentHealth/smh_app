@@ -4,10 +4,13 @@
 {% block content %}
 Fill in the following additional info for new member {{ member }} at {{ organization }}.
 
-{{ errors }}
+{% if errors %}
+  {{ errors }}
+{% endif %}
 
 <form method="POST">
   {% csrf_token %}
+  {{ form }}
 <button type="submit">Submit</button>
 
 {% endblock content %}
