@@ -16,7 +16,9 @@ from .forms import (
     CreateNewMemberAtOrgForm, UpdateNewMemberAtOrgBasicInfoForm,
     UpdateNewMemberAtOrgAdditionalInfoForm, VerifyMemberIdentityForm
 )
-from .models import Organization
+from .models import (
+    Organization, REQUEST_REQUESTED, RESOURCE_CHOICES, ResourceRequest
+)
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -134,7 +136,8 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
          1.) Verify that the request.user has a UserSocialAuth object for VMI
          2.) make a request to VMI to create the new user in VMI
          3.) create a new Member with the response from VMI
-         4.) redirect the user to the next step in the Member-creation process
+         4.) create a ResourceRequest for the new Member's data from the relavant Organization
+         5.) redirect the user to the next step in the Member-creation process
         """
         # 1.) Verify that the request.user has a UserSocialAuth object for VMI
         request_user_social_auth = self.request.user.social_auth.filter(
@@ -195,7 +198,16 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
                 uid=response_data_dict['sub']
             )
 
-            # 4.) Redirect the user to the next step in the Member-creation process
+            # 4.) create a ResourceRequest for the new Member's data from the relavant Organization
+            ResourceRequest.objects.create(
+                organization=self.organization,
+                member=new_user,
+                user=self.request.user,
+                resource_class_path=RESOURCE_CHOICES[0][0],
+                status=REQUEST_REQUESTED
+            )
+
+            # 5.) Redirect the user to the next step in the Member-creation process
             return HttpResponseRedirect(self.get_success_url(organization.slug, new_user.username))
         else:
             # The request to create a user in VMI did not succeed. Show the errors
