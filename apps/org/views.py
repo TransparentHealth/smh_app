@@ -71,7 +71,44 @@ class DeleteOrganizationView(LoginRequiredMixin, DeleteView):
         return qs.filter(users=self.request.user)
 
 
-class OrgCreateMemberView(LoginRequiredMixin, FormView):
+class OrgCreateMemberMixin:
+    """A mixin for the create member views."""
+    def get_organization(self, request, org_slug):
+        """Get the Organization object that the org_slug refers to, or return a 404 response."""
+        return get_object_or_404(
+            Organization.objects.filter(users=request.user),
+            slug=org_slug
+        )
+
+    def get_member(self, organization, username):
+        """Get the Member object that the username refers to, or return a 404 response."""
+        user = get_object_or_404(
+            get_user_model().objects.filter(member__organizations=organization),
+            username=username
+        )
+        return user.member
+
+    def get_context_data(self, **kwargs):
+        """Get the context data for the template."""
+        kwargs.setdefault('organization', self.organization)
+        kwargs.setdefault('member', self.member)
+        kwargs.setdefault('errors', self.errors)
+        return super().get_context_data(**kwargs)
+
+    def get(self, request, *args, **kwargs):
+        """Set the self.organization and self.member."""
+        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        """Set the self.organization and self.member."""
+        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        return super().post(request, *args, **kwargs)
+
+
+class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
     """A view for allowing a User at an Organization to create a Member for that Organization."""
     template_name = 'org/org_create_member.html'
     form_class = CreateNewMemberAtOrgForm
@@ -87,21 +124,9 @@ class OrgCreateMemberView(LoginRequiredMixin, FormView):
             kwargs={'org_slug': org_slug, 'username': username}
         )
 
-    def get_organization(self, request, org_slug):
-        """Get the Organization object that the org_slug refers to, or return a 404 response."""
-        return get_object_or_404(
-            Organization.objects.filter(users=request.user),
-            slug=org_slug
-        )
-
-    def get_context_data(self, **kwargs):
-        """Get the context data for the template."""
-        kwargs.setdefault(
-            'organization',
-            self.get_organization(self.request, self.kwargs.get('org_slug'))
-        )
-        kwargs.setdefault('errors', self.errors)
-        return super().get_context_data(**kwargs)
+    def get_member(self, organization, username):
+        """Override the get_member() method, since the Member does not yet exist."""
+        return None
 
     def form_valid(self, form):
         """
@@ -179,7 +204,7 @@ class OrgCreateMemberView(LoginRequiredMixin, FormView):
             return self.render_to_response(self.get_context_data())
 
 
-class OrgCreateMemberBasicInfoView(LoginRequiredMixin, FormView):
+class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
     """View to fill in basic info about a Member that was just created at an Organization."""
     template_name = 'org/member_basic_info.html'
     form_class = UpdateNewMemberAtOrgBasicInfoForm
@@ -194,40 +219,6 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, FormView):
             'org:org_create_member_verify_identity',
             kwargs={'org_slug': org_slug, 'username': username}
         )
-
-    def get_organization(self, request, org_slug):
-        """Get the Organization object that the org_slug refers to, or return a 404 response."""
-        return get_object_or_404(
-            Organization.objects.filter(users=request.user),
-            slug=org_slug
-        )
-
-    def get_member(self, organization, username):
-        """Get the Member object that the username refers to, or return a 404 response."""
-        user = get_object_or_404(
-            get_user_model().objects.filter(member__organizations=organization),
-            username=username
-        )
-        return user.member
-
-    def get_context_data(self, **kwargs):
-        """Get the context data for the template."""
-        kwargs.setdefault('organization', self.organization)
-        kwargs.setdefault('member', self.member)
-        kwargs.setdefault('errors', self.errors)
-        return super().get_context_data(**kwargs)
-
-    def get(self, request, *args, **kwargs):
-        """Set the self.organization and self.member."""
-        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        """Set the self.organization and self.member."""
-        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
-        return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         """
