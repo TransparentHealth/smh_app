@@ -284,7 +284,7 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
             return self.render_to_response(self.get_context_data())
 
 
-class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, FormView):
+class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
     """View to verify identity for a Member that was just created at an Organization."""
     template_name = 'org/member_verify_identity.html'
     form_class = VerifyMemberIdentityForm
@@ -299,40 +299,6 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, FormView):
             'org:org_create_member_additional_info',
             kwargs={'org_slug': org_slug, 'username': username}
         )
-
-    def get_organization(self, request, org_slug):
-        """Get the Organization object that the org_slug refers to, or return a 404 response."""
-        return get_object_or_404(
-            Organization.objects.filter(users=request.user),
-            slug=org_slug
-        )
-
-    def get_member(self, organization, username):
-        """Get the Member object that the username refers to, or return a 404 response."""
-        user = get_object_or_404(
-            get_user_model().objects.filter(member__organizations=organization),
-            username=username
-        )
-        return user.member
-
-    def get_context_data(self, **kwargs):
-        """Get the context data for the template."""
-        kwargs.setdefault('organization', self.organization)
-        kwargs.setdefault('member', self.member)
-        kwargs.setdefault('errors', self.errors)
-        return super().get_context_data(**kwargs)
-
-    def get(self, request, *args, **kwargs):
-        """Set the self.organization and self.member."""
-        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        """Set the self.organization and self.member."""
-        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
-        return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         """
