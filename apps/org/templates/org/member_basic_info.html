@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+Fill in the following data for new member {{ member }} at {{ organization }}.
+
+{% if errors %}
+  {{ errors }}
+{% endif %}
+
+<form method="POST">
+  {% csrf_token %}
+  {{ form }}
+<button type="submit">Submit</button>
+
+{% endblock content %}
