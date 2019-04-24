@@ -76,3 +76,4 @@ class UpdateNewMemberAtOrgMemberForm(Form):
     # Note for BooleanFields: having required=True means the user must check the
     # checkbox in the template.
     accept_terms_and_conditions = BooleanField(required=True)
+    give_org_access_to_data = BooleanField(required=True)

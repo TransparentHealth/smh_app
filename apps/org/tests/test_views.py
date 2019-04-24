@@ -12,8 +12,10 @@ from apps.common.tests.base import SMHAppTestMixin
 from apps.common.tests.factories import UserFactory
 from apps.member.models import Member
 from apps.org.tests.factories import UserSocialAuthFactory
-from .factories import OrganizationFactory
-from ..models import Organization, ResourceRequest
+from .factories import OrganizationFactory, ResourceRequestFactory
+from ..models import (
+    Organization, ResourceRequest, ResourceGrant, REQUEST_APPROVED, REQUEST_REQUESTED
+)
 
 
 class OrganizationDashboardTestCase(SMHAppTestMixin, TestCase):
@@ -1296,6 +1298,17 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
 
     def test_post(self):
         """POSTing to org_create_member_complete view redirects the user to the next step."""
+        # The ResourceRequest made from the self.user at the self.organization to
+        # access the new Member's data.
+        resource_request = ResourceRequestFactory(
+            user=self.user,
+            organization=self.organization,
+            member=self.member.user,
+        )
+        # The current number of ResourceRequests and ResourceGrants
+        expected_num_resource_requests = ResourceRequest.objects.count()
+        expected_num_resource_grants = ResourceGrant.objects.count()
+
         with self.subTest('no data'):
             data = {}
             response = self.client.post(self.url, data=data)
@@ -1303,31 +1316,52 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
                 response.context['form'].errors,
-                {'accept_terms_and_conditions': ['This field is required.']}
+                {
+                    'accept_terms_and_conditions': ['This field is required.'],
+                    'give_org_access_to_data': ['This field is required.'],
+                }
             )
+            # No ResourceRequest or ResourceGrant objects have been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            # The ResourceRequest still has a 'Requested' status
+            self.assertEqual(resource_request.status, REQUEST_REQUESTED)
 
         with self.subTest('incomplete data'):
-            data = {}
+            data = {'accept_terms_and_conditions': True}
             response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
                 response.context['form'].errors,
-                {'accept_terms_and_conditions': ['This field is required.']}
+                {'give_org_access_to_data': ['This field is required.']}
             )
+            # No ResourceRequest or ResourceGrant objects have been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            # The ResourceRequest still has a 'Requested' status
+            self.assertEqual(resource_request.status, REQUEST_REQUESTED)
 
         with self.subTest('invalid data'):
-            data = {'accept_terms_and_conditions': False}
+            data = {'accept_terms_and_conditions': False, 'give_org_access_to_data': False}
             response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
                 response.context['form'].errors,
-                {'accept_terms_and_conditions': ['This field is required.']}
+                {
+                    'accept_terms_and_conditions': ['This field is required.'],
+                    'give_org_access_to_data': ['This field is required.'],
+                }
             )
+            # No ResourceRequest or ResourceGrant objects have been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            # The ResourceRequest still has a 'Requested' status
+            self.assertEqual(resource_request.status, REQUEST_REQUESTED)
 
         with self.subTest('valid data'):
-            data = {'accept_terms_and_conditions': True}
+            data = {'accept_terms_and_conditions': True, 'give_org_access_to_data': True}
             response = self.client.post(self.url, data=data)
 
             expected_url_next_page = reverse(
@@ -1338,6 +1372,22 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 }
             )
             self.assertRedirects(response, expected_url_next_page)
+            # No ResourceRequest has been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            # A ResourceGrant object has been created
+            expected_num_resource_grants += 1
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            self.assertEqual(
+                ResourceGrant.objects.filter(
+                    organization=self.organization,
+                    member=self.member.user,
+                    resource_request=resource_request,
+                ).count(),
+                1
+            )
+            # The ResourceRequest is now approved
+            resource_request.refresh_from_db()
+            self.assertEqual(resource_request.status, REQUEST_APPROVED)
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_complete view."""

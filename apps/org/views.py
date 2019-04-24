@@ -18,7 +18,8 @@ from .forms import (
     VerifyMemberIdentityForm
 )
 from .models import (
-    Organization, REQUEST_REQUESTED, RESOURCE_CHOICES, ResourceRequest
+    Organization, REQUEST_APPROVED, REQUEST_REQUESTED, RESOURCE_CHOICES,
+    ResourceGrant, ResourceRequest
 )
 
 
@@ -456,7 +457,32 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
         )
 
     def form_valid(self, form):
-        """If form is valid, then redirect the user to the next step."""
+        """
+        If form is valid, then create a ResourceGrant, and redirect user to the next step.
+
+        If the form is valid, that means that the member is approving the Organization's
+        ResourceRequest. Therefore, we
+         1.) find and update the relevant ResourceRequest to be approved
+         2.) create a ResourceGrant object
+         3.) redirect the user to the next step in the Member-creation process
+        """
+        # 1.) Find and update the ResourceRequest for this Member to be approved
+        resource_request = ResourceRequest.objects.filter(
+            member=self.member.user,
+            organization=self.organization,
+        ).first()
+        resource_request.status = REQUEST_APPROVED
+        resource_request.save()
+
+        # 2.) Create a ResourceGrant object for the ResourceRequest and the Member
+        ResourceGrant.objects.create(
+            organization=resource_request.organization,
+            member=resource_request.member,
+            resource_class_path=resource_request.resource_class_path,
+            resource_request=resource_request
+        )
+
+        # 3.) Redirect the user to the next step in the Member-creation process
         return HttpResponseRedirect(
             self.get_success_url(self.organization.slug, self.member.user.username)
         )
