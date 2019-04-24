@@ -458,13 +458,14 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
 
     def form_valid(self, form):
         """
-        If form is valid, then create a ResourceGrant, and redirect user to the next step.
+        If form is valid, then create a ResourceGrant, set password, redirect user to the next step.
 
         If the form is valid, that means that the member is approving the Organization's
-        ResourceRequest. Therefore, we
+        ResourceRequest, and is also setting their password. Therefore, we
          1.) find and update the relevant ResourceRequest to be approved
          2.) create a ResourceGrant object
-         3.) redirect the user to the next step in the Member-creation process
+         3.) set the member's password
+         4.) redirect the user to the next step in the Member-creation process
         """
         # 1.) Find and update the ResourceRequest for this Member to be approved
         resource_request = ResourceRequest.objects.filter(
@@ -482,7 +483,11 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
             resource_request=resource_request
         )
 
-        # 3.) Redirect the user to the next step in the Member-creation process
+        # 3.) Set the member's password
+        self.member.user.set_password(form.data['password1'])
+        self.member.user.save()
+
+        # 4.) Redirect the user to the next step in the Member-creation process
         return HttpResponseRedirect(
             self.get_success_url(self.organization.slug, self.member.user.username)
         )

@@ -1319,6 +1319,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 {
                     'accept_terms_and_conditions': ['This field is required.'],
                     'give_org_access_to_data': ['This field is required.'],
+                    'password1': ['This field is required.'],
+                    'password2': ['This field is required.'],
                 }
             )
             # No ResourceRequest or ResourceGrant objects have been created
@@ -1328,7 +1330,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
 
         with self.subTest('incomplete data'):
-            data = {'accept_terms_and_conditions': True}
+            data = {
+                'accept_terms_and_conditions': True,
+                'password1': 'password1',
+                'password2': 'password1'
+            }
             response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
@@ -1342,8 +1348,13 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
 
-        with self.subTest('invalid data'):
-            data = {'accept_terms_and_conditions': False, 'give_org_access_to_data': False}
+        with self.subTest('invalid data for BooleanFields'):
+            data = {
+                'accept_terms_and_conditions': False,
+                'give_org_access_to_data': False,
+                'password1': 'password1',
+                'password2': 'password1'
+            }
             response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
@@ -1360,8 +1371,33 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
 
+        with self.subTest('invalid data for passwords'):
+            data = {
+                'accept_terms_and_conditions': True,
+                'give_org_access_to_data': True,
+                'password1': 'password1',
+                'password2': 'password2',
+            }
+            response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['form'].errors,
+                {'password2': ['Passwords must match.']}
+            )
+            # No ResourceRequest or ResourceGrant objects have been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            # The ResourceRequest still has a 'Requested' status
+            self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+
         with self.subTest('valid data'):
-            data = {'accept_terms_and_conditions': True, 'give_org_access_to_data': True}
+            data = {
+                'accept_terms_and_conditions': True,
+                'give_org_access_to_data': True,
+                'password1': 'password1',
+                'password2': 'password1',
+            }
             response = self.client.post(self.url, data=data)
 
             expected_url_next_page = reverse(
@@ -1388,6 +1424,9 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # The ResourceRequest is now approved
             resource_request.refresh_from_db()
             self.assertEqual(resource_request.status, REQUEST_APPROVED)
+            # The member's password has been set
+            self.member.user.refresh_from_db()
+            self.assertTrue(self.member.user.check_password(data['password1']))
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_complete view."""
