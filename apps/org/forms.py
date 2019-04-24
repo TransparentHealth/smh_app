@@ -1,4 +1,4 @@
-from django.forms import CharField, ChoiceField, DateField, EmailField, Form
+from django.forms import BooleanField, CharField, ChoiceField, DateField, EmailField, Form
 
 
 # Choices for a user's gender field in VMI
@@ -64,3 +64,15 @@ class UpdateNewMemberAtOrgAdditionalInfoForm(Form):
     to help a person become a Member at that Organization.
     """
     pass
+
+
+class UpdateNewMemberAtOrgMemberForm(Form):
+    """
+    A form for a Member to set their password, and accept terms and requests from an Organization.
+
+    This form is used in the last step of the process for an Organization user
+    to help a person become a Member at that Organization.
+    """
+    # Note for BooleanFields: having required=True means the user must check the
+    # checkbox in the template.
+    accept_terms_and_conditions = BooleanField(required=True)

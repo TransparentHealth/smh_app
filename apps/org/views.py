@@ -14,7 +14,8 @@ from social_django.models import UserSocialAuth
 
 from .forms import (
     CreateNewMemberAtOrgForm, UpdateNewMemberAtOrgBasicInfoForm,
-    UpdateNewMemberAtOrgAdditionalInfoForm, VerifyMemberIdentityForm
+    UpdateNewMemberAtOrgAdditionalInfoForm, UpdateNewMemberAtOrgMemberForm,
+    VerifyMemberIdentityForm
 )
 from .models import (
     Organization, REQUEST_REQUESTED, RESOURCE_CHOICES, ResourceRequest
@@ -438,30 +439,34 @@ class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class OrgCreateMemberCompleteView(LoginRequiredMixin, TemplateView):
+class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
+    """View for the new Member to complete their account creation."""
     template_name = "org/member_complete.html"
+    form_class = UpdateNewMemberAtOrgMemberForm
     login_url = 'home'
+    # If there are any non-form errors, they can be stored in self.errors, and
+    # will be displayed in the template.
+    errors = {}
 
-    def get_organization(self, request, org_slug):
-        """Get the Organization object that the org_slug refers to, or return a 404 response."""
-        return get_object_or_404(
-            Organization.objects.filter(users=request.user),
-            slug=org_slug
+    def get_success_url(self, org_slug, username):
+        """A successful verification redirects to the next step in the process."""
+        return reverse(
+            'org:org_create_member_success',
+            kwargs={'org_slug': org_slug, 'username': username}
         )
 
-    def get_member(self, organization, username):
-        """Get the Member object that the username refers to, or return a 404 response."""
-        user = get_object_or_404(
-            get_user_model().objects.filter(member__organizations=organization),
-            username=username
+    def form_valid(self, form):
+        """If form is valid, then redirect the user to the next step."""
+        return HttpResponseRedirect(
+            self.get_success_url(self.organization.slug, self.member.user.username)
         )
-        return user.member
 
-    def get_context_data(self, **kwargs):
-        """Add the Organization and Member to the context."""
-        organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
-        kwargs.setdefault('organization', organization)
-        member = self.get_member(organization, self.kwargs.get('username'))
-        kwargs.setdefault('member', member)
 
-        return super().get_context_data(**kwargs)
+class OrgCreateMemberSuccessView(LoginRequiredMixin, OrgCreateMemberMixin, TemplateView):
+    template_name = "org/member_success.html"
+    login_url = 'home'
+    errors = {}
+
+    def post(self, request, *args, **kwargs):
+        from django.http import HttpResponseNotAllowed
+        return HttpResponseNotAllowed('GET')
