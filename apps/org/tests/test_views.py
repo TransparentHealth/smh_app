@@ -13,7 +13,7 @@ from apps.common.tests.factories import UserFactory
 from apps.member.models import Member
 from apps.org.tests.factories import UserSocialAuthFactory
 from .factories import OrganizationFactory
-from ..models import Organization
+from ..models import Organization, ResourceRequest
 
 
 class OrganizationDashboardTestCase(SMHAppTestMixin, TestCase):
@@ -298,6 +298,7 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
         """POSTing to the org_create_member view can create a new Member."""
         expected_num_members = Member.objects.count()
         expected_num_user_social_auths = UserSocialAuth.objects.count()
+        expected_num_resource_requests = ResourceRequest.objects.count()
 
         with self.subTest('no data'):
             response = self.client.post(self.url, data={})
@@ -311,9 +312,10 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
                     'username': ['This field is required.']
                 }
             )
-            # No Member was created, and no UserSocialAuth was created
+            # No Member was created, and no UserSocialAuth or ResourceRequest was created
             self.assertEqual(Member.objects.count(), expected_num_members)
             self.assertEqual(UserSocialAuth.objects.count(), expected_num_user_social_auths)
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
 
         with self.subTest('incomplete data'):
             data = {'first_name': 'New', 'last_name': 'Member'}
@@ -324,9 +326,10 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
                 response.context['form'].errors,
                 {'username': ['This field is required.']}
             )
-            # No Member was created, and no UserSocialAuth was created
+            # No Member was created, and no UserSocialAuth or ResourceRequest was created
             self.assertEqual(Member.objects.count(), expected_num_members)
             self.assertEqual(UserSocialAuth.objects.count(), expected_num_user_social_auths)
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
 
         with self.subTest('valid data, no request.user UserSocialAuth object'):
             # If the request.user does not have a UserSocialAuth object for VMI,
@@ -341,9 +344,10 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
                 {'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
             )
 
-            # No Member was created, and no UserSocialAuth was created
+            # No Member was created, and no UserSocialAuth or ResourceRequest was created
             self.assertEqual(Member.objects.count(), expected_num_members)
             self.assertEqual(UserSocialAuth.objects.count(), expected_num_user_social_auths)
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
 
         with self.subTest('valid data, and request.user has a UserSocialAuth object'):
             # Create a UserSocialAuth object for the self.user for VMI
@@ -388,6 +392,17 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             # The new Member is associated with the relevant Organization
             new_member = Member.objects.get(user__username=data['username'])
             self.assertTrue(self.organization in new_member.organizations.all())
+            # A new ResourceRequest was created from the Organization to the new Member
+            expected_num_resource_requests += 1
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            self.assertEqual(
+                ResourceRequest.objects.filter(
+                    organization=self.organization,
+                    member=new_member.user,
+                    user=self.user
+                ).count(),
+                1
+            )
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member view."""
