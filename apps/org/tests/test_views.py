@@ -12,8 +12,10 @@ from apps.common.tests.base import SMHAppTestMixin
 from apps.common.tests.factories import UserFactory
 from apps.member.models import Member
 from apps.org.tests.factories import UserSocialAuthFactory
-from .factories import OrganizationFactory
-from ..models import Organization, ResourceRequest
+from .factories import OrganizationFactory, ResourceRequestFactory
+from ..models import (
+    Organization, ResourceRequest, ResourceGrant, REQUEST_APPROVED, REQUEST_REQUESTED
+)
 
 
 class OrganizationDashboardTestCase(SMHAppTestMixin, TestCase):
@@ -1259,6 +1261,224 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
 
     def test_get(self):
         """GETting org_create_member_complete view shows a page."""
+        subtests = (
+            # user_at_org:         |  member_at_org:    | expected_success:
+            # Is the request.user  | Is the Member      |  Should the
+            # associated with the  | associated with    |  request
+            # Organization?        | the Organization?  |  succeed?
+            (True,                     True,                True),
+            (False,                    True,                False),
+            (True,                     False,               False),
+            (False,                    False,               False),
+        )
+        for (user_at_org, member_at_org, expected_success) in subtests:
+            organization = OrganizationFactory()
+            if user_at_org:
+                organization.users.add(self.user)
+            member = UserFactory().member
+            if member_at_org:
+                organization.members.add(member)
+            url = reverse(
+                self.url_name,
+                kwargs={'org_slug': organization.slug, 'username': member.user.username}
+            )
+            with self.subTest(
+                user_at_org=user_at_org,
+                member_at_org=member_at_org,
+                expected_success=expected_success
+            ):
+                response = self.client.get(url)
+
+                if expected_success:
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response.context['organization'], organization)
+                    self.assertEqual(response.context['member'], member)
+                else:
+                    self.assertEqual(response.status_code, 404)
+
+    def test_post(self):
+        """POSTing to org_create_member_complete view redirects the user to the next step."""
+        # The ResourceRequest made from the self.user at the self.organization to
+        # access the new Member's data.
+        resource_request = ResourceRequestFactory(
+            user=self.user,
+            organization=self.organization,
+            member=self.member.user,
+        )
+        # The current number of ResourceRequests and ResourceGrants
+        expected_num_resource_requests = ResourceRequest.objects.count()
+        expected_num_resource_grants = ResourceGrant.objects.count()
+
+        with self.subTest('no data'):
+            data = {}
+            response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['form'].errors,
+                {
+                    'accept_terms_and_conditions': ['This field is required.'],
+                    'give_org_access_to_data': ['This field is required.'],
+                    'password1': ['This field is required.'],
+                    'password2': ['This field is required.'],
+                }
+            )
+            # No ResourceRequest or ResourceGrant objects have been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            # The ResourceRequest still has a 'Requested' status
+            self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+
+        with self.subTest('incomplete data'):
+            data = {
+                'accept_terms_and_conditions': True,
+                'password1': 'password1',
+                'password2': 'password1'
+            }
+            response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['form'].errors,
+                {'give_org_access_to_data': ['This field is required.']}
+            )
+            # No ResourceRequest or ResourceGrant objects have been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            # The ResourceRequest still has a 'Requested' status
+            self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+
+        with self.subTest('invalid data for BooleanFields'):
+            data = {
+                'accept_terms_and_conditions': False,
+                'give_org_access_to_data': False,
+                'password1': 'password1',
+                'password2': 'password1'
+            }
+            response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['form'].errors,
+                {
+                    'accept_terms_and_conditions': ['This field is required.'],
+                    'give_org_access_to_data': ['This field is required.'],
+                }
+            )
+            # No ResourceRequest or ResourceGrant objects have been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            # The ResourceRequest still has a 'Requested' status
+            self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+
+        with self.subTest('invalid data for passwords'):
+            data = {
+                'accept_terms_and_conditions': True,
+                'give_org_access_to_data': True,
+                'password1': 'password1',
+                'password2': 'password2',
+            }
+            response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['form'].errors,
+                {'password2': ['Passwords must match.']}
+            )
+            # No ResourceRequest or ResourceGrant objects have been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            # The ResourceRequest still has a 'Requested' status
+            self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+
+        with self.subTest('valid data'):
+            data = {
+                'accept_terms_and_conditions': True,
+                'give_org_access_to_data': True,
+                'password1': 'password1',
+                'password2': 'password1',
+            }
+            response = self.client.post(self.url, data=data)
+
+            expected_url_next_page = reverse(
+                'org:org_create_member_success',
+                kwargs={
+                    'org_slug': self.organization.slug,
+                    'username': self.member.user.username
+                }
+            )
+            self.assertRedirects(response, expected_url_next_page)
+            # No ResourceRequest has been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            # A ResourceGrant object has been created
+            expected_num_resource_grants += 1
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            self.assertEqual(
+                ResourceGrant.objects.filter(
+                    organization=self.organization,
+                    member=self.member.user,
+                    resource_request=resource_request,
+                ).count(),
+                1
+            )
+            # The ResourceRequest is now approved
+            resource_request.refresh_from_db()
+            self.assertEqual(resource_request.status, REQUEST_APPROVED)
+            # The member's password has been set
+            self.member.user.refresh_from_db()
+            self.assertTrue(self.member.user.check_password(data['password1']))
+
+    def test_authenticated(self):
+        """The user must be authenticated to use the org_create_member_complete view."""
+        with self.subTest('Authenticated GET'):
+            self.client.force_login(self.user)
+            response = self.client.get(self.url)
+            self.assertEqual(response.status_code, 200)
+
+        with self.subTest('Authenticated POST'):
+            self.client.force_login(self.user)
+            response = self.client.post(self.url, data={})
+            self.assertEqual(response.status_code, 200)
+
+        with self.subTest('Not authenticated GET'):
+            self.client.logout()
+
+            response = self.client.get(self.url)
+
+            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
+            self.assertRedirects(response, expected_redirect)
+
+        with self.subTest('Not authenticated POST'):
+            self.client.logout()
+
+            response = self.client.post(self.url, data={})
+
+            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
+            self.assertRedirects(response, expected_redirect)
+
+
+class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
+    url_name = 'org:org_create_member_success'
+
+    def setUp(self):
+        super().setUp()
+        # An Organization associated with the self.user
+        self.organization = OrganizationFactory()
+        self.organization.users.add(self.user)
+        # A Member at the Organization
+        self.member = UserFactory().member
+        self.organization.members.add(self.member)
+        # The URL for completing new Member creation at the self.organization
+        self.url = reverse(
+            self.url_name,
+            kwargs={
+                'org_slug': self.organization.slug,
+                'username': self.member.user.username
+            }
+        )
+
+    def test_get(self):
+        """GETting org_create_member_success view shows a page."""
         subtests = (
             # user_at_org:         |  member_at_org:    | expected_success:
             # Is the request.user  | Is the Member      |  Should the

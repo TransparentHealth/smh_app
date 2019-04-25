@@ -2,6 +2,19 @@
 {% load static %}
 
 {% block content %}
-{{ member }}, complete your account creation at {{ organization }} here
+{{ member }}, complete your account creation at {{ organization }} here:
+
+{% if errors %}
+  {{ errors }}
+{% endif %}
+
+<form method="POST">
+  {% csrf_token %}
+  {{ form }}
+  <button type="submit">Submit</button>
+</form>
+
+<h3>Terms and conditions</h3>
+<p>You use this website at your own risk.</p>
 
 {% endblock content %}
