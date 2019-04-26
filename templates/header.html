@@ -111,7 +111,11 @@
             </div>
             <div class="account-menu dropdown nav-item">
                 <a aria-haspopup="true" aria-expanded="false" href="#" class="dropdown-toggle nav-link" role="button">
-                    <img src="{% static '/images/icons/avatar_default.png' %}" alt="Account menu icon">
+                    {% if request.user.userprofile.picture_url %}
+                      <img src="{{ request.user.userprofile.picture_url }}" alt="Account menu icon">
+                    {% else %}
+                      <img src="{% static '/images/icons/avatar_default.png' %}" alt="Account menu icon">
+                    {% endif %}
                 </a><div class="dropdown-menu" aria-labelledby="">
                     <span class="navbar-text">
                         <a href="#/">Dashboard</a>
