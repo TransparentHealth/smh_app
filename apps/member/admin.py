@@ -7,4 +7,4 @@ from .models import Member
 class MemberAdmin(admin.ModelAdmin):
     # prepopulated_fields = {'slug': ('name',)}
     search_fields = ('user',)
-    filter_horizontal = ['organizations']
+    # filter_horizontal = ['organizations']

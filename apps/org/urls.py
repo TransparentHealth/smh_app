@@ -5,6 +5,8 @@ from .views import (
     OrgCreateMemberAdditionalInfoInfoView, OrgCreateMemberAlmostDoneView,
     OrgCreateMemberBasicInfoView, OrgCreateMemberCompleteView, OrgCreateMemberSuccessView,
     OrgCreateMemberVerifyIdentityView, UpdateOrganizationView,
+    DashboardView, CreateOrganizationView, DeleteOrganizationView, UpdateOrganizationView,
+    LocalUserAPI, SearchView
 )
 
 
@@ -24,7 +26,6 @@ urlpatterns = [
     url(r'^organization/(?P<pk>[0-9]+)/delete/$',
         DeleteOrganizationView.as_view(),
         name='organization-delete'),
-
     # URLs for the process of having a User at an Organization create a new Member
     url(r'(?P<org_slug>[-\w]+)/create-member/create',
         OrgCreateMemberView.as_view(),
@@ -47,4 +48,10 @@ urlpatterns = [
     url(r'(?P<org_slug>[-\w]+)/create-member/(?P<username>[-\w]+)/success',
         OrgCreateMemberSuccessView.as_view(),
         name='org_create_member_success'),
+    url(r'^org-member-api$',
+        LocalUserAPI.as_view(),
+        name='org-member-api'),
+    url(r'^search$',
+        SearchView.as_view(),
+        name='search'),
 ]
