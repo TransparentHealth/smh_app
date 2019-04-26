@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'apps.vmi',
     'apps.org',
     'apps.member',
+    'apps.users',
 
     'social_django',
 ]
