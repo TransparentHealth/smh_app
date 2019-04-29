@@ -193,6 +193,9 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
             new_member = new_user.member
             organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
             new_member.organizations.add(organization)
+            # Save the member's picture URL
+            new_user.userprofile.picture_url = response_data_dict['picture']
+            new_user.userprofile.save()
             # Create a UserSocialAuth for the new Member
             UserSocialAuth.objects.create(
                 user_id=new_user.id,
@@ -286,6 +289,7 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
             response_data_dict = json.loads(response.content)
             # Update the Member
             self.member.user.email = response_data_dict['email']
+            self.member.user.userprofile.picture_url = response_data_dict['picture']
             self.member.user.save()
 
             # Redirect the user to the next step in the Member-creation process

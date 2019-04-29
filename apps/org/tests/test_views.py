@@ -394,6 +394,12 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             # The new Member is associated with the relevant Organization
             new_member = Member.objects.get(user__username=data['username'])
             self.assertTrue(self.organization in new_member.organizations.all())
+            # The new Member's UserProfile has the picture_url from the VMI
+            # response (from get_successful_response_data_from_vmi()).
+            self.assertEqual(
+                new_member.user.userprofile.picture_url,
+                'http://localhost:8000/media/profile-picture/None/no-img.jpg'
+            )
             # A new ResourceRequest was created from the Organization to the new Member
             expected_num_resource_requests += 1
             self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
@@ -686,6 +692,12 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             # The self.member was updated
             self.member.user.refresh_from_db()
             self.assertEqual(self.member.user.email, data.get('email', ''))
+            # The self.member's UserProfile object's picture_url was updated based
+            # on the value of 'picture' from get_successful_response_data_from_vmi()
+            self.assertEqual(
+                self.member.user.userprofile.picture_url,
+                'http://localhost:8000/media/profile-picture/None/no-img.jpg'
+            )
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_basic_info view."""
