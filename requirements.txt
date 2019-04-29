@@ -10,6 +10,7 @@ django-phonenumber-field==2.0.1
 django-localflavor==2.1
 django-settings-export==1.2.1
 django-phonenumber-field==2.0.1
+Pillow==6.0.0
 
 # for tests
 factory-boy==2.11.1
