@@ -9,7 +9,8 @@ from httmock import remember_called, urlmatch, HTTMock
 from social_django.models import UserSocialAuth
 
 from apps.common.tests.base import SMHAppTestMixin
-from apps.org.tests.factories import UserSocialAuthFactory
+from apps.member.tests.factories import MemberFactory
+from apps.org.tests.factories import OrganizationFactory, UserSocialAuthFactory
 
 
 class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
@@ -184,6 +185,99 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
             self.client.force_login(self.user)
             response = self.client.post(self.url, data={})
             self.assertEqual(response.status_code, 200)
+
+        with self.subTest('Not authenticated GET'):
+            self.client.logout()
+
+            response = self.client.get(self.url)
+
+            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
+            self.assertRedirects(response, expected_redirect)
+
+        with self.subTest('Not authenticated POST'):
+            self.client.logout()
+
+            response = self.client.post(self.url, data={})
+
+            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
+            self.assertRedirects(response, expected_redirect)
+
+
+class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
+    url_name = 'users:user_member_router'
+
+    def setUp(self):
+        super().setUp()
+        self.url = reverse(self.url_name)
+
+    def test_get_post(self):
+        """
+        GETting or POSTing the user_member_router redirects the user, based on who the User is:
+         - if the request.user is an Organization User, the User is redirected to the org dashboard
+         - if the request.user is a member, the User is redirected to the member dashboard
+         - otherwise, the User is redirected to the org dashboard
+        """
+
+        subtests = (
+            # has_org             | has_member  | member_has_org             | expected_redirect
+            # Does the            | Does the    | Does the request.user's    | The url_name that
+            # request.user have   | request.user| Member have an association | the user should
+            # an association with | have a      | with an Organization?      | be redirected to
+            # an Organization?    | Member?     |                            |
+            (True,                    False,         False,                    'org:dashboard'),
+            (True,                    True,          False,                    'org:dashboard'),
+            (True,                    True,          True,                     'org:dashboard'),
+
+            (False,                   True,          False,                    'member:dashboard'),
+            (False,                   True,          True,                     'member:dashboard'),
+            (False,                   False,         False,                    'org:dashboard'),
+        )
+
+        for (has_org, has_member, member_has_org, expected_redirect) in subtests:
+            for method_name in ['get', 'post']:
+                with self.subTest(
+                    method_name=method_name,
+                    has_org=has_org,
+                    has_member=has_member,
+                    member_has_org=member_has_org,
+                    expected_redirect=expected_redirect,
+                ):
+                    self.user.refresh_from_db()
+
+                    if has_org:
+                        organization = OrganizationFactory()
+                        organization.users.add(self.user)
+                    else:
+                        self.user.organization_set.clear()
+
+                    if has_member:
+                        if not hasattr(self.user, 'member'):
+                            self.user.member = MemberFactory(user=self.user)
+                        if member_has_org:
+                            organization = OrganizationFactory()
+                            organization.members.add(self.user.member)
+                        else:
+                            self.user.member.organizations.clear()
+                    elif not has_member and hasattr(self.user, 'member'):
+                        self.user.member.delete()
+
+                    # Use the relevant method (GET or POST).
+                    method = getattr(self.client, method_name)
+                    response = method(self.url)
+
+                    self.assertRedirects(response, reverse(expected_redirect))
+
+    def test_authenticated(self):
+        """The user must be authenticated to use the user_member_router view."""
+        with self.subTest('Authenticated GET'):
+            self.client.force_login(self.user)
+            response = self.client.get(self.url)
+            self.assertEqual(response.status_code, 302)
+
+        with self.subTest('Authenticated POST'):
+            self.client.force_login(self.user)
+            response = self.client.post(self.url, data={})
+            self.assertEqual(response.status_code, 302)
 
         with self.subTest('Not authenticated GET'):
             self.client.logout()

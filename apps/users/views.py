@@ -3,7 +3,9 @@ import requests
 from urllib.parse import urlparse
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect, reverse
 from django.views.generic.edit import FormView
 
 from .forms import UserSettingsForm
@@ -69,3 +71,25 @@ class UserSettingsView(LoginRequiredMixin, FormView):
         context = self.get_context_data()
         context['form'] = form
         return self.render_to_response(context)
+
+
+@login_required(login_url='home')
+def user_member_router(request):
+    """
+    Redirect the user, based on which type of user they are:
+     - if the request.user is an Organization User, redirect to the org dashboard
+     - if the request.user is a member, redirect to the member dashboard
+     - otherwise, redirect to the org dashboard
+    """
+    # If the request.user is an Organization User, then redirect to the org dashboard
+    if request.user.organization_set.exists():
+        return redirect(reverse('org:dashboard'))
+
+    # If the request.user is a Member, then redirect to the member dashboard
+    if hasattr(request.user, 'member'):
+        return redirect(reverse('member:dashboard'))
+
+    # The request.user is not associated with any Organizations, and is not a Member.
+    # Redirect to the org dashboard (in case this is an Organization User who is
+    # being set up).
+    return redirect(reverse('org:dashboard'))
