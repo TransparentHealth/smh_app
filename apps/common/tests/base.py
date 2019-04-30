@@ -1,4 +1,6 @@
+from io import BytesIO
 from httmock import all_requests
+from PIL import Image
 
 from apps.org.models import REQUEST_APPROVED
 from apps.org.tests.factories import (
@@ -15,6 +17,14 @@ class SMHAppTestMixin:
         self.user.set_password('testpassword')
         self.user.save()
         self.client.force_login(self.user)
+
+    def get_test_image_for_upload(self, image_mode='RGB', image_format='PNG'):
+        """Create a simple test image, in case we need to test uploading an image."""
+        img_data = BytesIO()
+        size = (100, 100)
+        Image.new(image_mode, size).save(img_data, image_format)
+        img_data.seek(0)
+        return img_data
 
 
 class MockResourceDataMixin:
