@@ -1564,9 +1564,10 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # The ResourceRequest is now approved
             resource_request.refresh_from_db()
             self.assertEqual(resource_request.status, REQUEST_APPROVED)
-            # The member's password has been set
+            # Since we use VMI for authentication, the member's password in smh_app
+            # is not updated.
             self.member.user.refresh_from_db()
-            self.assertTrue(self.member.user.check_password(data['password1']))
+            self.assertFalse(self.member.user.check_password(data['password1']))
             # A request was made to the user detail API endpoint in VMI
             self.assertEqual(self.response_user_detail.call['count'], 1)
 

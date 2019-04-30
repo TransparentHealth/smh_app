@@ -471,8 +471,7 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
          3.) verify that the request.user has a UserSocialAuth object for VMI
          4.) verify that the Member has a UserSocialAuth object for VMI
          5.) make a request to VMI to update the member's password in VMI
-         6.) set the member's password locally
-         7.) redirect the user to the next step in the Member-creation process
+         6.) redirect the user to the next step in the Member-creation process
         """
         # 1.) Find and update the ResourceRequest for this Member to be approved
         resource_request = ResourceRequest.objects.filter(
@@ -520,17 +519,13 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
         response = requests.put(url=url, data=data, headers=headers)
 
         if response.status_code == 200:
-            # 6.) Set the member's password locally
-            self.member.user.set_password(form.data['password1'])
-            self.member.user.save()
-
             response_data_dict = json.loads(response.content)
             # Update the Member
             self.member.user.email = response_data_dict['email']
             self.member.user.userprofile.picture_url = response_data_dict['picture']
             self.member.user.save()
 
-            # 7.) Redirect the user to the next step in the Member-creation process
+            # 6.) Redirect the user to the next step in the Member-creation process
             return HttpResponseRedirect(
                 self.get_success_url(self.organization.slug, self.member.user.username)
             )
