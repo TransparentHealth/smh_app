@@ -468,8 +468,11 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
         ResourceRequest, and is also setting their password. Therefore, we
          1.) find and update the relevant ResourceRequest to be approved
          2.) create a ResourceGrant object
-         3.) set the member's password
-         4.) redirect the user to the next step in the Member-creation process
+         3.) verify that the request.user has a UserSocialAuth object for VMI
+         4.) verify that the Member has a UserSocialAuth object for VMI
+         5.) make a request to VMI to update the member's password in VMI
+         6.) set the member's password locally
+         7.) redirect the user to the next step in the Member-creation process
         """
         # 1.) Find and update the ResourceRequest for this Member to be approved
         resource_request = ResourceRequest.objects.filter(
@@ -480,21 +483,61 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
         resource_request.save()
 
         # 2.) Create a ResourceGrant object for the ResourceRequest and the Member
-        ResourceGrant.objects.create(
+        ResourceGrant.objects.get_or_create(
             organization=resource_request.organization,
             member=resource_request.member,
             resource_class_path=resource_request.resource_class_path,
             resource_request=resource_request
         )
 
-        # 3.) Set the member's password
-        self.member.user.set_password(form.data['password1'])
-        self.member.user.save()
+        # 3.) Verify that the request.user has a UserSocialAuth object for VMI
+        request_user_social_auth = self.request.user.social_auth.filter(
+            provider=settings.SOCIAL_AUTH_NAME
+        ).first()
+        # If the request.user does not have a UserSocialAuth for VMI, then
+        # return the error to the user.
+        if not request_user_social_auth:
+            self.errors = {
+                'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
+            }
+            return self.render_to_response(self.get_context_data())
 
-        # 4.) Redirect the user to the next step in the Member-creation process
-        return HttpResponseRedirect(
-            self.get_success_url(self.organization.slug, self.member.user.username)
-        )
+        # 4.) Verify that the Member has a UserSocialAuth object for VMI
+        member_social_auth = self.member.user.social_auth.filter(
+            provider=settings.SOCIAL_AUTH_NAME
+        ).first()
+        # If the Member does not have a UserSocialAuth for VMI, return an error to the user.
+        if not member_social_auth:
+            self.errors = {
+                'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
+            }
+            return self.render_to_response(self.get_context_data())
+
+        # 5.) Make a request to VMI to update the member's password in VMI
+        data = {'password': form.data['password1']}
+        url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST, member_social_auth.uid)
+        headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+        response = requests.put(url=url, data=data, headers=headers)
+
+        if response.status_code == 200:
+            # 6.) Set the member's password locally
+            self.member.user.set_password(form.data['password1'])
+            self.member.user.save()
+
+            response_data_dict = json.loads(response.content)
+            # Update the Member
+            self.member.user.email = response_data_dict['email']
+            self.member.user.userprofile.picture_url = response_data_dict['picture']
+            self.member.user.save()
+
+            # 7.) Redirect the user to the next step in the Member-creation process
+            return HttpResponseRedirect(
+                self.get_success_url(self.organization.slug, self.member.user.username)
+            )
+        else:
+            # The request to update a user in VMI did not succeed, so show errors to the user.
+            self.errors = json.loads(response.content)
+            return self.render_to_response(self.get_context_data())
 
 
 class OrgCreateMemberSuccessView(LoginRequiredMixin, OrgCreateMemberMixin, TemplateView):
