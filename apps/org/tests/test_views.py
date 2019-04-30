@@ -1271,6 +1271,41 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             }
         )
 
+    @urlmatch(path=r'^/api/v1/user/([0-9]+)/$')
+    @remember_called
+    def response_user_detail(self, url, request):
+        """The response for a successful PUT to update a user in VMI."""
+        return {
+            'status_code': 200,
+            'content': self.get_sample_vmi_user_detail_response()
+        }
+
+    def get_sample_vmi_user_detail_response(self):
+        """The expected content of a response for a VMI user detail."""
+        return {
+            'email': 'test_firstname_lastname@example.com',
+            'exp': 1555518026.550254,
+            'iat': 1555514426.5502696,
+            'iss': settings.SOCIAL_AUTH_VMI_HOST,
+            'sub': random.randint(100000000000000, 999999999999999),
+            'aal': '1',
+            'birthdate': '2000-01-01',
+            'email_verified': False,
+            'family_name': 'Lastname',
+            'given_name': 'Firstname',
+            'ial': '1',
+            'name': 'Firstname Lastname',
+            'nickname': 'Firstname',
+            'phone_number': 'nophone',
+            'phone_verified': False,
+            'picture': 'http://localhost:8000/media/profile-picture/None/no-img.jpg',
+            'preferred_username': 'username',
+            'vot': 'P0.Cc',
+            'website': '',
+            'address': [],
+            'document': []
+        }
+
     def test_get(self):
         """GETting org_create_member_complete view shows a page."""
         subtests = (
@@ -1323,7 +1358,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
 
         with self.subTest('no data'):
             data = {}
-            response = self.client.post(self.url, data=data)
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
@@ -1340,6 +1379,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
 
         with self.subTest('incomplete data'):
             data = {
@@ -1347,7 +1388,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password1': 'password1',
                 'password2': 'password1'
             }
-            response = self.client.post(self.url, data=data)
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
@@ -1359,6 +1404,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
 
         with self.subTest('invalid data for BooleanFields'):
             data = {
@@ -1367,7 +1414,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password1': 'password1',
                 'password2': 'password1'
             }
-            response = self.client.post(self.url, data=data)
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
@@ -1382,6 +1433,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
 
         with self.subTest('invalid data for passwords'):
             data = {
@@ -1390,7 +1443,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password1': 'password1',
                 'password2': 'password2',
             }
-            response = self.client.post(self.url, data=data)
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
@@ -1402,15 +1459,86 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
 
-        with self.subTest('valid data'):
+        with self.subTest('valid data, no request.user UserSocialAuth object'):
+            # If the request.user does not have a UserSocialAuth object for VMI,
+            # then the response is an error.
             data = {
                 'accept_terms_and_conditions': True,
                 'give_org_access_to_data': True,
                 'password1': 'password1',
                 'password2': 'password1',
             }
-            response = self.client.post(self.url, data=data)
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['errors'],
+                {'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+            )
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
+
+        with self.subTest('valid data, no UserSocialAuth object for Member'):
+            # If the Member does not have a UserSocialAuth object for VMI,
+            # then the response is an error. In reality, this shouldn't happen,
+            # since the UserSocialAuth object should get created for the new Member
+            # during step 1 of the member creation process (the org_create_member_view),
+            # but we handle the case that the UserSocialAuth object no longer exists.
+            data = {
+                'accept_terms_and_conditions': True,
+                'give_org_access_to_data': True,
+                'password1': 'password1',
+                'password2': 'password1',
+            }
+            # Create a UserSocialAuth object for the self.user for VMI
+            UserSocialAuthFactory(
+                user=self.user,
+                provider=settings.SOCIAL_AUTH_NAME,
+                extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'accessTOKENhere'},
+                uid=random.randint(100000000000000, 999999999999999),
+            )
+
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['errors'],
+                {'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+            )
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
+
+        with self.subTest('valid data, request.user & member have a UserSocialAuth object'):
+            # Create a UserSocialAuth object for the Member for VMI
+            UserSocialAuthFactory(
+                user=self.member.user,
+                provider=settings.SOCIAL_AUTH_NAME,
+                extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'MeMbEraccessTOKEN'},
+                uid=random.randint(100000000000000, 999999999999999),
+            )
+            data = {
+                'accept_terms_and_conditions': True,
+                'give_org_access_to_data': True,
+                'password1': 'password1',
+                'password2': 'password1',
+            }
+
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
 
             expected_url_next_page = reverse(
                 'org:org_create_member_success',
@@ -1436,9 +1564,12 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # The ResourceRequest is now approved
             resource_request.refresh_from_db()
             self.assertEqual(resource_request.status, REQUEST_APPROVED)
-            # The member's password has been set
+            # Since we use VMI for authentication, the member's password in smh_app
+            # is not updated.
             self.member.user.refresh_from_db()
-            self.assertTrue(self.member.user.check_password(data['password1']))
+            self.assertFalse(self.member.user.check_password(data['password1']))
+            # A request was made to the user detail API endpoint in VMI
+            self.assertEqual(self.response_user_detail.call['count'], 1)
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_complete view."""
