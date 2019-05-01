@@ -529,6 +529,29 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         )
 
 
+class OrgCreateMemberInvalidTokenView(OrgCreateMemberMixin, TemplateView):
+    template_name = "org/member_complete_invalid_token.html"
+    login_url = 'home'
+    errors = {}
+
+    def get_organization(self, request, org_slug):
+        """
+        Get the Organization object that the org_slug refers to, or return a 404 response.
+
+        We override the OrgCreateMemberMixin method here, since the request.user
+        is not required to be an Organization user (like an employee) at this
+        Organization.
+        """
+        return get_object_or_404(
+            Organization.objects.all(),
+            slug=org_slug
+        )
+
+    def post(self, request, *args, **kwargs):
+        from django.http import HttpResponseNotAllowed
+        return HttpResponseNotAllowed('GET')
+
+
 class OrgCreateMemberSuccessView(OrgCreateMemberMixin, TemplateView):
     template_name = "org/member_success.html"
     login_url = 'home'
