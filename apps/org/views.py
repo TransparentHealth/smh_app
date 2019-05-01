@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, reverse
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
 
@@ -491,6 +491,43 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             'org:org_create_member_success',
             kwargs={'org_slug': org_slug, 'username': username}
         )
+
+    def token_is_valid(self, uidb64, token):
+        """Return whether the token is valid (for the user)."""
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = get_user_model().objects.get(pk=uid)
+        return token_generator.check_token(user, token)
+
+    def get(self, *args, **kwargs):
+        """GETting the OrgCreateMemberCompleteView is only allowed with a valid token."""
+        self.organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+
+        if self.token_is_valid(uidb64=kwargs['uidb64'], token=kwargs['token']):
+            # The token is valid, so render the page to the user
+            return self.render_to_response(self.get_context_data())
+        else:
+            # The token is not valid, so redirect user to the org_create_member_invalid_token page
+            redirect_url = reverse(
+                'org:org_create_member_invalid_token',
+                kwargs={'org_slug': kwargs['org_slug'], 'username': kwargs['username']}
+
+            )
+            return HttpResponseRedirect(redirect_url)
+
+    def post(self, *args, **kwargs):
+        """POSTing to the OrgCreateMemberCompleteView is only allowed with a valid token."""
+        if self.token_is_valid(uidb64=kwargs['uidb64'], token=kwargs['token']):
+            # The token is valid, so call the super().post() method
+            return super().post(*args, **kwargs)
+        else:
+            # The token is not valid, so redirect user to the org_create_member_invalid_token page
+            redirect_url = reverse(
+                'org:org_create_member_invalid_token',
+                kwargs={'org_slug': kwargs['org_slug'], 'username': kwargs['username']}
+
+            )
+            return HttpResponseRedirect(redirect_url)
 
     def form_valid(self, form):
         """

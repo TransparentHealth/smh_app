@@ -1273,11 +1273,9 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
 
     def setUp(self):
         super().setUp()
-        # An Organization associated with the self.user
         self.organization = OrganizationFactory()
-        self.organization.users.add(self.user)
-        # A Member at the Organization
-        self.member = UserFactory().member
+        # The self.user in this test is a member who is trying to set their password
+        self.member = self.user.member
         self.organization.members.add(self.member)
         # The URL for completing new Member creation at the self.organization
         self.member_uid = urlsafe_base64_encode(force_bytes(self.member.pk)).decode('utf-8')
@@ -1295,39 +1293,91 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
     def test_get(self):
         """GETting org_create_member_complete view shows a page."""
         subtests = (
-            # user_at_org:         |  member_at_org:    | expected_success:
-            # Is the request.user  | Is the Member      |  Should the
-            # associated with the  | associated with    |  request
-            # Organization?        | the Organization?  |  succeed?
-            (True,                     True,                True),
-            (False,                    True,                False),
-            (True,                     False,               False),
-            (False,                    False,               False),
+            # user_at_org:         |  member_at_org:    | valid token: | expected_status_code:
+            # Is the request.user  | Is the Member      | is the token |  The expected
+            # associated with the  | associated with    | valid?       |  status code of the
+            # Organization?        | the Organization?  |              |  response?
+            (True,                     True,                 True,         200),
+            (True,                     True,                 False,        302),
+            (False,                    True,                 True,         200),
+            (False,                    True,                 False,        302),
+            (True,                     False,                True,         404),
+            (True,                     False,                False,        404),
+            (False,                    False,                True,         404),
+            (False,                    False,                False,        404),
         )
-        for (user_at_org, member_at_org, expected_success) in subtests:
-            organization = OrganizationFactory()
+        for (user_at_org, member_at_org, valid_token, expected_status_code) in subtests:
             if user_at_org:
-                organization.users.add(self.user)
-            member = UserFactory().member
+                self.organization.users.add(self.user)
+            else:
+                self.organization.users.clear()
             if member_at_org:
-                organization.members.add(member)
-            url = reverse(
-                self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.user.username}
-            )
+                self.organization.members.add(self.member)
+            else:
+                self.organization.members.clear()
+
             with self.subTest(
                 user_at_org=user_at_org,
                 member_at_org=member_at_org,
-                expected_success=expected_success
+                valid_token=valid_token,
+                expected_status_code=expected_status_code
             ):
+                token = self.member_token if valid_token else 'not_a_valid_token'
+                # Assert that the token is valid or invalid
+                if valid_token:
+                    self.assertTrue(token_generator.check_token(self.user, token))
+                else:
+                    self.assertFalse(token_generator.check_token(self.user, token))
+
+                url = reverse(
+                    self.url_name,
+                    kwargs={
+                        'org_slug': self.organization.slug,
+                        'username': self.member.user.username,
+                        'uidb64': self.member_uid,
+                        'token': token
+                    }
+                )
                 response = self.client.get(url)
 
-                if expected_success:
+                if expected_status_code == 200:
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.context['organization'], organization)
-                    self.assertEqual(response.context['member'], member)
-                else:
+                    self.assertEqual(response.context['organization'], self.organization)
+                    self.assertEqual(response.context['member'], self.member)
+                elif expected_status_code == 302:
+                    expected_url = reverse(
+                        'org:org_create_member_invalid_token',
+                        kwargs={
+                            'org_slug': self.organization.slug,
+                            'username': self.member.user.username
+                        }
+                    )
+                    self.assertRedirects(response, expected_url)
+                elif expected_status_code == 404:
                     self.assertEqual(response.status_code, 404)
+
+        with self.subTest(
+            'expired token',
+            user_at_org=True,
+            member_at_org=True,
+            expected_status_code=302
+        ):
+            self.organization.users.add(self.user)
+            self.organization.members.add(self.member)
+
+            # Make the token expire
+            self.user.set_password('anewpassword123!')
+            self.user.save()
+            self.assertFalse(token_generator.check_token(self.user, self.member_token))
+
+            response = self.client.get(url)
+
+            # The user should be redirected to the invalid_token page
+            expected_url = reverse(
+                'org:org_create_member_invalid_token',
+                kwargs={'org_slug': self.organization.slug, 'username': self.member.user.username}
+            )
+            self.assertRedirects(response, expected_url)
 
     def test_post(self):
         """POSTing to org_create_member_complete view redirects the user to the next step."""
@@ -1424,13 +1474,38 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
 
-        with self.subTest('valid data'):
+        with self.subTest('valid data, invalid token'):
             data = {
                 'accept_terms_and_conditions': True,
                 'give_org_access_to_data': True,
                 'password1': 'password1',
                 'password2': 'password1',
             }
+            url = self.url.replace(self.member_token, 'not_a_valid_token')
+            response = self.client.post(url, data=data)
+
+            expected_url_next_page = reverse(
+                'org:org_create_member_invalid_token',
+                kwargs={
+                    'org_slug': self.organization.slug,
+                    'username': self.member.user.username
+                }
+            )
+            self.assertRedirects(response, expected_url_next_page)
+            # No ResourceRequest or ResourceGrant objects have been created
+            self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
+            self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
+            # The ResourceRequest still has a 'Requested' status
+            self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+
+        with self.subTest('valid data, valid token'):
+            data = {
+                'accept_terms_and_conditions': True,
+                'give_org_access_to_data': True,
+                'password1': 'password1',
+                'password2': 'password1',
+            }
+
             response = self.client.post(self.url, data=data)
 
             expected_url_next_page = reverse(
@@ -1460,6 +1535,29 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # The member's password has been set
             self.member.user.refresh_from_db()
             self.assertTrue(self.member.user.check_password(data['password1']))
+
+        with self.subTest('valid data, expired token'):
+            data = {
+                'accept_terms_and_conditions': True,
+                'give_org_access_to_data': True,
+                'password1': 'password1',
+                'password2': 'password1',
+            }
+
+            # Since the member set their password in the previous subtest, their
+            # token has expired.
+            self.assertFalse(token_generator.check_token(self.user, self.member_token))
+
+            response = self.client.post(self.url, data=data)
+
+            expected_url_next_page = reverse(
+                'org:org_create_member_invalid_token',
+                kwargs={
+                    'org_slug': self.organization.slug,
+                    'username': self.member.user.username
+                }
+            )
+            self.assertRedirects(response, expected_url_next_page)
 
     def test_authenticated(self):
         """The user does not need to be authenticated to use the org_create_member_complete view."""
