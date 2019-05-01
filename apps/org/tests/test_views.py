@@ -1698,7 +1698,7 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
             # associated with the  | associated with    |  request
             # Organization?        | the Organization?  |  succeed?
             (True,                     True,                True),
-            (False,                    True,                False),
+            (False,                    True,                True),
             (True,                     False,               False),
             (False,                    False,               False),
         )
