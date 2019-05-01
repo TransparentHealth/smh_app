@@ -3,8 +3,8 @@
 
 {% block content %}
 You're almost done!
-Click on the button below to open a window for {{ member }} to complete setup on your device.
+Please copy the link below into a NEW INGOGNITO browser to open a window for {{ member }} to complete setup on your device.
 
-<a href="{% url 'org:org_create_member_complete' organization.slug member.user.username %}" target="_blank">New window</a>
+{{ url_to_set_password }}
 
 {% endblock content %}
