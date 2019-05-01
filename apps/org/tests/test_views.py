@@ -2,7 +2,10 @@ import random
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator as token_generator
 from django.test import TestCase
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.urls import reverse
 
 from httmock import all_requests, remember_called, urlmatch, HTTMock
@@ -1219,6 +1222,20 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
                     self.assertEqual(response.status_code, 200)
                     self.assertEqual(response.context['organization'], organization)
                     self.assertEqual(response.context['member'], member)
+                    # Verify the url_to_set_password in the context
+                    member_uid = urlsafe_base64_encode(force_bytes(member.pk)).decode('utf-8')
+                    member_token = token_generator.make_token(member.user)
+                    expected_relative_url = reverse(
+                        'org:org_create_member_complete',
+                        kwargs={
+                            'org_slug': organization.slug,
+                            'username': member.user.username,
+                            'uidb64': member_uid,
+                            'token': member_token
+                        }
+                    )
+                    expected_url = response.wsgi_request.build_absolute_uri(expected_relative_url)
+                    self.assertEqual(response.context['url_to_set_password'], expected_url)
                 else:
                     self.assertEqual(response.status_code, 404)
 

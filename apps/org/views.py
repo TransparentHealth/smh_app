@@ -4,9 +4,12 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.tokens import default_token_generator as token_generator
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, reverse
 from django.urls import reverse_lazy
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
 
@@ -440,6 +443,22 @@ class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
         kwargs.setdefault('organization', organization)
         member = self.get_member(organization, self.kwargs.get('username'))
         kwargs.setdefault('member', member)
+
+        # Create a uid and a token for the member, and use them to create a URL
+        # for allowing the member to set their password.
+        uid = urlsafe_base64_encode(force_bytes(member.pk)).decode('utf-8')
+        token = token_generator.make_token(member.user)
+        relative_url_to_set_password = reverse(
+            'org:org_create_member_complete',
+            kwargs={
+                'org_slug': organization.slug,
+                'username': member.user.username,
+                'uidb64': uid,
+                'token': token
+            }
+        )
+        full_url_to_set_password = self.request.build_absolute_uri(relative_url_to_set_password)
+        kwargs.setdefault('url_to_set_password', full_url_to_set_password)
 
         return super().get_context_data(**kwargs)
 
