@@ -3,8 +3,8 @@ from django.conf.urls import url
 from .views import (
     CreateOrganizationView, DashboardView, DeleteOrganizationView, OrgCreateMemberView,
     OrgCreateMemberAdditionalInfoInfoView, OrgCreateMemberAlmostDoneView,
-    OrgCreateMemberBasicInfoView, OrgCreateMemberCompleteView, OrgCreateMemberSuccessView,
-    OrgCreateMemberVerifyIdentityView, UpdateOrganizationView,
+    OrgCreateMemberBasicInfoView, OrgCreateMemberCompleteView, OrgCreateMemberInvalidTokenView,
+    OrgCreateMemberSuccessView, OrgCreateMemberVerifyIdentityView, UpdateOrganizationView,
 )
 
 
@@ -41,7 +41,7 @@ urlpatterns = [
     url(r'(?P<org_slug>[-\w]+)/create-member/(?P<username>[-\w]+)/almost_done',
         OrgCreateMemberAlmostDoneView.as_view(),
         name='org_create_member_almost_done'),
-    url(r'(?P<org_slug>[-\w]+)/create-member/(?P<username>[-\w]+)/complete',
+    url(r'(?P<org_slug>[-\w]+)/create-member/(?P<username>[-\w]+)/complete/(?P<uidb64>[-\wA-Z]+)/(?P<token>[-\w]+)/',
         OrgCreateMemberCompleteView.as_view(),
         name='org_create_member_complete'),
     url(r'(?P<org_slug>[-\w]+)/create-member/(?P<username>[-\w]+)/success',
