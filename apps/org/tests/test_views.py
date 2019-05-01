@@ -1462,7 +1462,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertTrue(self.member.user.check_password(data['password1']))
 
     def test_authenticated(self):
-        """The user must be authenticated to use the org_create_member_complete view."""
+        """The user does not need to be authenticated to use the org_create_member_complete view."""
         with self.subTest('Authenticated GET'):
             self.client.force_login(self.user)
             response = self.client.get(self.url)
@@ -1478,16 +1478,14 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
 
             response = self.client.get(self.url)
 
-            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
-            self.assertRedirects(response, expected_redirect)
+            self.assertEqual(response.status_code, 200)
 
         with self.subTest('Not authenticated POST'):
             self.client.logout()
 
             response = self.client.post(self.url, data={})
 
-            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
-            self.assertRedirects(response, expected_redirect)
+            self.assertEqual(response.status_code, 200)
 
 
 class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
@@ -1548,7 +1546,7 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
                     self.assertEqual(response.status_code, 404)
 
     def test_authenticated(self):
-        """The user must be authenticated to use the org_create_member_complete view."""
+        """The user does not need to be authenticated to use the org_create_member_complete view."""
         with self.subTest('Authenticated GET'):
             self.client.force_login(self.user)
             response = self.client.get(self.url)
@@ -1564,13 +1562,11 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
 
             response = self.client.get(self.url)
 
-            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
-            self.assertRedirects(response, expected_redirect)
+            self.assertEqual(response.status_code, 200)
 
         with self.subTest('Not authenticated POST'):
             self.client.logout()
 
             response = self.client.post(self.url, data={})
 
-            expected_redirect = '{}?next={}'.format(reverse('home'), self.url)
-            self.assertRedirects(response, expected_redirect)
+            self.assertEqual(response.status_code, 405)

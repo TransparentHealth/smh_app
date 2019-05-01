@@ -463,7 +463,7 @@ class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
         return super().get_context_data(**kwargs)
 
 
-class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
+class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
     """View for the new Member to complete their account creation."""
     template_name = "org/member_complete.html"
     form_class = UpdateNewMemberAtOrgMemberForm
@@ -471,6 +471,19 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
     # If there are any non-form errors, they can be stored in self.errors, and
     # will be displayed in the template.
     errors = {}
+
+    def get_organization(self, request, org_slug):
+        """
+        Get the Organization object that the org_slug refers to, or return a 404 response.
+
+        We override the OrgCreateMemberMixin method here, since the request.user
+        is not required to be an Organization user (like an employee) at this
+        Organization.
+        """
+        return get_object_or_404(
+            Organization.objects.all(),
+            slug=org_slug
+        )
 
     def get_success_url(self, org_slug, username):
         """A successful verification redirects to the next step in the process."""
@@ -516,10 +529,23 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
         )
 
 
-class OrgCreateMemberSuccessView(LoginRequiredMixin, OrgCreateMemberMixin, TemplateView):
+class OrgCreateMemberSuccessView(OrgCreateMemberMixin, TemplateView):
     template_name = "org/member_success.html"
     login_url = 'home'
     errors = {}
+
+    def get_organization(self, request, org_slug):
+        """
+        Get the Organization object that the org_slug refers to, or return a 404 response.
+
+        We override the OrgCreateMemberMixin method here, since the request.user
+        is not required to be an Organization user (like an employee) at this
+        Organization.
+        """
+        return get_object_or_404(
+            Organization.objects.all(),
+            slug=org_slug
+        )
 
     def post(self, request, *args, **kwargs):
         from django.http import HttpResponseNotAllowed
