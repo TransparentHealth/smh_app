@@ -26,8 +26,8 @@ urlpatterns = [
         DeleteOrganizationView.as_view(),
         name='organization-delete'),
     path('join/<slug>/<token>/',
-        JoinOrganizationView.as_view(),
-        name='organization-join'),
+         JoinOrganizationView.as_view(),
+         name='organization-join'),
 
     # URLs for the process of having a User at an Organization create a new Member
     url(r'(?P<org_slug>[-\w]+)/create-member/create',

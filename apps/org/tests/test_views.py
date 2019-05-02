@@ -2,7 +2,7 @@ import random
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from httmock import all_requests, remember_called, urlmatch, HTTMock
@@ -18,6 +18,7 @@ from ..models import (
 )
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrganizationDashboardTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:dashboard'
 
@@ -53,6 +54,7 @@ class OrganizationDashboardTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class CreateOrganizationTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:organization-add'
 
@@ -93,6 +95,7 @@ class CreateOrganizationTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
     def test_update_organizations(self):
         """The user may update an Organization."""
@@ -156,6 +159,7 @@ class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
     def test_delete_organization(self):
         """The user may delete an Organization."""
@@ -213,6 +217,7 @@ class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member'
 
@@ -441,6 +446,7 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_basic_info'
 
@@ -728,6 +734,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_verify_identity'
 
@@ -1064,6 +1071,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_additional_info'
 
@@ -1165,6 +1173,7 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_almost_done'
 
@@ -1251,6 +1260,7 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_complete'
 
@@ -1600,6 +1610,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_success'
 

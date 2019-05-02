@@ -4,6 +4,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, reverse
 from django.urls import reverse_lazy
@@ -87,7 +88,7 @@ class JoinOrganizationView(LoginRequiredMixin, BaseDetailView):
         """Return the URL to redirect to after processing a valid form."""
         if not self.success_url:
             raise ImproperlyConfigured("No URL to redirect to. Provide a success_url.")
-        return str(self.success_url) # success_url may be lazy
+        return str(self.success_url)  # success_url may be lazy
 
     def render_to_response(self, context):
         tkn = self.kwargs.get(self.token_kwarg)
