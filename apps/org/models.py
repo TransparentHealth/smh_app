@@ -7,6 +7,7 @@ from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
 from .utils import set_unique_slug
+from .tokens import default_token_generator
 from ..common.models import CreatedUpdatedModel
 
 
@@ -48,6 +49,10 @@ class Organization(CreatedUpdatedModel, models.Model):
             self.set_unique_slug()
 
         super().save(**kwargs)
+
+    @property
+    def invite_token(self):
+        return default_token_generator.make_token(self)
 
 
 class ResourceGrant(CreatedUpdatedModel, models.Model):
