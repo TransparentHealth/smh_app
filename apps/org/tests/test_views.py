@@ -761,7 +761,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         """The response for a successful GET for a user's id assurances in VMI."""
         content = [self.sample_identity_assurance_response()]
         return {
-            'status_code': 200,
+            'status_code': 201,
             'content': content
         }
 
@@ -1012,7 +1012,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             # Several requests were made to VMI: 1 to get the member's identity
             # assurance uuid, and another to update the member's identity assurance.
             self.assertEqual(self.response_id_assurance_list.call['count'], 1)
-            self.assertEqual(self.response_id_assurance_detail.call['count'], 1)
+            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
 
         with self.subTest('valid data, but request to VMI is not successful'):
             # The view makes a request to VMI to get the member's identity assurance
