@@ -4,14 +4,16 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, reverse
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
+from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
 
 from social_django.models import UserSocialAuth
 
+from .tokens import default_token_generator
 from .forms import (
     CreateNewMemberAtOrgForm, UpdateNewMemberAtOrgBasicInfoForm,
     UpdateNewMemberAtOrgAdditionalInfoForm, UpdateNewMemberAtOrgMemberForm,
@@ -73,6 +75,26 @@ class DeleteOrganizationView(LoginRequiredMixin, DeleteView):
         """A user may only delete Organizations that they are associated with."""
         qs = super().get_queryset()
         return qs.filter(users=self.request.user)
+
+
+class JoinOrganizationView(LoginRequiredMixin, BaseDetailView):
+    model = Organization
+    success_url = reverse_lazy('org:dashboard')
+    token_kwarg = "token"
+    token_generator = default_token_generator
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        if not self.success_url:
+            raise ImproperlyConfigured("No URL to redirect to. Provide a success_url.")
+        return str(self.success_url) # success_url may be lazy
+
+    def render_to_response(self, context):
+        tkn = self.kwargs.get(self.token_kwarg)
+        if self.token_generator.check_token(self.object, tkn):
+            self.object.users.add(self.request.user)
+            return HttpResponseRedirect(self.get_success_url())
+        raise Http404()
 
 
 class OrgCreateMemberMixin:
