@@ -1,6 +1,6 @@
 from httmock import HTTMock
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls.exceptions import NoReverseMatch
 from django.urls import reverse
 
@@ -16,6 +16,7 @@ from apps.org.tests.factories import (
 from apps.sharemyhealth.resources import Resource
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
     url_name = 'member:dashboard'
 
@@ -79,6 +80,7 @@ class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class ApproveResourceRequestTestCase(SMHAppTestMixin, TestCase):
     url_name = 'member:approve_resource_request'
 
@@ -149,6 +151,7 @@ class ApproveResourceRequestTestCase(SMHAppTestMixin, TestCase):
         self.assertIsNotNone(self.resource_request.resourcegrant)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
     url_name = 'member:revoke_resource_request'
 
@@ -253,6 +256,7 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
         self.assertIsNone(getattr(self.resource_request, 'resourcegrant', None))
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
     url_name = 'member:records'
 
@@ -302,6 +306,7 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
     url_name = 'member:data-sources'
 

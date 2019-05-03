@@ -3,7 +3,7 @@ import random
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator as token_generator
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.urls import reverse
@@ -21,6 +21,7 @@ from ..models import (
 )
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrganizationDashboardTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:dashboard'
 
@@ -56,6 +57,7 @@ class OrganizationDashboardTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class CreateOrganizationTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:organization-add'
 
@@ -96,6 +98,7 @@ class CreateOrganizationTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
     def test_update_organizations(self):
         """The user may update an Organization."""
@@ -159,6 +162,7 @@ class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
     def test_delete_organization(self):
         """The user may delete an Organization."""
@@ -216,6 +220,7 @@ class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member'
 
@@ -444,6 +449,7 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_basic_info'
 
@@ -731,6 +737,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_verify_identity'
 
@@ -757,7 +764,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         """The response for a successful GET for a user's id assurances in VMI."""
         content = [self.sample_identity_assurance_response()]
         return {
-            'status_code': 200,
+            'status_code': 201,
             'content': content
         }
 
@@ -1008,7 +1015,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             # Several requests were made to VMI: 1 to get the member's identity
             # assurance uuid, and another to update the member's identity assurance.
             self.assertEqual(self.response_id_assurance_list.call['count'], 1)
-            self.assertEqual(self.response_id_assurance_detail.call['count'], 1)
+            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
 
         with self.subTest('valid data, but request to VMI is not successful'):
             # The view makes a request to VMI to get the member's identity assurance
@@ -1067,6 +1074,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_additional_info'
 
@@ -1168,6 +1176,7 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_almost_done'
 
@@ -1268,6 +1277,7 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
             self.assertRedirects(response, expected_redirect)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_complete'
 
@@ -1289,6 +1299,41 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'token': self.member_token
             }
         )
+
+    @urlmatch(path=r'^/api/v1/user/([0-9]+)/$')
+    @remember_called
+    def response_user_detail(self, url, request):
+        """The response for a successful PUT to update a user in VMI."""
+        return {
+            'status_code': 200,
+            'content': self.get_sample_vmi_user_detail_response()
+        }
+
+    def get_sample_vmi_user_detail_response(self):
+        """The expected content of a response for a VMI user detail."""
+        return {
+            'email': 'test_firstname_lastname@example.com',
+            'exp': 1555518026.550254,
+            'iat': 1555514426.5502696,
+            'iss': settings.SOCIAL_AUTH_VMI_HOST,
+            'sub': random.randint(100000000000000, 999999999999999),
+            'aal': '1',
+            'birthdate': '2000-01-01',
+            'email_verified': False,
+            'family_name': 'Lastname',
+            'given_name': 'Firstname',
+            'ial': '1',
+            'name': 'Firstname Lastname',
+            'nickname': 'Firstname',
+            'phone_number': 'nophone',
+            'phone_verified': False,
+            'picture': 'http://localhost:8000/media/profile-picture/None/no-img.jpg',
+            'preferred_username': 'username',
+            'vot': 'P0.Cc',
+            'website': '',
+            'address': [],
+            'document': []
+        }
 
     def test_get(self):
         """GETting org_create_member_complete view shows a page."""
@@ -1394,7 +1439,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
 
         with self.subTest('no data'):
             data = {}
-            response = self.client.post(self.url, data=data)
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
@@ -1411,6 +1460,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
 
         with self.subTest('incomplete data'):
             data = {
@@ -1418,7 +1469,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password1': 'password1',
                 'password2': 'password1'
             }
-            response = self.client.post(self.url, data=data)
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
@@ -1430,6 +1485,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
 
         with self.subTest('invalid data for BooleanFields'):
             data = {
@@ -1438,7 +1495,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password1': 'password1',
                 'password2': 'password1'
             }
-            response = self.client.post(self.url, data=data)
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
@@ -1453,6 +1514,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
 
         with self.subTest('invalid data for passwords'):
             data = {
@@ -1461,7 +1524,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password1': 'password1',
                 'password2': 'password2',
             }
-            response = self.client.post(self.url, data=data)
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
@@ -1473,8 +1540,48 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
 
-        with self.subTest('valid data, invalid token'):
+        with self.subTest('valid data, no request.user UserSocialAuth object'):
+            # If the request.user (who is the Member in this test) does not have
+            # a UserSocialAuth object for VMI, then the response is an error.
+            # In reality, this shouldn't happen, since the UserSocialAuth object
+            # should get created for the new Member during step 1 of the member
+            # creation process (the org_create_member_view), but we handle the
+            # case that the UserSocialAuth object no longer exists.
+            data = {
+                'accept_terms_and_conditions': True,
+                'give_org_access_to_data': True,
+                'password1': 'password1',
+                'password2': 'password1',
+            }
+
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.context['errors'],
+                {'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+            )
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
+
+        with self.subTest(
+            'valid data, request.user & member have a UserSocialAuth object, invalid token'
+        ):
+            # Create a UserSocialAuth object for the self.user for VMI
+            UserSocialAuthFactory(
+                user=self.user,
+                provider=settings.SOCIAL_AUTH_NAME,
+                extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'accessTOKENhere'},
+                uid=random.randint(100000000000000, 999999999999999),
+            )
+
             data = {
                 'accept_terms_and_conditions': True,
                 'give_org_access_to_data': True,
@@ -1497,8 +1604,19 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(ResourceGrant.objects.count(), expected_num_resource_grants)
             # The ResourceRequest still has a 'Requested' status
             self.assertEqual(resource_request.status, REQUEST_REQUESTED)
+            # No requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 0)
 
-        with self.subTest('valid data, valid token'):
+        with self.subTest(
+            'valid data, request.user (the member) has a UserSocialAuth object, valid token'
+        ):
+            # Create a UserSocialAuth object for the Member for VMI
+            UserSocialAuthFactory(
+                user=self.member.user,
+                provider=settings.SOCIAL_AUTH_NAME,
+                extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'MeMbEraccessTOKEN'},
+                uid=random.randint(100000000000000, 999999999999999),
+            )
             data = {
                 'accept_terms_and_conditions': True,
                 'give_org_access_to_data': True,
@@ -1506,7 +1624,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password2': 'password1',
             }
 
-            response = self.client.post(self.url, data=data)
+            # Since POSTs with valid data use the requests library to make a request
+            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # library here.
+            with HTTMock(self.response_user_detail):
+                response = self.client.post(self.url, data=data)
 
             expected_url_next_page = reverse(
                 'org:org_create_member_success',
@@ -1532,11 +1654,17 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # The ResourceRequest is now approved
             resource_request.refresh_from_db()
             self.assertEqual(resource_request.status, REQUEST_APPROVED)
-            # The member's password has been set
+            # Since we use VMI for authentication, the member's password does not
+            # need to be set in smh_app. However, we do so in order to invalidate
+            # the self.member_token.
             self.member.user.refresh_from_db()
             self.assertTrue(self.member.user.check_password(data['password1']))
+            # A request was made to the user detail API endpoint in VMI
+            self.assertEqual(self.response_user_detail.call['count'], 1)
 
-        with self.subTest('valid data, expired token'):
+        with self.subTest(
+            'valid data, request.user & member have a UserSocialAuth object, expired token'
+        ):
             data = {
                 'accept_terms_and_conditions': True,
                 'give_org_access_to_data': True,
@@ -1558,6 +1686,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 }
             )
             self.assertRedirects(response, expected_url_next_page)
+            # No more requests were made to VMI
+            self.assertEqual(self.response_user_detail.call['count'], 1)
 
     def test_authenticated(self):
         """The user does not need to be authenticated to use the org_create_member_complete view."""
@@ -1670,6 +1800,7 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 405)
 
 
+@override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_success'
 

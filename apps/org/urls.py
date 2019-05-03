@@ -1,10 +1,12 @@
 # Copyright Videntity Systems, Inc.
 from django.conf.urls import url
+from django.urls import path
 from .views import (
     CreateOrganizationView, DashboardView, DeleteOrganizationView, OrgCreateMemberView,
     OrgCreateMemberAdditionalInfoInfoView, OrgCreateMemberAlmostDoneView,
     OrgCreateMemberBasicInfoView, OrgCreateMemberCompleteView, OrgCreateMemberInvalidTokenView,
     OrgCreateMemberSuccessView, OrgCreateMemberVerifyIdentityView, UpdateOrganizationView,
+    JoinOrganizationView,
 )
 
 
@@ -24,6 +26,9 @@ urlpatterns = [
     url(r'^organization/(?P<pk>[0-9]+)/delete/$',
         DeleteOrganizationView.as_view(),
         name='organization-delete'),
+    path('join/<slug>/<token>/',
+         JoinOrganizationView.as_view(),
+         name='organization-join'),
 
     # URLs for the process of having a User at an Organization create a new Member
     url(r'(?P<org_slug>[-\w]+)/create-member/create',
