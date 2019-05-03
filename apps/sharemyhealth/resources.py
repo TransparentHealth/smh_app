@@ -15,7 +15,7 @@ class Resource(object):
     # The URL to use when GETting the data
     url_for_data = 'https://alpha.sharemy.health/fhir/baseDstu3/{record_type}/?subject=141'
     # The URL to refresh the token
-    url_token_refresh = 'https://alpha.sharemy.health'
+    url_token_refresh = '{}/o/token'.format(settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST)
 
     def __init__(self, member, *args, **kwargs):
         """Set a 'member' and a 'db_object' on the Resource instance."""
