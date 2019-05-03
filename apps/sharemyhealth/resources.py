@@ -36,8 +36,12 @@ class Resource(object):
             'access_token': self.db_object.access_token,
             'refresh_token': self.db_object.extra_data['refresh_token'],
             'token_type': 'Bearer',
-            'expires_in': '3600',
+            'expires_in': 3600,
         }
+        if self.db_object.extra_data.get('auth_time', False):
+            # TODO: the 3600 expires_in should also be gleaned from the returned token
+            token_dict['expires_at'] = self.db_object.extra_data['auth_time'] + 3600
+
         # Other data sent as a part of the request
         extra = {
             'client_id': self.client_id,

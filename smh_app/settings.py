@@ -171,6 +171,7 @@ AUTHENTICATION_BACKENDS = (
 
 # When a user logs in, they are redirected to the appropriate page by the user_member_router
 LOGIN_REDIRECT_URL = 'users:user_member_router'
+LOGIN_URL = '/social-auth/login/vmi'
 
 # Settings for social_django
 SOCIAL_AUTH_URL_NAMESPACE = "social"

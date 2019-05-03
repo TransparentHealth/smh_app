@@ -4,14 +4,17 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
+from django.core.exceptions import ImproperlyConfigured
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, reverse
 from django.urls import reverse_lazy
 from django.views.generic.base import TemplateView
+from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
 
 from social_django.models import UserSocialAuth
 
+from .tokens import default_token_generator
 from .forms import (
     CreateNewMemberAtOrgForm, UpdateNewMemberAtOrgBasicInfoForm,
     UpdateNewMemberAtOrgAdditionalInfoForm, UpdateNewMemberAtOrgMemberForm,
@@ -73,6 +76,26 @@ class DeleteOrganizationView(LoginRequiredMixin, DeleteView):
         """A user may only delete Organizations that they are associated with."""
         qs = super().get_queryset()
         return qs.filter(users=self.request.user)
+
+
+class JoinOrganizationView(LoginRequiredMixin, BaseDetailView):
+    model = Organization
+    success_url = reverse_lazy('org:dashboard')
+    token_kwarg = "token"
+    token_generator = default_token_generator
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        if not self.success_url:
+            raise ImproperlyConfigured("No URL to redirect to. Provide a success_url.")
+        return str(self.success_url)  # success_url may be lazy
+
+    def render_to_response(self, context):
+        tkn = self.kwargs.get(self.token_kwarg)
+        if self.token_generator.check_token(self.object, tkn):
+            self.object.users.add(self.request.user)
+            return HttpResponseRedirect(self.get_success_url())
+        raise Http404()
 
 
 class OrgCreateMemberMixin:
@@ -350,26 +373,11 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
             }
             return self.render_to_response(self.get_context_data())
 
-        # 3.) Make a request to VMI to get the user's identity assurance uuid
+        headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+        # 4.) Make a request to VMI to update the user's identity assurance
         url = '{}/api/v1/user/{}/id-assurance/'.format(
             settings.SOCIAL_AUTH_VMI_HOST,
             member_social_auth.uid,
-        )
-        headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
-        response = requests.get(url=url, headers=headers)
-        # If the request to get the Member's identity assurance uuid from VMI fails,
-        # display the error to the user.
-        if response.status_code != 200:
-            self.errors = json.loads(response.content)
-            return self.render_to_response(self.get_context_data())
-        else:
-            identity_assurance_uuid = json.loads(response.content)[0].get('uuid')
-
-        # 4.) Make a request to VMI to update the user's identity assurance
-        url = '{}/api/v1/user/{}/id-assurance/{}/'.format(
-            settings.SOCIAL_AUTH_VMI_HOST,
-            member_social_auth.uid,
-            identity_assurance_uuid
         )
         data = {
             'subject_user': member_social_auth.uid,
@@ -377,10 +385,10 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
             'description': self.request.POST.get('description'),
             'exp': self.request.POST.get('expiration_date'),
         }
-        # PUT the data to the VMI endpoint for identity verification
-        response = requests.put(url=url, data=data, headers=headers)
+        # POST the data to the VMI endpoint for identity verification
+        response = requests.post(url=url, json=data, headers=headers)
 
-        if response.status_code == 200:
+        if response.status_code == 201:
             # Redirect the user to the next step in the Member-creation process
             return HttpResponseRedirect(
                 self.get_success_url(self.organization.slug, self.member.user.username)
