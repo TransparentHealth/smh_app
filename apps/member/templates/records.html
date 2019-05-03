@@ -20,14 +20,12 @@
             -->
 
             <div class="tile-flex mt-5">
-                {% for record in records_options %}
-                    <div class="tile tile-flex__item {% if record.disabled %} disabled {% endif %}">
-                        {% with "/images/icons/"|add:record.icon|add:".png" as img_src %}
-                        <img src="{% static img_src %}" alt="">
-                        <p>{{ record.name }}
-                            <span> {% if record.number %} ({{ record.number }}) {% endif %}</span>
+                {% for result in results %}
+                    <div class="tile tile-flex__item {% if result.total == 0 %} disabled {% endif %}">
+                        <img src="{% static result.icon_src %}" alt="">
+                        <p>{{ result.name }}
+                            <span> {% if result.total %} ({{ result.total }}) {% endif %}</span>
                         </p>
-                        {% endwith %}
                     </div>
                 {% endfor %}
             </div>
