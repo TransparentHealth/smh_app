@@ -256,6 +256,16 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
 class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
     url_name = 'member:records'
 
+    def setUp(self):
+        """
+        Set the self.expected_response_success.
+
+        The self.expected_response_success is set to a sample response for getting
+        1 Condition (diagnosis) record from the resource server.
+        """
+        super().setUp()
+        self.expected_response_success = self.get_member_health_data_condition()
+
     def test_context_data(self):
         """GETting records view puts response of get_member_data() into the context."""
         # Create a member
@@ -270,13 +280,13 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         with HTTMock(self.response_content_success):
             response = self.client.get(url)
 
-        # The response has data,
-        # which matches the mocked response.
+        # The response has data matches the mocked response.
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.context_data.get('data').json(),
-            self.expected_response_success['content']
-        )
+        # The self.expected_response_success includes 1 'Diagnoses' record
+        diagnoses_results = [
+            data for data in response.context_data.get('results') if data['name'] == 'Diagnoses'
+        ]
+        self.assertEqual(diagnoses_results[0]['total'], 1)
 
     def test_authenticated(self):
         """The user must be authenticated to see records."""
@@ -289,7 +299,10 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
 
         with self.subTest('Authenticated'):
             self.client.force_login(self.user)
-            response = self.client.get(url)
+            # We mock the use of the requests library, so we don't make real
+            # requests from within the test.
+            with HTTMock(self.response_content_success):
+                response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
 
         with self.subTest('Not authenticated'):

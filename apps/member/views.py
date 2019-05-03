@@ -48,18 +48,18 @@ class RecordsView(LoginRequiredMixin, DetailView):
     model = Member
     template_name = "records.html"
     default_resource_name = 'sharemyhealth'
-    default_record_type = 'all'
+    default_record_type = 'Condition'
 
     def get_context_data(self, **kwargs):
         """Add records data into the context."""
         # Get the data for the member, and set it in the context
-        data = get_member_data(
+        results = get_member_data(
             self.request.user,
             kwargs.get('object'),
             self.default_resource_name,
             self.default_record_type
         )
-        kwargs.setdefault('data', data)
+        kwargs.setdefault('results', results)
 
         # TODO: remove this line, but keep it here for now until get_member_data()
         # returns meaningful data, so the template doesn't look blank.
