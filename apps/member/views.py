@@ -1,7 +1,7 @@
 import requests
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
@@ -63,20 +63,18 @@ class RecordsView(LoginRequiredMixin, DetailView):
         return super().get_context_data(**kwargs)
 
 
-class DataSourcesView(LoginRequiredMixin, DetailView):
+class DataSourcesView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Member
     template_name = "data_sources.html"
 
-    def get(self, *args, **kwargs):
+    def test_func(self):
         """
         The request.user may see the member's data sources if:
          - the request.user is the member, or
          - the request.user is in an Organization that has been granted access
            to the member's data
         """
-        member = get_object_or_404(Member.objects.all(), pk=kwargs['pk'])
-
-        # A member may see their own data sources
+        member = get_object_or_404(Member.objects.all(), pk=self.kwargs['pk'])
         if member.user != self.request.user:
             # The request.user is not the member. If the request.user is not in
             # an Organization that has been granted access to the member's data,
@@ -85,8 +83,7 @@ class DataSourcesView(LoginRequiredMixin, DetailView):
                 ResourceGrant.objects.filter(organization__users=self.request.user),
                 member_id=member.id
             )
-
-        return super().get(*args, **kwargs)
+        return True
 
     def get_context_data(self, **kwargs):
         """Add current data sources and data into the context."""
