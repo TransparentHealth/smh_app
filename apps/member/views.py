@@ -71,12 +71,27 @@ class RecordsView(LoginRequiredMixin, DetailView):
 class DataSourcesView(LoginRequiredMixin, DetailView):
     model = Member
     template_name = "data_sources.html"
-    default_record_type = 'all'
 
-    def dispatch(self, request, *args, **kwargs):
-        self.resource_name = kwargs.get('resource_name')
-        self.record_type = kwargs.get('record_type') or self.default_record_type
-        return super().dispatch(request, *args, **kwargs)
+    def get(self, *args, **kwargs):
+        """
+        The request.user may see the member's data sources if:
+         - the request.user is the member, or
+         - the request.user is in an Organization that has been granted access
+           to the member's data
+        """
+        member = get_object_or_404(Member.objects.all(), pk=kwargs['pk'])
+
+        # A member may see their own data sources
+        if member.user != self.request.user:
+            # The request.user is not the member. If the request.user is not in
+            # an Organization that has been granted access to the member's data,
+            # then return a 404 response.
+            get_object_or_404(
+                ResourceGrant.objects.filter(organization__users=self.request.user),
+                member_id=member.id
+            )
+
+        return super().get(*args, **kwargs)
 
     def get_context_data(self, **kwargs):
         """Add current data sources and data into the context."""
@@ -88,17 +103,6 @@ class DataSourcesView(LoginRequiredMixin, DetailView):
             }
         ]
         kwargs.setdefault('current_data_sources', current_data_sources)
-
-        # Get the data for this member
-        if self.resource_name and self.record_type:
-            data = get_member_data(
-                self.request.user,
-                kwargs.get('object'),
-                self.resource_name,
-                self.record_type
-            )
-
-            kwargs.setdefault('data', data)
 
         return super().get_context_data(**kwargs)
 
