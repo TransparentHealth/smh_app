@@ -60,11 +60,6 @@ class RecordsView(LoginRequiredMixin, DetailView):
             self.default_record_type
         )
         kwargs.setdefault('results', results)
-
-        # TODO: remove this line, but keep it here for now until get_member_data()
-        # returns meaningful data, so the template doesn't look blank.
-        kwargs.setdefault('records_options', RECORDS)
-
         return super().get_context_data(**kwargs)
 
 
