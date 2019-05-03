@@ -1,4 +1,3 @@
-import json
 from httmock import HTTMock
 
 from django.conf import settings
@@ -13,6 +12,75 @@ from ..utils import get_member_data
 
 
 class GetMemberDataTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
+    # The default re ord type used in this test
+    default_record_type = 'Condition'
+
+    def setUp(self):
+        """
+        Set the self.expected_response_success.
+
+        The self.expected_response_success is set to a sample response for getting
+        1 Condition (diagnosis) record from the resource server.
+        """
+        super().setUp()
+        self.expected_response_success = {
+            'status_code': 200,
+            'content': {
+                'entry': [
+                    {
+                        'fullUrl': 'https://alpha.sharemy.health/fhir/baseDstu3/Condition/253',
+                        'resource': {
+                            'abatementDateTime': '2016-04-16T21:27:04-04:00',
+                            'assertedDate': '2016-03-27',
+                            'clinicalStatus': 'active',
+                            'code': {
+                                'coding': [
+                                    {
+                                        'code': '10509002',
+                                        'display': 'Acute bronchitis (disorder)',
+                                        'system': 'http://snomed.info/sct'
+                                    }
+                                ],
+                                'text': 'Acute bronchitis (disorder)'
+                            },
+                            'context': {
+                                'reference': 'Encounter/252'
+                            },
+                            'id': '253',
+                            'meta': {
+                                'lastUpdated': '2019-01-08T04:41:20.513+00:00',
+                                'profile': [
+                                    'http://standardhealthrecord.org/fhir/StructureDefinition/shr-problem-Problem'
+                                ],
+                                'versionId': '1'
+                            },
+                            'onsetDateTime': '2016-03-27T21:16:04-04:00',
+                            'resourceType': 'Condition',
+                            'subject': {
+                                'reference': 'Patient/141'
+                            },
+                            'verificationStatus': 'confirmed'
+                        },
+                        'search': {
+                            'mode': 'match'
+                        }
+                    },
+                ],
+                'id': '5f8fe636-e703-46be-b794-b755a43da684',
+                'link': [
+                    {
+                        'relation': 'self',
+                        'url': 'https://alpha.sharemy.health/fhir/baseDstu3/Condition?subject=141'
+                    }
+                ],
+                'meta': {
+                    'lastUpdated': '2019-05-03T12:54:55.807+00:00'
+                },
+                'resourceType': 'Bundle',
+                'total': 1,
+                'type': 'searchset',
+            }
+        }
 
     def test_get_member_data_success(self):
         """A successful request to get data for a member."""
@@ -26,16 +94,21 @@ class GetMemberDataTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         # We mock the use of the requests library, so we don't make real requests
         # from within the test.
         with HTTMock(self.response_content_success):
-            response = get_member_data(self.user, member.member, provider_name, 'all')
+            member_data = get_member_data(
+                self.user,
+                member.member,
+                provider_name,
+                self.default_record_type
+            )
 
         # Here, we assert that the response has the expected mocked response.
         # More specific testing for the Resource.get() method exists in the
         # sharemyhealth app.
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            json.loads(response.content.decode()),
-            self.expected_response_success['content']
-        )
+        # The self.expected_response_success includes 1 'Diagnoses' record
+        diagnoses_results = [
+            data for data in member_data if data['name'] == 'Diagnoses'
+        ]
+        self.assertEqual(diagnoses_results[0]['total'], 1)
 
     def test_parameters(self):
         """Sending invalid parameters into get_member_data() returns a 404 response."""
@@ -70,9 +143,18 @@ class GetMemberDataTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
                     # We mock the use of the requests library, so we don't make real requests
                     # from within the test.
                     with HTTMock(self.response_content_success):
-                        response = get_member_data(self.user, member.member, provider_name, 'all')
+                        member_data = get_member_data(
+                            self.user,
+                            member.member,
+                            provider_name,
+                            self.default_record_type
+                        )
 
-                    self.assertEqual(response.status_code, 200)
+                    # The self.expected_response_success includes 1 'Diagnoses' record
+                    diagnoses_results = [
+                        data for data in member_data if data['name'] == 'Diagnoses'
+                    ]
+                    self.assertEqual(diagnoses_results[0]['total'], 1)
 
     def test_resource_grant_needed(self):
         """Requesting to GET the member's data without a ResourceGrant returns a 404 response."""
@@ -87,9 +169,16 @@ class GetMemberDataTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             # We mock the use of the requests library, so we don't make real requests
             # from within the test.
             with HTTMock(self.response_content_success):
-                response = get_member_data(self.user, member.member, provider_name, 'all')
+                member_data = get_member_data(
+                    self.user,
+                    member.member,
+                    provider_name,
+                    self.default_record_type
+                )
 
-            self.assertEqual(response.status_code, 200)
+            # The self.expected_response_success includes 1 'Diagnoses' record
+            diagnoses_results = [data for data in member_data if data['name'] == 'Diagnoses']
+            self.assertEqual(diagnoses_results[0]['total'], 1)
 
         with self.subTest('without ResourceGrant'):
             # Remove the ResourceGrant for the member's access_token to the
@@ -121,9 +210,16 @@ class GetMemberDataTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             # from within the test.
             with HTTMock(self.response_content_success):
                 # The member (not the self.user) requests access to the member's data.
-                response = get_member_data(member, member.member, provider_name, 'all')
+                member_data = get_member_data(
+                    member,
+                    member.member,
+                    provider_name,
+                    self.default_record_type
+                )
 
-            self.assertEqual(response.status_code, 200)
+            # The self.expected_response_success includes 1 'Diagnoses' record
+            diagnoses_results = [data for data in member_data if data['name'] == 'Diagnoses']
+            self.assertEqual(diagnoses_results[0]['total'], 1)
 
         with self.subTest('without ResourceGrant'):
             # Remove the ResourceGrant for the member's access_token.
@@ -133,6 +229,13 @@ class GetMemberDataTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             # from within the test.
             with HTTMock(self.response_content_success):
                 # The member (not the self.user) requests access to the member's data.
-                response = get_member_data(member, member.member, provider_name, 'all')
+                member_data = get_member_data(
+                    member,
+                    member.member,
+                    provider_name,
+                    self.default_record_type
+                )
 
-            self.assertEqual(response.status_code, 200)
+            # The self.expected_response_success includes 1 'Diagnoses' record
+            diagnoses_results = [data for data in member_data if data['name'] == 'Diagnoses']
+            self.assertEqual(diagnoses_results[0]['total'], 1)
