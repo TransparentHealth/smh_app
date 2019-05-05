@@ -43,6 +43,10 @@
             {% block content %}
             {% endblock content %}
         </main>
+        <div class="modal" id="create-member-modal">
+            <iframe src="{% url 'org:org_create_member' request.user.organization_set.first.slug %}"></iframe>
+            <div id="create-member-modal-backdrop"></div>
+        </div>
         <script src="{% static 'App.js' %}"></script>
     </body>
 </html>

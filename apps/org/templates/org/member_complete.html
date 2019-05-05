@@ -2,10 +2,13 @@
 {% load static %}
 
 {% block content %}
-{{ member }}, complete your account creation at {{ organization }} here:
+<h1>
+    <span><em>{{ member }}</em> complete your account creation at <em>{{ organization }}</em> here:</span>
+    <button type="button" class="close-btn" aria-label="Close">&times;</button>
+</h1>
 
 {% if errors %}
-  {{ errors }}
+  <div class="errors">{{ errors }}</div>
 {% endif %}
 
 <form method="POST">
