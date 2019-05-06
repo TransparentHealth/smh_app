@@ -1287,6 +1287,9 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
         # The self.user in this test is a member who is trying to set their password
         self.member = self.user.member
         self.organization.members.add(self.member)
+        # It's assumed that the self.user is not authenticated, because they are
+        # setting their password for the first time.
+        self.client.logout()
         # The URL for completing new Member creation at the self.organization
         self.member_uid = urlsafe_base64_encode(force_bytes(self.member.pk)).decode('utf-8')
         self.member_token = token_generator.make_token(self.member.user)

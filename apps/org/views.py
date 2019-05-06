@@ -551,7 +551,9 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
          6.) redirect the user to the next step in the Member-creation process
         """
         # 1.) Verify that the request.user has a UserSocialAuth object for VMI
-        request_user_social_auth = self.request.user.social_auth.filter(
+        request_user_id = urlsafe_base64_decode(self.kwargs.get('uidb64'))
+        request_user = get_user_model().objects.get(pk=request_user_id)
+        request_user_social_auth = request_user.social_auth.filter(
             provider=settings.SOCIAL_AUTH_NAME
         ).first()
         # If the request.user does not have a UserSocialAuth for VMI, then
