@@ -4,10 +4,13 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ImproperlyConfigured
+from django.contrib.auth.tokens import default_token_generator as token_generator
 from django.http import HttpResponseRedirect, Http404
+from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404, reverse
 from django.urls import reverse_lazy
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
@@ -449,10 +452,26 @@ class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
         member = self.get_member(organization, self.kwargs.get('username'))
         kwargs.setdefault('member', member)
 
+        # Create a uid and a token for the member, and use them to create a URL
+        # for allowing the member to set their password.
+        uid = urlsafe_base64_encode(force_bytes(member.pk)).decode('utf-8')
+        token = token_generator.make_token(member.user)
+        relative_url_to_set_password = reverse(
+            'org:org_create_member_complete',
+            kwargs={
+                'org_slug': organization.slug,
+                'username': member.user.username,
+                'uidb64': uid,
+                'token': token
+            }
+        )
+        full_url_to_set_password = self.request.build_absolute_uri(relative_url_to_set_password)
+        kwargs.setdefault('url_to_set_password', full_url_to_set_password)
+
         return super().get_context_data(**kwargs)
 
 
-class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
+class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
     """View for the new Member to complete their account creation."""
     template_name = "org/member_complete.html"
     form_class = UpdateNewMemberAtOrgMemberForm
@@ -461,6 +480,19 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
     # will be displayed in the template.
     errors = {}
 
+    def get_organization(self, request, org_slug):
+        """
+        Get the Organization object that the org_slug refers to, or return a 404 response.
+
+        We override the OrgCreateMemberMixin method here, since the request.user
+        is not required to be an Organization user (like an employee) at this
+        Organization.
+        """
+        return get_object_or_404(
+            Organization.objects.all(),
+            slug=org_slug
+        )
+
     def get_success_url(self, org_slug, username):
         """A successful verification redirects to the next step in the process."""
         return reverse(
@@ -468,37 +500,60 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
             kwargs={'org_slug': org_slug, 'username': username}
         )
 
+    def token_is_valid(self, uidb64, token):
+        """Return whether the token is valid (for the user)."""
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = get_user_model().objects.get(pk=uid)
+        return token_generator.check_token(user, token)
+
+    def get(self, *args, **kwargs):
+        """GETting the OrgCreateMemberCompleteView is only allowed with a valid token."""
+        self.organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+
+        if self.token_is_valid(uidb64=kwargs['uidb64'], token=kwargs['token']):
+            # The token is valid, so render the page to the user
+            return self.render_to_response(self.get_context_data())
+        else:
+            # The token is not valid, so redirect user to the org_create_member_invalid_token page
+            redirect_url = reverse(
+                'org:org_create_member_invalid_token',
+                kwargs={'org_slug': kwargs['org_slug'], 'username': kwargs['username']}
+
+            )
+            return HttpResponseRedirect(redirect_url)
+
+    def post(self, *args, **kwargs):
+        """POSTing to the OrgCreateMemberCompleteView is only allowed with a valid token."""
+        if self.token_is_valid(uidb64=kwargs['uidb64'], token=kwargs['token']):
+            # The token is valid, so call the super().post() method
+            return super().post(*args, **kwargs)
+        else:
+            # The token is not valid, so redirect user to the org_create_member_invalid_token page
+            redirect_url = reverse(
+                'org:org_create_member_invalid_token',
+                kwargs={'org_slug': kwargs['org_slug'], 'username': kwargs['username']}
+
+            )
+            return HttpResponseRedirect(redirect_url)
+
     def form_valid(self, form):
         """
         If form is valid, then create a ResourceGrant, set password, redirect user to the next step.
 
         If the form is valid, that means that the member is approving the Organization's
         ResourceRequest, and is also setting their password. Therefore, we
-         1.) find and update the relevant ResourceRequest to be approved
-         2.) create a ResourceGrant object
-         3.) verify that the request.user has a UserSocialAuth object for VMI
-         4.) verify that the Member has a UserSocialAuth object for VMI
-         5.) make a request to VMI to update the member's password in VMI
+         1.) verify that the request.user (the Member) has a UserSocialAuth object for VMI
+         2.) find and update the relevant ResourceRequest to be approved
+         3.) create a ResourceGrant object
+         4.) make a request to VMI to update the member's password in VMI
+         5.) set the member's password locally
          6.) redirect the user to the next step in the Member-creation process
         """
-        # 1.) Find and update the ResourceRequest for this Member to be approved
-        resource_request = ResourceRequest.objects.filter(
-            member=self.member.user,
-            organization=self.organization,
-        ).first()
-        resource_request.status = REQUEST_APPROVED
-        resource_request.save()
-
-        # 2.) Create a ResourceGrant object for the ResourceRequest and the Member
-        ResourceGrant.objects.get_or_create(
-            organization=resource_request.organization,
-            member=resource_request.member,
-            resource_class_path=resource_request.resource_class_path,
-            resource_request=resource_request
-        )
-
-        # 3.) Verify that the request.user has a UserSocialAuth object for VMI
-        request_user_social_auth = self.request.user.social_auth.filter(
+        # 1.) Verify that the request.user has a UserSocialAuth object for VMI
+        request_user_id = urlsafe_base64_decode(self.kwargs.get('uidb64'))
+        request_user = get_user_model().objects.get(pk=request_user_id)
+        request_user_social_auth = request_user.social_auth.filter(
             provider=settings.SOCIAL_AUTH_NAME
         ).first()
         # If the request.user does not have a UserSocialAuth for VMI, then
@@ -509,28 +564,35 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
             }
             return self.render_to_response(self.get_context_data())
 
-        # 4.) Verify that the Member has a UserSocialAuth object for VMI
-        member_social_auth = self.member.user.social_auth.filter(
-            provider=settings.SOCIAL_AUTH_NAME
+        # 2.) Find and update the ResourceRequest for this Member to be approved
+        resource_request = ResourceRequest.objects.filter(
+            member=self.member.user,
+            organization=self.organization,
         ).first()
-        # If the Member does not have a UserSocialAuth for VMI, return an error to the user.
-        if not member_social_auth:
-            self.errors = {
-                'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
-            }
-            return self.render_to_response(self.get_context_data())
+        resource_request.status = REQUEST_APPROVED
+        resource_request.save()
 
-        # 5.) Make a request to VMI to update the member's password in VMI
+        # 3.) Create a ResourceGrant object for the ResourceRequest and the Member
+        ResourceGrant.objects.get_or_create(
+            organization=resource_request.organization,
+            member=resource_request.member,
+            resource_class_path=resource_request.resource_class_path,
+            resource_request=resource_request
+        )
+
+        # 4.) Make a request to VMI to update the member's password in VMI
         data = {'password': form.data['password1']}
-        url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST, member_social_auth.uid)
+        url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST, request_user_social_auth.uid)
         headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
         response = requests.put(url=url, data=data, headers=headers)
 
         if response.status_code == 200:
             response_data_dict = json.loads(response.content)
-            # Update the Member
+            # Update the Member. Note: we set the password locally, in order to
+            # invalidate the member's token (the one in kwargs['token']).
             self.member.user.email = response_data_dict['email']
             self.member.user.userprofile.picture_url = response_data_dict['picture']
+            self.member.user.set_password(form.data['password1'])
             self.member.user.save()
 
             # 6.) Redirect the user to the next step in the Member-creation process
@@ -543,10 +605,46 @@ class OrgCreateMemberCompleteView(LoginRequiredMixin, OrgCreateMemberMixin, Form
             return self.render_to_response(self.get_context_data())
 
 
-class OrgCreateMemberSuccessView(LoginRequiredMixin, OrgCreateMemberMixin, TemplateView):
+class OrgCreateMemberInvalidTokenView(OrgCreateMemberMixin, TemplateView):
+    template_name = "org/member_complete_invalid_token.html"
+    login_url = 'home'
+    errors = {}
+
+    def get_organization(self, request, org_slug):
+        """
+        Get the Organization object that the org_slug refers to, or return a 404 response.
+
+        We override the OrgCreateMemberMixin method here, since the request.user
+        is not required to be an Organization user (like an employee) at this
+        Organization.
+        """
+        return get_object_or_404(
+            Organization.objects.all(),
+            slug=org_slug
+        )
+
+    def post(self, request, *args, **kwargs):
+        from django.http import HttpResponseNotAllowed
+        return HttpResponseNotAllowed('GET')
+
+
+class OrgCreateMemberSuccessView(OrgCreateMemberMixin, TemplateView):
     template_name = "org/member_success.html"
     login_url = 'home'
     errors = {}
+
+    def get_organization(self, request, org_slug):
+        """
+        Get the Organization object that the org_slug refers to, or return a 404 response.
+
+        We override the OrgCreateMemberMixin method here, since the request.user
+        is not required to be an Organization user (like an employee) at this
+        Organization.
+        """
+        return get_object_or_404(
+            Organization.objects.all(),
+            slug=org_slug
+        )
 
     def post(self, request, *args, **kwargs):
         from django.http import HttpResponseNotAllowed
