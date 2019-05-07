@@ -1,5 +1,6 @@
 import json
 import requests
+import re
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -193,9 +194,10 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
             'password': 'abcde12345',
             'birthdate': '2000-01-01',
             'nickname': self.request.POST.get('first_name'),
-            'email': 'test_{}_{}@example.com'.format(
-                self.request.POST.get('first_name'),
-                self.request.POST.get('last_name'),
+            'email': '{}_{}_{}@example.com'.format(
+                "".join(re.findall("[a-zA-Z]+", self.request.POST.get('username'))),
+                "".join(re.findall("[a-zA-Z]+", self.request.POST.get('first_name'))),
+                "".join(re.findall("[a-zA-Z]+", self.request.POST.get('last_name'))),
             ),
         }
         # POST the data to VMI
