@@ -1633,14 +1633,17 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             with HTTMock(self.response_user_detail):
                 response = self.client.post(self.url, data=data)
 
-            expected_url_next_page = reverse(
+            url_vmi_auth = reverse('social:begin', args=(settings.SOCIAL_AUTH_NAME,))
+            url_next_page = reverse(
                 'org:org_create_member_success',
                 kwargs={
                     'org_slug': self.organization.slug,
                     'username': self.member.user.username
                 }
             )
-            self.assertRedirects(response, expected_url_next_page)
+            expected_redirect_url = '{}?next={}'.format(url_vmi_auth, url_next_page)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, expected_redirect_url)
             # No ResourceRequest has been created
             self.assertEqual(ResourceRequest.objects.count(), expected_num_resource_requests)
             # A ResourceGrant object has been created
