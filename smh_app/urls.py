@@ -32,8 +32,7 @@ urlpatterns = [
     path(r'resources/', include('apps.resources.urls')),
     path(r'org/', include('apps.org.urls')),
     path(r'member/', include('apps.member.urls')),
-    path(r'lockbox/', include('apps.lockbox.urls')),
-    path(r'affiliations/', include('apps.affiliations.urls')),
+    path(r'user/', include('apps.users.urls')),
     path('social-auth/', include('social_django.urls', namespace='social')),
     path('admin/', admin.site.urls),
 ]

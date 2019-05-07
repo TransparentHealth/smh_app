@@ -1,4 +1,4 @@
-SMH App
+SMH App |build-status|
 ------------------------
 
 - Python 3.7.x
@@ -30,6 +30,7 @@ and create a database via Postgres named "smh_app" with all migrations run::
     $ make setup
     $ workon smh_app
 
+<<<<<<< HEAD
 VMI and ShareMyHealth
 ------------------------
 This project also communicates with several other apps (VMI and ShareMyHealth).
@@ -39,3 +40,16 @@ You will need to set up a way for ``smh_app`` to communicate with these apps by:
   registering an application on each server
 - adding the appropriate values for each application to your ``.env`` file. A
   sample ``.env`` file is provided in ``.env-sample``.
+=======
+
+Development
+------------------------
+
+to setup a watcher on all sass files and compile sass (from main directory)::
+
+    $ npm run sass --prefix style
+
+
+.. |build-status| image:: https://travis-ci.org/TransparentHealth/smh_app.svg?branch=master
+    :target: https://travis-ci.org/TransparentHealth/smh_app
+>>>>>>> master

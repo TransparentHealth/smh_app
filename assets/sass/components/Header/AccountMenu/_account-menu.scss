@@ -1,0 +1,35 @@
+.account-menu {
+  padding: 0 1em;
+
+  img{
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    background-color: #dbe1fa; //
+    padding: 4px;
+  }
+
+  @include media-breakpoint-up(lg) {
+    padding: 0;
+  }
+
+  a {
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
+  }
+
+  .dropdown-menu::after {
+    display: none;
+
+    @include media-breakpoint-up(sm) {
+      display: block;
+      right: 1.625em;
+    }
+
+    @include media-breakpoint-up(lg) {
+      right: 1.1em;
+    }
+  }
+}

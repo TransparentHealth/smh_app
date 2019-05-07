@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+You're almost done!
+Please copy the link below into a NEW INGOGNITO browser to open a window for {{ member }} to complete setup on your device.
+
+{{ url_to_set_password }}
+
+{% endblock content %}

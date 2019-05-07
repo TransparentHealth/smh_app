@@ -14,7 +14,6 @@ import os
 import dj_database_url
 from django.contrib.messages import constants as messages
 from getenv import env
-from django.utils.translation import ugettext_lazy as _
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -47,10 +46,9 @@ INSTALLED_APPS = [
     'apps.resources',
     'apps.sharemyhealth',
     'apps.vmi',
-    'apps.affiliations',
-    'apps.lockbox',
     'apps.org',
     'apps.member',
+    'apps.users',
 
     'social_django',
 ]
@@ -171,7 +169,9 @@ AUTHENTICATION_BACKENDS = (
     'apps.vmi.backends.VMIOAuth2Backend'
 )
 
-LOGIN_REDIRECT_URL = 'home'
+# When a user logs in, they are redirected to the appropriate page by the user_member_router
+LOGIN_REDIRECT_URL = 'users:user_member_router'
+LOGIN_URL = '/social-auth/login/vmi'
 
 # Settings for social_django
 SOCIAL_AUTH_URL_NAMESPACE = "social"
@@ -205,19 +205,30 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
 # social-auth-app-django to recognize it. For example, for VMI, we define
 # settings that begin with 'SOCIAL_AUTH_VMI_'.
 SOCIAL_AUTH_NAME = env('VMI_OAUTH_NAME', 'vmi')
-SOCIAL_AUTH_VMI_HOST = env('VMI_OAUTH_HOST')
-SOCIAL_AUTH_VMI_KEY = env('VMI_OAUTH_KEY')
-SOCIAL_AUTH_VMI_SECRET = env('VMI_OAUTH_SECRET')
-SOCIAL_AUTH_SHAREMYHEALTH_HOST = env('SMH_OAUTH_HOST')
-SOCIAL_AUTH_SHAREMYHEALTH_KEY = env('SMH_OAUTH_KEY')
-SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SMH_OAUTH_SECRET')
+SOCIAL_AUTH_VMI_HOST = env('VMI_OAUTH_HOST', 'http://localhost:8000')
+SOCIAL_AUTH_VMI_KEY = env('VMI_OAUTH_KEY', '')
+SOCIAL_AUTH_VMI_SECRET = env('VMI_OAUTH_SECRET', '')
+SOCIAL_AUTH_SHAREMYHEALTH_HOST = env('SMH_OAUTH_HOST', 'http://localhost:8000')
+SOCIAL_AUTH_SHAREMYHEALTH_KEY = env('SMH_OAUTH_KEY', '')
+SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SMH_OAUTH_SECRET', '')
 
+# A mapping of resource names to the path for their class
+RESOURCE_NAME_AND_CLASS_MAPPING = {
+    'sharemyhealth': 'apps.sharemyhealth.resources.Resource'
+}
+
+# Valid record types for member data
+VALID_MEMBER_DATA_RECORD_TYPES = [
+    'all', 'prescriptions', 'diagnoses', 'allergies', 'procedures', 'ed_reports',
+    'family_history', 'demographics', 'discharge_summaries', 'immunizations',
+    'lab_results', 'progress_notes', 'vital_signs'
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'sitestatic'),
-    os.path.join(BASE_DIR, 'style/dist'),
+    os.path.join(BASE_DIR, 'assets/dist'),
 ]
 
 STATIC_URL = '/static/'

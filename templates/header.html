@@ -1,0 +1,135 @@
+{% load static %}
+<header class="header header--auth">
+    <nav class="container d-flex justify-content-between align-content-center navbar navbar-expand-lg navbar-light">
+        <a href="/" class="navbar-brand">
+            <img src="{% static '/images/logo.svg' %}" alt="Share My Health Home">
+        </a>
+        <button aria-controls="responsive-navbar-nav" type="button" aria-label="Toggle navigation" class="navbar-toggler">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse" id="responsive-navbar-nav">
+            <div class="navbar-nav__wrapper d-flex justify-content-end align-items-center">
+                <div class="nav-item nav-item--search pr-3 pl-3">
+                    <form class="form--search form--search--header form-inline">
+                        <label class="sr-only sr-only-focusable form-label">Search</label>
+                        <input type="text" placeholder="Search members" class="bg-white" value="">
+                        <button type="button" class="button--reset btn btn-primary">
+                            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="search" class="svg-inline--fa fa-search fa-w-16 " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path></svg>
+                        </button>
+                    </form>
+                </div>
+                <div class="mr-auto align-items-center navbar-nav">
+                    <div class="nav-item nav-item--button pr-3 pl-3">
+                        {% if request.user.organization_set.first %}
+                          <a href="{% url 'org:org_create_member' request.user.organization_set.first.slug %}" class="btn btn-primary" role="button">
+                              <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" class="svg-inline--fa fa-plus fa-w-14 mr-1" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"></path></svg>
+                              Create Account
+                          </a>
+                        {% endif %}
+                    </div>
+                    <div class="alerts dropdown nav-item">
+                        <a aria-haspopup="true" aria-expanded="false" href="#" class="dropdown-toggle nav-link" role="button">
+                            <img src="{% static '/images/icons/bell.png' %}" alt="Notifications menu icon">
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="">
+                            <h2 class="text-center pt-3 pb-3">Recent Notifications</h2>
+                            <span class="navbar-text">
+                                <div class="alert-item">
+                                    <img src="/images/avatars/sloan.png" alt="" class="alert-item__image">
+                                    <div>
+                                        <div class="alert-item__text">
+                                            <p><strong>Danielle Sloan</strong> accepted your request.</p>
+                                        </div>
+                                        <div class="alert-item__time">3 minutes ago</div>
+                                    </div>
+                                </div>
+                            </span>
+                            <span class="navbar-text">
+                                <div class="alert-item">
+                                    <img src="/images/avatars/mcnabb.png" alt="" class="alert-item__image">
+                                    <div>
+                                        <div class="alert-item__text">
+                                            <p><strong>Stephanie McNabb</strong> hasn't accepted your request yet.</p>
+                                        </div>
+                                        <div class="alert-item__time">1 hour ago</div>
+                                        <div class="alert-item__action">Send Reminder</div>
+                                    </div>
+                                </div>
+                            </span>
+                            <span class="navbar-text">
+                                <div class="alert-item">
+                                    <img src="/images/avatars/arthur.png" alt="" class="alert-item__image">
+                                    <div>
+                                        <div class="alert-item__text">
+                                            <p><strong>Trinity Health</strong> left a note for <strong>Dennis Arthur</strong></p>
+                                        </div>
+                                        <div class="alert-item__time">3 hours ago</div>
+                                    </div>
+                                </div>
+                            </span>
+                            <span class="navbar-text">
+                                <div class="alert-item">
+                                    <img src="/images/avatars/deets.png" alt="" class="alert-item__image">
+                                    <div>
+                                        <div class="alert-item__text">
+                                            <p><strong>Ricky Deets</strong> accepted your request.</p>
+                                        </div><div class="alert-item__time">3 hours ago</div>
+                                    </div>
+                                </div>
+                            </span>
+                            <span class="navbar-text">
+                                <div class="alert-item">
+                                    <img src="/images/avatars/westenheimer.png" alt="" class="alert-item__image">
+                                    <div>
+                                        <div class="alert-item__text">
+                                            <p><strong>Samantha Westenheimer</strong> accepted your request.</p>
+                                        </div>
+                                        <div class="alert-item__time">6 hours ago</div>
+                                    </div>
+                                </div>
+                            </span>
+                            <span class="navbar-text">
+                                <div class="alert-item"><img src="/images/avatars/arthur.png" alt="" class="alert-item__image">
+                                    <div>
+                                        <div class="alert-item__text">
+                                            <p><strong>Dennis Arthur</strong> accepted your request.</p>
+                                        </div>
+                                        <div class="alert-item__time">3 minutes ago</div>
+                                    </div>
+                                </div>
+                            </span>
+                            <span class="navbar-text"><div class="alert-item">
+                                <img src="/images/avatars/lender.png" alt="" class="alert-item__image">
+                                <div><div class="alert-item__text">
+                                    <p><strong>Abbey Lender</strong> accepted your request.</p>
+                                </div>
+                                <div class="alert-item__time">3 minutes ago</div>
+                            </div>
+                        </div>
+                    </span>
+                </div>
+            </div>
+            <div class="account-menu dropdown nav-item">
+                <a aria-haspopup="true" aria-expanded="false" href="#" class="dropdown-toggle nav-link" role="button">
+                    {% if request.user.userprofile.picture_url %}
+                      <img src="{{ request.user.userprofile.picture_url }}" alt="Account menu icon">
+                    {% else %}
+                      <img src="{% static '/images/icons/avatar_default.png' %}" alt="Account menu icon">
+                    {% endif %}
+                </a><div class="dropdown-menu" aria-labelledby="">
+                    <span class="navbar-text">
+                        <a href="#/">Dashboard</a>
+                    </span><div role="separator" class="dropdown-divider">
+
+                    </div>
+                    <span class="navbar-text"><a href="#/settings">Settings</a>
+                    </span>
+                    <div role="separator" class="dropdown-divider"></div>
+                    <span class="navbar-text">
+                        <a href="/">Log Out</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>

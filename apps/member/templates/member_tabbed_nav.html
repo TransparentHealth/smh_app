@@ -1,0 +1,32 @@
+{% with request.resolver_match.url_name as url_name %}
+    <nav class="records-tabs nav nav-tabs" role="tablist">
+        <a
+            href="#"
+            role="tab"
+            data-rb-event-key="summary"
+            aria-selected="true"
+            class="nav-item nav-link {% if url_name == 'foo-bar' %}active{% endif %}">Summary</a>
+            {# TODO: set these active classes based on urls/views not yet created #}
+        <a
+            href="{% url 'member:records' member.id %}"
+            role="tab"
+            data-rb-event-key="records"
+            tabindex="-1"
+            aria-selected="false"
+            class="nav-item nav-link {% if url_name == 'records' %}active{% endif %}">Records</a>
+        <a
+            href="#"
+            role="tab"
+            data-rb-event-key="addSource"
+            tabindex="-1"
+            aria-selected="false"
+            class="nav-item nav-link {% if url_name == 'foo-bar' %}active{% endif %}">Providers</a>
+        <a
+            href="{% url 'member:data-sources' member.id %}"
+            role="tab"
+            data-rb-event-key="sources"
+            tabindex="-1"
+            aria-selected="false"
+            class="nav-item nav-link {% if url_name == 'data-sources' %}active{% endif %}">Data Sources</a>
+    </nav>
+{% endwith %}

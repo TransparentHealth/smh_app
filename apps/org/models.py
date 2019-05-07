@@ -7,11 +7,12 @@ from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
 from .utils import set_unique_slug
+from .tokens import default_token_generator
 from ..common.models import CreatedUpdatedModel
 
 
 RESOURCE_CHOICES = [
-    ('apps.sharemyhealth.resources.Resource', 'apps.sharemyhealth.resources.Resource')
+    (value, value) for value in settings.RESOURCE_NAME_AND_CLASS_MAPPING.values()
 ]
 REQUEST_REQUESTED = 'Requested'
 REQUEST_APPROVED = 'Approved'
@@ -49,6 +50,10 @@ class Organization(CreatedUpdatedModel, models.Model):
 
         super().save(**kwargs)
 
+    @property
+    def invite_token(self):
+        return default_token_generator.make_token(self)
+
 
 class ResourceGrant(CreatedUpdatedModel, models.Model):
     """A model to track which Organizations have access to which users' resources."""
@@ -61,7 +66,7 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
         on_delete=models.CASCADE,
         help_text='The member who has granted this Organization access to the resource'
     )
-    resource_class = models.CharField(
+    resource_class_path = models.CharField(
         max_length=255,
         choices=RESOURCE_CHOICES,
         default=RESOURCE_CHOICES[0][0]
@@ -79,12 +84,14 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
     @property
     def provider_name(self):
         """Return the 'name' of the resource_class."""
-        # First, import the class
-        resource_module = '.'.join(self.resource_class.split('.')[:-1])
-        resource_class_name = self.resource_class.split('.')[-1]
-        resource_class = getattr(import_module(resource_module), resource_class_name)
-        # Return the class' name
-        return resource_class.name
+        return self.resource_class.name
+
+    @property
+    def resource_class(self):
+        """Return the class that the resource_class_path refers to."""
+        resource_module = '.'.join(self.resource_class_path.split('.')[:-1])
+        resource_class_name = self.resource_class_path.split('.')[-1]
+        return getattr(import_module(resource_module), resource_class_name)
 
     class Meta:
         verbose_name_plural = "Resource Grants"
@@ -108,7 +115,7 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
         related_name='resource_requests_sent',
         help_text='The user at the Organization who initiated this request'
     )
-    resource_class = models.CharField(
+    resource_class_path = models.CharField(
         max_length=255,
         choices=RESOURCE_CHOICES,
         default=RESOURCE_CHOICES[0][0]
@@ -129,12 +136,14 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
     @property
     def provider_name(self):
         """Return the 'name' of the resource_class."""
-        # First, import the class
-        resource_module = '.'.join(self.resource_class.split('.')[:-1])
-        resource_class_name = self.resource_class.split('.')[-1]
-        resource_class = getattr(import_module(resource_module), resource_class_name)
-        # Return the class' name
-        return resource_class.name
+        return self.resource_class.name
+
+    @property
+    def resource_class(self):
+        """Return the class that the resource_class_path refers to."""
+        resource_module = '.'.join(self.resource_class_path.split('.')[:-1])
+        resource_class_name = self.resource_class_path.split('.')[-1]
+        return getattr(import_module(resource_module), resource_class_name)
 
     class Meta:
         verbose_name_plural = "Resource Requests"
