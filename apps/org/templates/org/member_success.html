@@ -1,7 +1,13 @@
-{% extends "base.html" %}
+{% extends "modal_base.html" %}
 {% load static %}
 
 {% block content %}
-Congratulations, {{ member }}, you have completed your account creation at {{ organization }}!
+
+<h1>
+    <span>Congratulations, <em>{{ member }}</em>! you have completed your account creation at <em>{{ organization }}</em></span>
+    <button type="button" class="close-btn" aria-label="Close">&times;</button>
+</h1>
+
+<a class="btn btn-primary" href="{% url 'member:member-update' pk=member.pk %}" target="_parent">Go to {{ member }} profile</a>
 
 {% endblock content %}

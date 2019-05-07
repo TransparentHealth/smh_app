@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "modal_base.html" %}
 {% load static %}
 
 {% block content %}
@@ -17,7 +17,9 @@
   <button type="submit">Submit</button>
 </form>
 
-<h3>Terms and conditions</h3>
-<p>You use this website at your own risk.</p>
+<div class="terms-and-conditions">
+    <h3>Terms and conditions</h3>
+    <p>You use this website at your own risk.</p>
+</div>
 
 {% endblock content %}

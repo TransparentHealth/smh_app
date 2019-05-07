@@ -3,10 +3,10 @@
 
 {% block content %}
 <h1>
-    <span>You're almost done! Click on the button below to open a window for <em>{{ member }}</em> to complete setup on your device</span>
+    <span>You're almost done, <em>{{ member }}</em>! Click on the button below to complete setup on your device</span>
     <button type="button" class="close-btn" aria-label="Close">&times;</button>
 </h1>
 
-<a href="{% url 'org:org_create_member_complete' organization.slug member.user.username %}" target="_blank">New window</a>
+<a class="btn btn-primary" href="{% url 'org:org_create_member_complete' organization.slug member.user.username %}">Click to Complete</a>
 
 {% endblock content %}

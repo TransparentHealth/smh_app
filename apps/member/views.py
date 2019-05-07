@@ -110,7 +110,7 @@ class CreateMemberView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         member_id = self.object.id
-        return reverse_lazy('member:member-update', kwargs={'pk': member_id})
+        return reverse_lazy('member:member-create')
 
 
 class UpdateMemberView(LoginRequiredMixin, UpdateView):

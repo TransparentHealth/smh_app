@@ -35,7 +35,7 @@
               <ul class="list--formatted">
                   {% for member in organization.members.all %}
                       <li class="user-link">
-                          <a href="/member/{{ member.id }}">
+                          <a href="{% url 'member:member-update' pk=member.pk %}">
                               <img src="{% static '/images/icons/avatar_default.png' %}" alt="Abbey Lender" class="mr-3">
                               {{ member }}
                           </a>

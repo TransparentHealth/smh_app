@@ -43,10 +43,12 @@
             {% block content %}
             {% endblock content %}
         </main>
+        {% if request.user.organization_set %}
         <div class="modal" id="create-member-modal">
             <iframe src="{% url 'org:org_create_member' request.user.organization_set.first.slug %}"></iframe>
             <div id="create-member-modal-backdrop"></div>
         </div>
+        {% endif %}
         <script src="{% static 'App.js' %}"></script>
     </body>
 </html>
