@@ -27,12 +27,9 @@ from .models import (
     Organization, REQUEST_APPROVED, REQUEST_REQUESTED, RESOURCE_CHOICES,
     ResourceGrant, ResourceRequest
 )
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.contrib.auth.models import User
 from django.views import View
 from django.http import JsonResponse
-
-from .models import Organization
 from smh_app.utils import get_vmi_user_data
 
 
