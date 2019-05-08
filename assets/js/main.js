@@ -70,7 +70,7 @@ function populateSearchPage () {
 	})
 }
 
-window.onload = function() {
+window.addEventListener('DOMContentLoaded', () => {
 
 	// ------------------------- search functionality in the header ------------------------- //
 	if (memberSearch) {
@@ -92,4 +92,4 @@ window.onload = function() {
 		sortOption.onchange = populateSearchPage
 	}
 
-}
+})
