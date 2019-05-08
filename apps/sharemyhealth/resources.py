@@ -15,7 +15,7 @@ class Resource(object):
     # The URL to use when GETting the data
     url_for_data = 'https://alpha.sharemy.health/'
     # The URL to refresh the token
-    url_token_refresh = 'https://alpha.sharemy.health'
+    url_token_refresh = '{}/o/token'.format(settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST)
 
     def __init__(self, member, *args, **kwargs):
         """Set a 'member' and a 'db_object' on the Resource instance."""
@@ -36,8 +36,12 @@ class Resource(object):
             'access_token': self.db_object.access_token,
             'refresh_token': self.db_object.extra_data['refresh_token'],
             'token_type': 'Bearer',
-            'expires_in': '3600',
+            'expires_in': 3600,
         }
+        if self.db_object.extra_data.get('auth_time', False):
+            # TODO: the 3600 expires_in should also be gleaned from the returned token
+            token_dict['expires_at'] = self.db_object.extra_data['auth_time'] + 3600
+
         # Other data sent as a part of the request
         extra = {
             'client_id': self.client_id,

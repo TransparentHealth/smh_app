@@ -9,6 +9,7 @@
           <span>{{ organization }}</span>
           <a href="{% url 'org:organization-update' organization.pk %}">edit</a>
           <a href="{% url 'org:organization-delete' organization.pk %}">delete</a>
+          <a href="{% url 'org:organization-join' organization.slug organization.invite_token %}">invite</a>
         </div>
 
         <div class="recent-alerts col-md-6 pr-4 pl-4">
