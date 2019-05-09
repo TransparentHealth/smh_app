@@ -23,7 +23,7 @@
             {% for data_source in current_data_sources %}
               <div class="mt-5">
                   <h2>Current Data Sources</h2>
-                  <a href="{% url 'member:data-sources' pk=member.pk resource_name=data_source.resource_name %}">
+                  <a href="{% url 'member:data-sources' pk=member.pk %}">
                     <div class="tile-flex">
                         <div class="tile tile-flex__item">
                             <img src="{{ data_source.image_url }}" alt="">

@@ -104,7 +104,7 @@ class ResourceTestCase(TestCase):
         self.assertEqual(data.json(), self.expected_response_success['content'])
         # The request was made to a URL built from the Resource's url_for_data,
         # and the requested_record_type.
-        expected_url = '{}/{}'.format(Resource.url_for_data, requested_record_type)
+        expected_url = Resource.url_for_data.format(record_type=requested_record_type)
         self.assertEqual(data.request.url, expected_url)
         # The request was made with a 'Bearer' Authorization header that includes
         # the access_token.

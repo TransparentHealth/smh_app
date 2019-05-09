@@ -1,4 +1,6 @@
+from collections import defaultdict
 from importlib import import_module
+import json
 
 from django.conf import settings
 from django.shortcuts import Http404
@@ -27,7 +29,7 @@ def get_member_data(requesting_user, member, resource_name, record_type):
         resource_class_name = resource_class_path.split('.')[-1]
         resource_class = getattr(import_module(resource_module), resource_class_name)
 
-        data = resource_class(member.user).get(record_type)
+        response = resource_class(member.user).get(record_type)
     else:
         resource_grants = ResourceGrant.objects.filter(
             member=member.user,
@@ -38,6 +40,47 @@ def get_member_data(requesting_user, member, resource_name, record_type):
             raise Http404
         else:
             resource_grant = resource_grants.first()
-        data = resource_grant.resource_class(resource_grant.member).get(record_type)
+        response = resource_grant.resource_class(resource_grant.member).get(record_type)
 
-    return data
+    # Loop through the content of the response, and put the fields that will need
+    # to be shown in the template into a dictionary, where the keys are record types.
+    records_dict = defaultdict(list)
+    for record in json.loads(response.content)['entry']:
+        # These are the data that will be needed for the template
+        record_data = {
+            'date': record['resource']['assertedDate'],
+            'code': record['resource']['code']['coding'][0]['code'],
+            'diagnosis': record['resource']['code']['text'],
+            'provider': '',
+        }
+        # Add the data into the records_dict
+        records_dict[record['resource']['resourceType']].append(record_data)
+
+    # Loop through the valid record types, and create a list of dictionaries,
+    # where the keys are the record types, and the values are the data that will
+    # be shown in the template for that record type. Note: the results list can
+    # include record types that have no data, in which case just their 'name'
+    # and 'icon_src' are returned, so those can still be rendered in the template.
+    results = []
+    for valid_record_type in settings.VALID_MEMBER_DATA_RECORD_TYPES:
+        # Find the record type name that will be used in the template
+        if valid_record_type in settings.MEMBER_DATA_RECORD_TYPE_MAPPING.keys():
+            record_type_name = settings.MEMBER_DATA_RECORD_TYPE_MAPPING[valid_record_type]
+        else:
+            record_type_name = valid_record_type
+
+        # Create a dictionary of data for this record type
+        record_type_data = {
+            'name': record_type_name.replace('_', ' ').title(),
+            'icon_src': '/images/icons/{}.png'.format(record_type_name.replace('_', '-')),
+        }
+        if valid_record_type in records_dict:
+            record_type_data['records'] = records_dict[valid_record_type]
+        else:
+            record_type_data['records'] = []
+        record_type_data['total'] = len(record_type_data['records'])
+
+        # Add the dictionary of data for this record type to the results
+        results.append(record_type_data)
+
+    return results
