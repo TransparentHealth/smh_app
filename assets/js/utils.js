@@ -12,19 +12,6 @@ function generateRandomString () {
   return randomString
 }
 
-function getUserData (val) {
-  return axios.get('/org/org-member-api').then( response => {
-    const members = response.data.filter(
-        user => {
-        const name = user.name.toLowerCase()
-          const email = user.email.toLowerCase()
-          return name.includes(val) || email.includes(val)
-        }
-      )
-      return members.sort((a, b) => a.family_name.localeCompare(b.family_name))
-  })
-}
-
 function toggleForm (elements) {
   // takes a collection of elements on a page and adds or removes the class, 'hide'
   // depending on whether the element already contains this class.
@@ -41,5 +28,4 @@ function toggleForm (elements) {
 
 // exports
 module.exports.generateRandomString = generateRandomString
-module.exports.getUserData = getUserData
 module.exports.toggleForm = toggleForm

@@ -9,20 +9,23 @@ const memberSearchForm = document.getElementById('header-search-form')
 
 function formatListResults (members) {
 	return members.map(mem => {
-		return '<li class="user-link"><a href="/member/' + mem.id + '"><img src="' + mem.picture + '" class="mr-3">' + mem.name + '</a></li>'
+		// `mem.extra_data.picture` does not currently work, but in the future extra_data should include this picture url from the vmi server
+		return '<li class="user-link"><a href="/member/' + mem.id + '"><img src="' + mem.extra_data.picture + '" class="mr-3">' + mem.user.first_name + ' ' + mem.user.last_name +'</a></li>'
 	}).join('')
 }
 
 function getUserData (val) {
 	return axios.get('/org/org-member-api').then( response => {
 		const members = response.data.filter(
-    		user => {
-				const name = user.name.toLowerCase()
-    			const email = user.email.toLowerCase()
-    			return name.includes(val) || email.includes(val)
+    		member => {
+
+				const first_name = member.user.first_name.toLowerCase()
+				const last_name = member.user.last_name.toLowerCase()
+    			const email = member.user.email.toLowerCase()
+    			return last_name.includes(val) || first_name.includes(val) || email.includes(val)
     		}
     	)
-    	return members.sort((a, b) => a.family_name.localeCompare(b.family_name))
+    	return members.sort((a, b) => a.user.last_name.localeCompare(b.user.last_name))
 	})
 }
 

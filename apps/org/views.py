@@ -32,6 +32,8 @@ from django.views import View
 from django.http import JsonResponse
 from smh_app.utils import get_vmi_user_data
 
+from apps.member.models import Member
+
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "org/dashboard.html"
@@ -656,22 +658,29 @@ class OrgCreateMemberSuccessView(OrgCreateMemberMixin, TemplateView):
 
 
 class LocalUserAPI(LoginRequiredMixin, View):
-    ''' Setting up a local endpoint that talks to the VMI endpoint and filters to
-        only include users with user social auth uids that match '''
+    ''' Setting up a local endpoint for users here. '''
     def get(self, request, *args, **kwargs):
-        response = get_vmi_user_data(request)
-        user_data = []
+        # picking the first organization here
+        org_id = request.user.organization_set.all().first().id
 
-        if isinstance(response.json(), list):
-            for i, user in enumerate(response.json(), 0):
-                # we only choose users/members with valid user social auth uids that match a field from VMI called 'sub'
-                member = User.social_auth.rel.related_model.objects.filter(uid=user['sub']).first()
-                if member:
-                    # add id so we can use in template (main.js)
-                    user['id'] = member.user.id
-                    user_data.append(user)
+        members = Member.objects.filter(user__organization=org_id)
+        members_data = list(members.values())
 
-        return JsonResponse(user_data, safe=False)
+        user_id_list = [mem.user.id for mem in members]
+
+        users = get_user_model().objects.filter(pk__in=user_id_list)
+        user_data = {user['id']: user for user in list(users.values())}
+
+        # TODO: Save all the extra_data from vmi when we create member and link to VMI, including `picture`
+
+        social_auth_data = list(get_user_model().social_auth.rel.related_model.objects.filter(user__pk__in=user_id_list).values())
+        extra_data = {user['user_id']: user['extra_data'] for user in social_auth_data}
+
+        for member in members_data:
+            member['user'] = user_data.get(member['user_id'], {})
+            member['extra_data'] = extra_data.get(member['user_id'], {})
+
+        return JsonResponse(members_data, safe=False)
 
 
 class SearchView(LoginRequiredMixin, TemplateView):
