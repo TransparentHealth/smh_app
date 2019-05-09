@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator as token_generator
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404, reverse
 from django.urls import reverse_lazy
@@ -14,6 +14,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
+from django.views import View
 
 from social_django.models import UserSocialAuth
 
@@ -27,11 +28,6 @@ from .models import (
     Organization, REQUEST_APPROVED, REQUEST_REQUESTED, RESOURCE_CHOICES,
     ResourceGrant, ResourceRequest
 )
-from django.contrib.auth.models import User
-from django.views import View
-from django.http import JsonResponse
-from smh_app.utils import get_vmi_user_data
-
 from apps.member.models import Member
 
 
