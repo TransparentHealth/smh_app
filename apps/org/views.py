@@ -581,9 +581,12 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         )
 
         # 4.) Make a request to VMI to update the member's password in VMI
+        org_user_social_auth = resource_request.user.social_auth.filter(
+            provider=settings.SOCIAL_AUTH_NAME
+        ).first()
         data = {'password': form.data['password1']}
         url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST, request_user_social_auth.uid)
-        headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+        headers = {'Authorization': "Bearer {}".format(org_user_social_auth.access_token)}
         response = requests.put(url=url, data=data, headers=headers)
 
         if response.status_code == 200:
@@ -595,10 +598,11 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             self.member.user.set_password(form.data['password1'])
             self.member.user.save()
 
-            # 6.) Redirect the user to the next step in the Member-creation process
-            return HttpResponseRedirect(
-                self.get_success_url(self.organization.slug, self.member.user.username)
-            )
+            # 6.) Redirect the user to authenticate in VMI, and to accept this
+            # application's access (and get an access token as a result).
+            url_vmi_auth = reverse('social:begin', args=(settings.SOCIAL_AUTH_NAME,))
+            url_success = self.get_success_url(self.organization.slug, self.member.user.username)
+            return HttpResponseRedirect('{}?next={}'.format(url_vmi_auth, url_success))
         else:
             # The request to update a user in VMI did not succeed, so show errors to the user.
             self.errors = json.loads(response.content)
