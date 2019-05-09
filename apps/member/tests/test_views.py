@@ -1,7 +1,6 @@
 from httmock import HTTMock
 
 from django.test import TestCase, override_settings
-from django.urls.exceptions import NoReverseMatch
 from django.urls import reverse
 
 from apps.common.tests.base import MockResourceDataMixin, SMHAppTestMixin
@@ -260,6 +259,16 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
 class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
     url_name = 'member:records'
 
+    def setUp(self):
+        """
+        Set the self.expected_response_success.
+
+        The self.expected_response_success is set to a sample response for getting
+        1 Condition (diagnosis) record from the resource server.
+        """
+        super().setUp()
+        self.expected_response_success = self.get_member_health_data_condition()
+
     def test_context_data(self):
         """GETting records view puts response of get_member_data() into the context."""
         # Create a member
@@ -274,13 +283,13 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         with HTTMock(self.response_content_success):
             response = self.client.get(url)
 
-        # The response has data,
-        # which matches the mocked response.
+        # The response has data matches the mocked response.
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.context_data.get('data').json(),
-            self.expected_response_success['content']
-        )
+        # The self.expected_response_success includes 1 'Diagnoses' record
+        diagnoses_results = [
+            data for data in response.context_data.get('results') if data['name'] == 'Diagnoses'
+        ]
+        self.assertEqual(diagnoses_results[0]['total'], 1)
 
     def test_authenticated(self):
         """The user must be authenticated to see records."""
@@ -293,7 +302,10 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
 
         with self.subTest('Authenticated'):
             self.client.force_login(self.user)
-            response = self.client.get(url)
+            # We mock the use of the requests library, so we don't make real
+            # requests from within the test.
+            with HTTMock(self.response_content_success):
+                response = self.client.get(url)
             self.assertEqual(response.status_code, 200)
 
         with self.subTest('Not authenticated'):
@@ -310,77 +322,22 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
 class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
     url_name = 'member:data-sources'
 
-    def test_get_parameters(self):
-        """GETting data sources view with/without resource_name and record_type parameters."""
+    def test_get(self):
+        """GET the data sources view."""
         # Create a member
         member = UserFactory()
         # Give the self.user access to the member's access_token.
         provider_name = Resource.name
         self.give_user_access_to_member_token(self.user, member, provider_name)
 
-        with self.subTest('no resource_name or record_type parameters'):
-            url = reverse(self.url_name, kwargs={'pk': member.pk})
+        url = reverse(self.url_name, kwargs={'pk': member.pk})
 
-            # We mock the use of the requests library, so we don't make real
-            # requests from within the test.
-            with HTTMock(self.response_content_success):
-                response = self.client.get(url)
+        # We mock the use of the requests library, so we don't make real
+        # requests from within the test.
+        with HTTMock(self.response_content_success):
+            response = self.client.get(url)
 
-            # Because the user did not specify a resource_name, the response has
-            # no data.
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.context_data.get('data'), None)
-
-        with self.subTest('no record_type parameter', resource_name=provider_name):
-            url = reverse(
-                self.url_name,
-                kwargs={'pk': member.pk, 'resource_name': provider_name}
-            )
-
-            # We mock the use of the requests library, so we don't make real
-            # requests from within the test.
-            with HTTMock(self.response_content_success):
-                response = self.client.get(url)
-
-            # Since the user specified a resource_name, the response has data,
-            # which matches the mocked response.
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(
-                response.context_data.get('data').json(),
-                self.expected_response_success['content']
-            )
-
-        with self.subTest('no resource_name parameter', record_type='all'):
-            # A URL for data-soruces with a record_type parameter but no
-            # resource_name parameter does not exist.
-            with self.assertRaises(NoReverseMatch):
-                url = reverse(
-                    self.url_name,
-                    kwargs={'pk': member.pk, 'record_type': 'all'}
-                )
-
-        with self.subTest(resource_name='sharemyhealth', record_type='all'):
-            url = reverse(
-                self.url_name,
-                kwargs={
-                    'pk': member.pk,
-                    'resource_name': provider_name,
-                    'record_type': 'all'
-                }
-            )
-
-            # We mock the use of the requests library, so we don't make real
-            # requests from within the test.
-            with HTTMock(self.response_content_success):
-                response = self.client.get(url)
-
-            # Since the user specified a resource_name and a record_type, the
-            # response has data, which matches the mocked response.
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(
-                response.context_data.get('data').json(),
-                self.expected_response_success['content']
-            )
+        self.assertEqual(response.status_code, 200)
 
     def test_authenticated(self):
         """The user must be authenticated to see data sources."""
@@ -391,11 +348,7 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         self.give_user_access_to_member_token(self.user, member, provider_name)
         url = reverse(
             self.url_name,
-            kwargs={
-                'pk': member.pk,
-                'resource_name': provider_name,
-                'record_type': 'all'
-            }
+            kwargs={'pk': member.pk}
         )
 
         with self.subTest('Authenticated'):
@@ -409,11 +362,11 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             expected_redirect = '{}?next={}'.format(reverse('login'), url)
             self.assertRedirects(response, expected_redirect)
 
-    def test_permissions(self):
+    def test_get_permissions(self):
         """
-        A user may see a member's data, if the user has access to it:
-          - if the request.user is the member, or
-          - if the request.user is in an Organization that has an approved
+        A user may see a member's data sources, if:
+          - the request.user is the member, or
+          - the request.user is in an Organization that has an approved
             ResourceRequest for the member's data
         """
         # Create a member
@@ -428,16 +381,9 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         )
 
         # The URLs that will be used in this test
-        member_data_url = reverse(
-            self.url_name,
-            kwargs={
-                'pk': member.pk,
-                'resource_name': provider_name,
-                'record_type': 'all'
-            }
-        )
+        member_data_url = reverse(self.url_name, kwargs={'pk': member.pk})
 
-        with self.subTest("A member's data without an approved ResourceRequest"):
+        with self.subTest("A member's data sources without an approved ResourceRequest"):
 
             # We mock the use of the requests library, so we don't make real
             # requests from within the test.
@@ -447,7 +393,9 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             # The request.user does not have access to the member's data
             self.assertEqual(response.status_code, 404)
 
-        with self.subTest("A member's data with an approved ResourceRequest, other Organization"):
+        with self.subTest(
+            "A member's data sources with an approved ResourceRequest, other Organization"
+        ):
             # The member has approved some Organization's request for the member's data
             organization = OrganizationFactory()
             resource_request = ResourceRequestFactory(
@@ -472,7 +420,7 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 404)
 
         with self.subTest(
-            "A member's data with an approved ResourceRequest from request.user's Organization"
+            "A member's data sources with approved ResourceRequest from request.user's Organization"
         ):
             # The request.user is now in the organization
             organization.users.add(self.user)
@@ -487,7 +435,6 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 200)
 
         with self.subTest('A member requesting their own data'):
-            # import ipdb; ipdb.set_trace()
             self.client.logout()
             self.client.force_login(member)
 

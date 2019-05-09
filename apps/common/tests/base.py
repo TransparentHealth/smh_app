@@ -40,6 +40,69 @@ class MockResourceDataMixin:
     def response_content_success(self, url, request):
         return self.expected_response_success
 
+    def get_member_health_data_condition(self):
+        """
+        Return sample response for getting 1 Condition (diagnosis) record from resource server.
+        """
+        return {
+            'status_code': 200,
+            'content': {
+                'entry': [
+                    {
+                        'fullUrl': 'https://alpha.sharemy.health/fhir/baseDstu3/Condition/253',
+                        'resource': {
+                            'abatementDateTime': '2016-04-16T21:27:04-04:00',
+                            'assertedDate': '2016-03-27',
+                            'clinicalStatus': 'active',
+                            'code': {
+                                'coding': [
+                                    {
+                                        'code': '10509002',
+                                        'display': 'Acute bronchitis (disorder)',
+                                        'system': 'http://snomed.info/sct'
+                                    }
+                                ],
+                                'text': 'Acute bronchitis (disorder)'
+                            },
+                            'context': {
+                                'reference': 'Encounter/252'
+                            },
+                            'id': '253',
+                            'meta': {
+                                'lastUpdated': '2019-01-08T04:41:20.513+00:00',
+                                'profile': [
+                                    'http://standardhealthrecord.org/fhir/StructureDefinition/shr-problem-Problem'
+                                ],
+                                'versionId': '1'
+                            },
+                            'onsetDateTime': '2016-03-27T21:16:04-04:00',
+                            'resourceType': 'Condition',
+                            'subject': {
+                                'reference': 'Patient/141'
+                            },
+                            'verificationStatus': 'confirmed'
+                        },
+                        'search': {
+                            'mode': 'match'
+                        }
+                    },
+                ],
+                'id': '5f8fe636-e703-46be-b794-b755a43da684',
+                'link': [
+                    {
+                        'relation': 'self',
+                        'url': 'https://alpha.sharemy.health/fhir/baseDstu3/Condition?subject=141'
+                    }
+                ],
+                'meta': {
+                    'lastUpdated': '2019-05-03T12:54:55.807+00:00'
+                },
+                'resourceType': 'Bundle',
+                'total': 1,
+                'type': 'searchset',
+            }
+        }
+
     def give_user_access_to_member_token(self, user, member, provider_name):
         """
         Give the user access to the member's access_token, and return access_token.

@@ -13,7 +13,7 @@ class Resource(object):
     client_id = settings.SOCIAL_AUTH_SHAREMYHEALTH_KEY
     client_secret = settings.SOCIAL_AUTH_SHAREMYHEALTH_SECRET
     # The URL to use when GETting the data
-    url_for_data = 'https://alpha.sharemy.health/'
+    url_for_data = 'https://alpha.sharemy.health/fhir/baseDstu3/{record_type}/?subject=141'
     # The URL to refresh the token
     url_token_refresh = '{}/o/token'.format(settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST)
 
@@ -48,7 +48,7 @@ class Resource(object):
             'client_secret': self.client_secret
         }
         # The URL for the request
-        url = '{}/{}'.format(self.url_for_data, record_type)
+        url = self.url_for_data.format(record_type=record_type)
 
         client = OAuth2Session(
             self.client_id,
