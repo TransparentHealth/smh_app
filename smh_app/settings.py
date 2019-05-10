@@ -219,10 +219,13 @@ RESOURCE_NAME_AND_CLASS_MAPPING = {
 
 # Valid record types for member data
 VALID_MEMBER_DATA_RECORD_TYPES = [
-    'all', 'prescriptions', 'diagnoses', 'allergies', 'procedures', 'ed_reports',
+    'prescriptions', 'Condition', 'allergies', 'procedures', 'ed_reports',
     'family_history', 'demographics', 'discharge_summaries', 'immunizations',
     'lab_results', 'progress_notes', 'vital_signs'
 ]
+MEMBER_DATA_RECORD_TYPE_MAPPING = {
+    'Condition': 'diagnoses'
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
