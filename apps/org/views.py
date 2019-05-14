@@ -661,9 +661,7 @@ class LocalUserAPI(LoginRequiredMixin, View):
     ''' Setting up a local endpoint for users here. '''
     def get(self, request, *args, **kwargs):
         # picking the first organization here
-        org_id = request.user.organization_set.all().first().id
-
-        members = Member.objects.filter(user__organization=org_id)
+        members = Member.objects.all()
         members_data = list(members.values())
 
         user_id_list = [mem.user.id for mem in members]
