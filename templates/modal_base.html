@@ -1,0 +1,19 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'App.css' %}" type="text/css" />
+<div class="modal-content-wrap">
+	{% block content %}
+    {% endblock content %}
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // close the modal
+        const memberModal = window.parent.document.getElementById('create-member-modal')
+        function closeMemberModal() {
+            memberModal.classList.remove('show-modal')
+        }
+        const closeModalBtn = document.getElementsByClassName('close-btn')
+        for (var i = 0; i < closeModalBtn.length; i++) {
+            closeModalBtn[i].onclick = closeMemberModal
+        }
+    });
+</script>
