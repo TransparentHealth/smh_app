@@ -1,11 +1,14 @@
-{% extends "base.html" %}
+{% extends "modal_base.html" %}
 {% load static %}
 
 {% block content %}
-Fill in the following additional info for new member {{ member }} at {{ organization }}.
+<h1>
+    <span>Fill in the following additional info for new member <em>{{ member }}</em> at <em>{{ organization }}</em></span>
+    <button type="button" class="close-btn" aria-label="Close">&times;</button>
+</h1>
 
 {% if errors %}
-  {{ errors }}
+  <div class="errors">{{ errors }}</div>
 {% endif %}
 
 <form method="POST">

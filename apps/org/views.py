@@ -1,5 +1,6 @@
 import json
 import requests
+import re
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -195,9 +196,10 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
             'password': 'abcde12345',
             'birthdate': '2000-01-01',
             'nickname': self.request.POST.get('first_name'),
-            'email': 'test_{}_{}@example.com'.format(
-                self.request.POST.get('first_name'),
-                self.request.POST.get('last_name'),
+            'email': '{}_{}_{}@example.com'.format(
+                "".join(re.findall("[a-zA-Z]+", self.request.POST.get('username'))),
+                "".join(re.findall("[a-zA-Z]+", self.request.POST.get('first_name'))),
+                "".join(re.findall("[a-zA-Z]+", self.request.POST.get('last_name'))),
             ),
         }
         # POST the data to VMI
@@ -505,7 +507,7 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
     def token_is_valid(self, uidb64, token):
         """Return whether the token is valid (for the user)."""
         uid = urlsafe_base64_decode(uidb64).decode()
-        user = get_user_model().objects.get(pk=uid)
+        user = self.member.user if self.member.pk == int(uid) else None
         return token_generator.check_token(user, token)
 
     def get(self, *args, **kwargs):
@@ -527,6 +529,9 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
 
     def post(self, *args, **kwargs):
         """POSTing to the OrgCreateMemberCompleteView is only allowed with a valid token."""
+        self.organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+
         if self.token_is_valid(uidb64=kwargs['uidb64'], token=kwargs['token']):
             # The token is valid, so call the super().post() method
             return super().post(*args, **kwargs)
@@ -553,11 +558,13 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
          6.) redirect the user to the next step in the Member-creation process
         """
         # 1.) Verify that the request.user has a UserSocialAuth object for VMI
-        request_user_id = urlsafe_base64_decode(self.kwargs.get('uidb64'))
-        request_user = get_user_model().objects.get(pk=request_user_id)
-        request_user_social_auth = request_user.social_auth.filter(
+        # request_user_id = urlsafe_base64_decode(self.kwargs.get('uidb64'))
+        # request_user = Member.objects.get(pk=request_user_id)
+
+        request_user_social_auth = self.member.user.social_auth.filter(
             provider=settings.SOCIAL_AUTH_NAME
         ).first()
+
         # If the request.user does not have a UserSocialAuth for VMI, then
         # return the error to the user.
         if not request_user_social_auth:

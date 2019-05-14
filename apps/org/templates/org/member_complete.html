@@ -1,11 +1,14 @@
-{% extends "base.html" %}
+{% extends "modal_base.html" %}
 {% load static %}
 
 {% block content %}
-{{ member }}, complete your account creation at {{ organization }} here:
+<h1>
+    <span><em>{{ member }}</em> complete your account creation at <em>{{ organization }}</em> here:</span>
+    <button type="button" class="close-btn" aria-label="Close">&times;</button>
+</h1>
 
 {% if errors %}
-  {{ errors }}
+  <div class="errors">{{ errors }}</div>
 {% endif %}
 
 <form method="POST">
@@ -14,7 +17,9 @@
   <button type="submit">Submit</button>
 </form>
 
-<h3>Terms and conditions</h3>
-<p>You use this website at your own risk.</p>
+<div class="terms-and-conditions">
+    <h3>Terms and conditions</h3>
+    <p>You use this website at your own risk.</p>
+</div>
 
 {% endblock content %}
