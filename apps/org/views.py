@@ -343,7 +343,7 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
     def get_success_url(self, org_slug, username):
         """A successful verification redirects to the next step in the process."""
         return reverse(
-            'org:org_create_member_additional_info',
+            'org:org_create_member_almost_done',    # skip 'org:member_additional_info' for now
             kwargs={'org_slug': org_slug, 'username': username}
         )
 
