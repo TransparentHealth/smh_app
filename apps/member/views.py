@@ -105,7 +105,6 @@ class CreateMemberView(LoginRequiredMixin, CreateView):
     template_name = 'member.html'
 
     def get_success_url(self):
-        member_id = self.object.id
         return reverse_lazy('member:member-create')
 
 

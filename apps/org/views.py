@@ -29,8 +29,6 @@ from .models import (
     ResourceGrant, ResourceRequest
 )
 
-from apps.member.models import Member
-
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "org/dashboard.html"
