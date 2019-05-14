@@ -28,6 +28,7 @@ from .models import (
     Organization, REQUEST_APPROVED, REQUEST_REQUESTED, RESOURCE_CHOICES,
     ResourceGrant, ResourceRequest
 )
+from .utils import make_qr_code
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -469,6 +470,7 @@ class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
         )
         full_url_to_set_password = self.request.build_absolute_uri(relative_url_to_set_password)
         kwargs.setdefault('url_to_set_password', full_url_to_set_password)
+        kwargs.setdefault('qrcode', make_qr_code(full_url_to_set_password))
 
         return super().get_context_data(**kwargs)
 

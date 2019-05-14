@@ -2,19 +2,25 @@
 {% load static %}
 
 {% block content %}
-<h1>
-    <span>You're almost done, <em>{{ member }}</em>! Click on the button below to complete setup on your device</span>
-    <button type="button" class="close-btn" aria-label="Close">&times;</button>
-</h1>
-
-<a class="btn btn-primary" href="{{ url_to_set_password }}">Click to Complete</a>
-
-<div class="user-message">
-    If you are <em>{{ member }}</em>, please copy link into new incognito browser window to complete setup on your device.
-    <!-- This step is to simulate a link via text message/email being sent to your device -->
-    <br>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <h1>
+                <span>You're almost done, <em>{{ member }}</em>! Click on the button below to complete setup on your device</span>
+                <button type="button" class="close-btn" aria-label="Close">&times;</button>
+            </h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <a href="{{ url_to_set_password }}"><img src="data:image/png;base64, {{ qrcode }}" alt="{{ url_to_set_password }}"/></a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <a class="btn btn-primary" href="{{ url_to_set_password }}">Click to Complete</a>
+        </div>
+    </div>
 </div>
-<div>{{ url_to_set_password }}</div>
-
 
 {% endblock content %}
