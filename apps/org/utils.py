@@ -27,7 +27,7 @@ def set_unique_slug(instance, based_on_field='name'):
 
 def make_qr_code(text, format='PNG', encoding='base64'):
     """
-    Convert the given text to a QR-code. If encoding=='base64', return base64; 
+    Convert the given text to a QR-code. If encoding=='base64', return base64;
     otherwise, return raw image file data as bytes.
     """
     qr = qrcode.QRCode(version=None)
