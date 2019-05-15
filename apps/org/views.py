@@ -29,6 +29,7 @@ from .models import (
     Organization, REQUEST_APPROVED, REQUEST_REQUESTED, RESOURCE_CHOICES,
     ResourceGrant, ResourceRequest
 )
+from libs.qrcode import make_qr_code
 from apps.member.models import Member
 
 
@@ -344,7 +345,7 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
     def get_success_url(self, org_slug, username):
         """A successful verification redirects to the next step in the process."""
         return reverse(
-            'org:org_create_member_additional_info',
+            'org:org_create_member_almost_done',    # skip 'org:member_additional_info' for now
             kwargs={'org_slug': org_slug, 'username': username}
         )
 
@@ -471,6 +472,7 @@ class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
         )
         full_url_to_set_password = self.request.build_absolute_uri(relative_url_to_set_password)
         kwargs.setdefault('url_to_set_password', full_url_to_set_password)
+        kwargs.setdefault('qrcode', make_qr_code(full_url_to_set_password))
 
         return super().get_context_data(**kwargs)
 

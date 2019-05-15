@@ -1005,7 +1005,8 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
 
             # A successful create redirects to the next page of the creation process.
             expected_url_next_page = reverse(
-                'org:org_create_member_additional_info',
+                # skip org:org_create_member_additional_info for now
+                'org:org_create_member_almost_done',
                 kwargs={
                     'org_slug': self.organization.slug,
                     'username': self.member.user.username

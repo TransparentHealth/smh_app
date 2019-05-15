@@ -79,8 +79,8 @@ class UpdateNewMemberAtOrgMemberForm(Form):
     # checkbox in the template.
     accept_terms_and_conditions = BooleanField(required=True)
     give_org_access_to_data = BooleanField(required=True)
-    password1 = CharField(widget=PasswordInput, required=True)
-    password2 = CharField(widget=PasswordInput, required=True)
+    password1 = CharField(widget=PasswordInput, required=True, label="Password")
+    password2 = CharField(widget=PasswordInput, required=True, label="Confirm Password")
 
     def clean(self):
         """Verify that passwords match each other."""
