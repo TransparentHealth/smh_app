@@ -17,7 +17,7 @@ def make_qr_code(text, encode_base64=True):
     image.save(f, format='PNG')
     f.seek(0)
     b = f.read()
-    if encode_base64 == True:
+    if encode_base64 is True:
         return base64.b64encode(b).decode('utf-8')
     else:
         return b
