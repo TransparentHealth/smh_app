@@ -20,7 +20,8 @@ RUN apk add bash \
 	nginx \
 	curl \
 	supervisor \
-	git && \
+	git \
+	npm && \
 	python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     pip3 install --upgrade pip setuptools && \
@@ -50,6 +51,10 @@ COPY .nginx/uwsgi_params /home/docker/code/
 # install django, normally you would remove this step because your project would already
 # be installed in the code/app/ directory
 # RUN django-admin.py startproject website /home/docker/code/app/
+
+# build assets (takes awhile)
+WORKDIR /home/docker/code/assets
+RUN make build
 
 WORKDIR /home/docker/
 EXPOSE 80
