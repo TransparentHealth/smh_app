@@ -29,10 +29,8 @@ from .models import (
     Organization, REQUEST_APPROVED, REQUEST_REQUESTED, RESOURCE_CHOICES,
     ResourceGrant, ResourceRequest
 )
-
-from .utils import make_qr_code
+from libs.qrcode import make_qr_code
 from apps.member.models import Member
-
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
