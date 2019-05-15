@@ -1,6 +1,7 @@
 import json
 import requests
 import re
+import uuid
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -186,21 +187,23 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
         # 2.) Make a request to VMI to create the new user
         # The data to be POSTed to VMI
         data = {
-            'given_name': self.request.POST.get('first_name'),
-            'family_name': self.request.POST.get('last_name'),
-            'preferred_username': self.request.POST.get('username'),
-            'phone_number': self.request.POST.get('phone_number', '').strip() or 'none',
+            # required form data, so we know it's present and cleaned
+            'given_name': form.cleaned_data['first_name'],
+            'family_name': form.cleaned_data['last_name'],
+            'preferred_username': form.cleaned_data['username'],
+            # non-required form data, might not be present
+            'phone_number': form.cleaned_data.get('phone_number', 'none').strip(),
             # The following fields are required by VMI, but we don't have values
             # for them yet, so we make up some data now, and require the user
             # to fill them in during the next steps of the Member creation process.
-            'gender': '',
-            'password': 'abcde12345',
+            'gender': '',   # = Unspecified
+            'password': str(uuid.uuid4()),
             'birthdate': '2000-01-01',
-            'nickname': self.request.POST.get('first_name'),
+            'nickname': form.cleaned_data['first_name'],
             'email': '{}_{}_{}@example.com'.format(
-                "".join(re.findall("[a-zA-Z]+", self.request.POST.get('username'))),
-                "".join(re.findall("[a-zA-Z]+", self.request.POST.get('first_name'))),
-                "".join(re.findall("[a-zA-Z]+", self.request.POST.get('last_name'))),
+                "".join(re.findall("[a-zA-Z]+", form.cleaned_data['username'])),
+                "".join(re.findall("[a-zA-Z]+", form.cleaned_data['first_name'])),
+                "".join(re.findall("[a-zA-Z]+", form.cleaned_data['last_name'])),
             ),
         }
         # POST the data to VMI

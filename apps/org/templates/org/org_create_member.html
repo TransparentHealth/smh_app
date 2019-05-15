@@ -2,18 +2,31 @@
 {% load static %}
 
 {% block content %}
-<h1>
-    <span>Create a member at <em>{{ organization }}</em></span>
-    <button type="button" class="close-btn" aria-label="Close">&times;</button>
-</h1>
-
-{% if errors %}
-  {{ errors }}
-{% endif %}
-
-<form method="POST">
-  {% csrf_token %}
-  {{ form }}
-<button type="submit">Create Member</button>
-
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <h1>
+                <span>Create a member at <em>{{ organization }}</em></span>
+                <button type="button" class="close-btn" aria-label="Close">&times;</button>
+            </h1>
+        </div>
+    </div>
+    {% if errors %}
+    <div class="row">
+        <div class="col errors">
+        {% for error in errors %}
+        {{ error }}
+        {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    <div class="row">
+        <div class="col">
+            <form method="POST">
+              {% csrf_token %}
+              {{ form }}
+            <button type="submit">Create Member</button>
+        </div>
+    </div>
+</div>
 {% endblock content %}
