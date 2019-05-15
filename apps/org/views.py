@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator as token_generator
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect, Http404, JsonResponse
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import get_object_or_404, reverse
 from django.urls import reverse_lazy
@@ -15,6 +15,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
+from django.views import View
 
 from social_django.models import UserSocialAuth
 
@@ -28,7 +29,10 @@ from .models import (
     Organization, REQUEST_APPROVED, REQUEST_REQUESTED, RESOURCE_CHOICES,
     ResourceGrant, ResourceRequest
 )
+
 from .utils import make_qr_code
+from apps.member.models import Member
+
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -662,3 +666,32 @@ class OrgCreateMemberSuccessView(OrgCreateMemberMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         from django.http import HttpResponseNotAllowed
         return HttpResponseNotAllowed('GET')
+
+
+class LocalUserAPI(LoginRequiredMixin, View):
+    ''' Setting up a local endpoint for users here. '''
+    def get(self, request, *args, **kwargs):
+        # picking the first organization here
+        members = Member.objects.all()
+        members_data = list(members.values())
+
+        user_id_list = [mem.user.id for mem in members]
+
+        users = get_user_model().objects.filter(pk__in=user_id_list)
+        user_data = {user['id']: user for user in list(users.values())}
+
+        # TODO: Save all the extra_data from vmi when we create member and link to VMI, including `picture`
+
+        social_auth_data = list(get_user_model().social_auth.rel.related_model.objects.filter(user__pk__in=user_id_list).values())
+        extra_data = {user['user_id']: user['extra_data'] for user in social_auth_data}
+
+        for member in members_data:
+            member['user'] = user_data.get(member['user_id'], {})
+            member['extra_data'] = extra_data.get(member['user_id'], {})
+
+        return JsonResponse(members_data, safe=False)
+
+
+class SearchView(LoginRequiredMixin, TemplateView):
+    """template view that mostly uses javascript to render content"""
+    template_name = "org/search.html"
