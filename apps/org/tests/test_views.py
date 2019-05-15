@@ -589,7 +589,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(
                 response.context['form'].errors,
                 {
-                    # 'nickname': ['This field is required.'], 
+                    # 'nickname': ['This field is required.'],
                     # 'email': ['This field is required.']
                 }
             )

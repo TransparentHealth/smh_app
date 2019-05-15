@@ -51,6 +51,7 @@ class UpdateNewMemberAtOrgBasicInfoForm(Form):
         if 'birthdate' in self.cleaned_data:
             self.cleaned_data['birthdate'] = str(self.cleaned_data['birthdate'])
 
+
 class VerifyMemberIdentityForm(Form):
     """
     A form for verifying a Member's identity.

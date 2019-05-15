@@ -303,7 +303,7 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
         # 3.) Make a request to VMI to update the new user
         # The data to be PUT to VMI
         # (at this point we know the form itself is valid; only put fields that are non-empty)
-        data = {k: v for k, v in form.cleaned_data.items() if bool(v)==True}
+        data = {k: v for k, v in form.cleaned_data.items() if bool(v) is True}
 
         # PUT the data to VMI
         url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST, member_social_auth.uid)
@@ -356,8 +356,8 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
          5.) redirect the user to the next step in the Member-creation process
         """
         # Only post the form_data if it's non-empty -- otherwise, we can skip this step
-        form_data = {k: v for k, v in form.cleaned_data.items() if bool(v)==True}
-        if bool(form_data)==True:
+        form_data = {k: v for k, v in form.cleaned_data.items() if bool(v) is True}
+        if bool(form_data) is True:
             # 1.) Verify that the request.user has a UserSocialAuth object for VMI
             request_user_social_auth = self.request.user.social_auth.filter(
                 provider=settings.SOCIAL_AUTH_NAME
