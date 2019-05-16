@@ -573,8 +573,8 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
                 response.context['form'].errors,
                 {
                     'birthdate': ['This field is required.'],
-                    'nickname': ['This field is required.'],
-                    'email': ['This field is required.'],
+                    # 'nickname': ['This field is required.'],
+                    # 'email': ['This field is required.'],
                 }
             )
             # The self.member was not updated
@@ -588,7 +588,10 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
                 response.context['form'].errors,
-                {'nickname': ['This field is required.'], 'email': ['This field is required.']}
+                {
+                    # 'nickname': ['This field is required.'],
+                    # 'email': ['This field is required.']
+                }
             )
             # The self.member was not updated
             self.member.user.refresh_from_db()
@@ -872,9 +875,9 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(
                 response.context['form'].errors,
                 {
-                    'classification': ['This field is required.'],
-                    'description': ['This field is required.'],
-                    'expiration_date': ['This field is required.'],
+                    # 'classification': ['This field is required.'],
+                    # 'description': ['This field is required.'],
+                    # 'expiration_date': ['This field is required.'],
                 }
             )
             # No requests were made to VMI
@@ -892,7 +895,9 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
                 response.context['form'].errors,
-                {'classification': ['This field is required.']}
+                {
+                    # 'classification': ['This field is required.']
+                }
             )
             # No requests were made to VMI
             self.assertEqual(self.response_id_assurance_list.call['count'], 0)

@@ -42,8 +42,14 @@ class UpdateNewMemberAtOrgBasicInfoForm(Form):
     """
     birthdate = DateField(required=True)
     gender = ChoiceField(choices=GENDER_CHOICES, required=False)
-    nickname = CharField(required=True)
-    email = EmailField(required=True)
+    nickname = CharField(required=False)
+    email = EmailField(required=False)
+
+    def clean(self):
+        super().clean()
+        # even though it's a date field, keep it as a string for json.dumps
+        if 'birthdate' in self.cleaned_data:
+            self.cleaned_data['birthdate'] = str(self.cleaned_data['birthdate'])
 
 
 class VerifyMemberIdentityForm(Form):
@@ -53,9 +59,15 @@ class VerifyMemberIdentityForm(Form):
     This form is used in the third step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
-    classification = ChoiceField(choices=IDENTITY_VERIFICATION_CLASSIFICATIONS, required=True)
-    description = CharField(required=True)
-    expiration_date = DateField(required=True)
+    classification = ChoiceField(choices=IDENTITY_VERIFICATION_CLASSIFICATIONS, required=False)
+    description = CharField(required=False)
+    expiration_date = DateField(required=False)
+
+    def clean(self):
+        super().clean()
+        # even though it's a date field, keep it as a string for json.dumps
+        if 'expiration_date' in self.cleaned_data:
+            self.cleaned_data['expiration_date'] = str(self.cleaned_data['expiration_date'])
 
 
 class UpdateNewMemberAtOrgAdditionalInfoForm(Form):

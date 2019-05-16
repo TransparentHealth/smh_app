@@ -302,12 +302,9 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
 
         # 3.) Make a request to VMI to update the new user
         # The data to be PUT to VMI
-        data = {
-            'gender': self.request.POST.get('gender'),
-            'birthdate': self.request.POST.get('birthdate'),
-            'nickname': self.request.POST.get('nickname'),
-            'email': self.request.POST.get('email'),
-        }
+        # (at this point we know the form itself is valid; only put fields that are non-empty)
+        data = {k: v for k, v in form.cleaned_data.items() if bool(v) is True}
+
         # PUT the data to VMI
         url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST, member_social_auth.uid)
         headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
@@ -358,53 +355,54 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
          4.) make a request to VMI to update the user's identity assurance
          5.) redirect the user to the next step in the Member-creation process
         """
-        # 1.) Verify that the request.user has a UserSocialAuth object for VMI
-        request_user_social_auth = self.request.user.social_auth.filter(
-            provider=settings.SOCIAL_AUTH_NAME
-        ).first()
-        # If the request.user does not have a UserSocialAuth for VMI, then
-        # return the error to the user.
-        if not request_user_social_auth:
-            self.errors = {
-                'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
-            }
-            return self.render_to_response(self.get_context_data())
+        # Only post the form_data if it's non-empty -- otherwise, we can skip this step
+        form_data = {k: v for k, v in form.cleaned_data.items() if bool(v) is True}
+        if bool(form_data) is True:
+            # 1.) Verify that the request.user has a UserSocialAuth object for VMI
+            request_user_social_auth = self.request.user.social_auth.filter(
+                provider=settings.SOCIAL_AUTH_NAME
+            ).first()
+            # If the request.user does not have a UserSocialAuth for VMI, then
+            # return the error to the user.
+            if not request_user_social_auth:
+                self.errors = {
+                    'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
+                }
+                return self.render_to_response(self.get_context_data())
 
-        # 2.) Verify that the Member has a UserSocialAuth object for VMI
-        member_social_auth = self.member.user.social_auth.filter(
-            provider=settings.SOCIAL_AUTH_NAME
-        ).first()
-        # If the Member does not have a UserSocialAuth for VMI, return an error to the user.
-        if not member_social_auth:
-            self.errors = {
-                'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
-            }
-            return self.render_to_response(self.get_context_data())
+            # 2.) Verify that the Member has a UserSocialAuth object for VMI
+            member_social_auth = self.member.user.social_auth.filter(
+                provider=settings.SOCIAL_AUTH_NAME
+            ).first()
+            # If the Member does not have a UserSocialAuth for VMI, return an error to the user.
+            if not member_social_auth:
+                self.errors = {
+                    'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
+                }
+                return self.render_to_response(self.get_context_data())
 
-        headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
-        # 4.) Make a request to VMI to update the user's identity assurance
-        url = '{}/api/v1/user/{}/id-assurance/'.format(
-            settings.SOCIAL_AUTH_VMI_HOST,
-            member_social_auth.uid,
-        )
-        data = {
-            'subject_user': member_social_auth.uid,
-            'classification': self.request.POST.get('classification'),
-            'description': self.request.POST.get('description'),
-            'exp': self.request.POST.get('expiration_date'),
-        }
-        # POST the data to the VMI endpoint for identity verification
-        response = requests.post(url=url, json=data, headers=headers)
-
-        if response.status_code == 201:
-            # Redirect the user to the next step in the Member-creation process
-            return HttpResponseRedirect(
-                self.get_success_url(self.organization.slug, self.member.user.username)
+            headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+            # 4.) Make a request to VMI to update the user's identity assurance
+            url = '{}/api/v1/user/{}/id-assurance/'.format(
+                settings.SOCIAL_AUTH_VMI_HOST,
+                member_social_auth.uid,
             )
-        else:
-            # The request to update a user in VMI did not succeed, so show errors to the user.
-            self.errors = json.loads(response.content)
-            return self.render_to_response(self.get_context_data())
+            data = {
+                'subject_user': member_social_auth.uid,
+                **form_data,
+            }
+            # POST the data to the VMI endpoint for identity verification
+            response = requests.post(url=url, json=data, headers=headers)
+
+            if response.status_code != 201:
+                # The request to update a user in VMI did not succeed, so show errors to the user.
+                self.errors = json.loads(response.content)
+                return self.render_to_response(self.get_context_data())
+
+        # Redirect the user to the next step in the Member-creation process
+        return HttpResponseRedirect(
+            self.get_success_url(self.organization.slug, self.member.user.username)
+        )
 
 
 class OrgCreateMemberAdditionalInfoInfoView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
