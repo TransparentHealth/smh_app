@@ -55,6 +55,8 @@ COPY .nginx/uwsgi_params /home/docker/code/
 # build assets (takes awhile)
 WORKDIR /home/docker/code/assets
 RUN make build
+WORKDIR /home/docker/code
+python manage.py collectstatic
 
 WORKDIR /home/docker/
 EXPOSE 80
