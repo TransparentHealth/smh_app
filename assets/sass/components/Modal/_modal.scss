@@ -84,7 +84,8 @@
     padding: 1rem;
   }
   form {
-    width: 50%;
+    max-width: 500px;
+    margin: 0 auto;
     label {
       display: inline-block;
       text-transform: uppercase;
