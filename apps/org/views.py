@@ -390,10 +390,13 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
                 settings.SOCIAL_AUTH_VMI_HOST,
                 member_social_auth.uid,
             )
+
             data = {
+                'exp': form_data['expiration_date'],
                 'subject_user': member_social_auth.uid,
                 **form_data,
             }
+
             # POST the data to the VMI endpoint for identity verification
             response = requests.post(url=url, json=data, headers=headers)
 

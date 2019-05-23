@@ -8,7 +8,11 @@
 </h1>
 
 {% if errors %}
-  <div class="errors">{{ errors }}</div>
+    <div class="errors">
+        {% for key, error in errors.items %}
+            <div>{{ key.title }}: {{ error.0 }}</div>
+        {% endfor %}
+    </div>
 {% endif %}
 
 <form method="POST">
