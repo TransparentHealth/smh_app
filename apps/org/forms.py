@@ -61,13 +61,13 @@ class VerifyMemberIdentityForm(Form):
     """
     classification = ChoiceField(choices=IDENTITY_VERIFICATION_CLASSIFICATIONS, required=False)
     description = CharField(required=False)
-    expiration_date = DateField(required=False)
+    exp = DateField(required=False, label='Expiration Date')
 
     def clean(self):
         super().clean()
         # even though it's a date field, keep it as a string for json.dumps
-        if 'expiration_date' in self.cleaned_data:
-            self.cleaned_data['expiration_date'] = str(self.cleaned_data['expiration_date'])
+        if self.cleaned_data.get('exp'):
+            self.cleaned_data['exp'] = str(self.cleaned_data['exp'])
 
 
 class UpdateNewMemberAtOrgAdditionalInfoForm(Form):
