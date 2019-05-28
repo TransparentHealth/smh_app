@@ -14,7 +14,7 @@ from .constants import RECORDS
 from .models import Member
 from .utils import get_member_data
 from apps.org.models import (
-    ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED
+    ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED
 )
 
 
