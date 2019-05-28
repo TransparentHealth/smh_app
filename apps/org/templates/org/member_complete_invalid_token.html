@@ -1,7 +1,10 @@
-{% extends "base.html" %}
+{% extends "modal_base.html" %}
 {% load static %}
 
 {% block content %}
-{{ member }}, the token used was invalid, possibly because it has already been used. Please request another token to complete your account creation at {{ organization }}.
+<h1>{{ member }}, the token used was invalid, possibly because it has already been used.</h1>
+
+<p>Please request another token to complete your account creation at {{ organization }}.</p>
+<a class="btn btn-primary" href="{% url 'org:dashboard' %}" target="_parent">Go to Dashboard</a>
 
 {% endblock content %}
