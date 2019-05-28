@@ -131,17 +131,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         """Add ResourceRequests for the user's resources to the context."""
         # Get all of the ResourceRequests for access to the self.request.user's resources
         resource_requests = ResourceRequest.objects.filter(
-            member=self.request.user
-        ).filter(
-            status=REQUEST_REQUESTED
-        )
-        resources_granted = ResourceRequest.objects.filter(
-            member=self.request.user
-        ).filter(
-            status=REQUEST_APPROVED
-        )
+             member=self.request.user
+        ).order_by('-updated')[:4]
+        organizations = self.request.user.member.organizations.all()[:4]
         kwargs.setdefault('resource_requests', resource_requests)
-        kwargs.setdefault('resources_granted', resources_granted)
+        kwargs.setdefault('organizations', organizations)
         return super().get_context_data(**kwargs)
 
 

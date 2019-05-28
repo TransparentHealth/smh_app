@@ -2,6 +2,10 @@ from importlib import import_module
 
 from django.conf import settings
 from django.db import models
+from django.utils.html import mark_safe
+from django.utils.timezone import now
+# from django.contrib.humanize import naturaltime
+
 
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
@@ -144,6 +148,29 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
         resource_module = '.'.join(self.resource_class_path.split('.')[:-1])
         resource_class_name = self.resource_class_path.split('.')[-1]
         return getattr(import_module(resource_module), resource_class_name)
+
+    @property
+    def notification_text(self):
+        if self.status == REQUEST_REQUESTED:
+            return mark_safe("<b>{}</b> requested access to your data".format(self.organization))
+        elif self.status == REQUEST_APPROVED:
+            return mark_safe("You allowed <b>{}</b> to access your data".format(self.organization))
+        elif self.status == REQUEST_DENIED:
+            return mark_safe("You revoked access to <b>{}</b> to your data".format(self.organization))
+
+    @property
+    def actions(self):
+        if self.status == REQUEST_REQUESTED:
+            return [
+                {'url': 'member:revoke_resource_request', 'button_text': 'Dismiss' },
+                {'url': 'member:approve_resource_request', 'button_text': 'Accept Request' },
+            ]
+        elif self.status == REQUEST_APPROVED:
+            return [{'url': 'member:revoke_resource_request', 'button_text': 'Revoke' }]
+        elif self.status == REQUEST_DENIED:
+            return [{'url': 'member:approve_resource_request', 'button_text': 'Re-Approve Access' }]
+
+
 
     class Meta:
         verbose_name_plural = "Resource Requests"
