@@ -10,7 +10,7 @@
 {% if errors %}
     <div class="errors">
         {% for key, error in errors.items %}
-            <div>{{ key.title }}: {{ error.0 }}</div>
+            <div>{{ key.title }}: {% for err in error %}{{ err }}{% endfor %}</div>
         {% endfor %}
     </div>
 {% endif %}

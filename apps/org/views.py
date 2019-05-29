@@ -392,7 +392,6 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
             )
 
             data = {
-                'exp': form_data['expiration_date'],
                 'subject_user': member_social_auth.uid,
                 **form_data,
             }
