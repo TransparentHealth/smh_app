@@ -743,6 +743,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
 @override_settings(LOGIN_URL='/accounts/login/')
 class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_create_member_verify_identity'
+    next_url_name = 'org:org_create_member_almost_done'
 
     def setUp(self):
         super().setUp()
@@ -755,6 +756,13 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         # The URL for verifying the identity of a Member associated with the self.organization
         self.url = reverse(
             self.url_name,
+            kwargs={
+                'org_slug': self.organization.slug,
+                'username': self.member.user.username
+            }
+        )
+        self.next_url = reverse(
+            self.next_url_name,
             kwargs={
                 'org_slug': self.organization.slug,
                 'username': self.member.user.username
@@ -871,21 +879,14 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             with HTTMock(self.response_id_assurance_list, self.response_id_assurance_detail):
                 response = self.client.post(self.url, data=data)
 
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(
-                response.context['form'].errors,
-                {
-                    # 'classification': ['This field is required.'],
-                    # 'description': ['This field is required.'],
-                    # 'expiration_date': ['This field is required.'],
-                }
-            )
+            self.assertRedirects(response, self.next_url)
+
             # No requests were made to VMI
             self.assertEqual(self.response_id_assurance_list.call['count'], 0)
             self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
 
         with self.subTest('incomplete data'):
-            data = {'description': 'description here', 'expiration_date': '2020-01-01'}
+            data = {'description': 'description here', 'exp': '2020-01-01'}
             # Since POSTs with valid data use the requests library to make a request
             # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
             # library here.
@@ -906,7 +907,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('invalid data'):
             data = {
                 'description': 'description',
-                'expiration_date': '2020-13-100',
+                'exp': '2020-13-100',
                 'classification': 'invalid classification',
             }
             # Since POSTs with valid data use the requests library to make a request
@@ -917,7 +918,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
 
             self.assertEqual(response.status_code, 200)
             expected_errors = {
-                'expiration_date': ['Enter a valid date.'],
+                'exp': ['Enter a valid date.'],
                 'classification': [
                     'Select a valid choice. {} is not one of the available choices.'.format(
                         data['classification']
@@ -934,7 +935,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             # then the response is an error.
             data = {
                 'description': 'description',
-                'expiration_date': '2099-01-01',
+                'exp': '2099-01-01',
                 'classification': 'ONE-SUPERIOR-OR-STRONG+',
             }
             # Since POSTs with valid data use the requests library to make a request
@@ -960,7 +961,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             # but we handle the case that the UserSocialAuth object no longer exists.
             data = {
                 'description': 'description',
-                'expiration_date': '2099-01-01',
+                'exp': '2099-01-01',
                 'classification': 'ONE-SUPERIOR-OR-STRONG+',
             }
             # Create a UserSocialAuth object for the self.user for VMI
@@ -998,7 +999,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             # The data POSTed to the org_create_member_basic_info view
             data = {
                 'description': 'description',
-                'expiration_date': '2099-01-01',
+                'exp': '2099-01-01',
                 'classification': 'ONE-SUPERIOR-OR-STRONG+',
             }
 
@@ -1031,7 +1032,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             # The data POSTed to the org_create_member_basic_info view
             data = {
                 'description': 'description',
-                'expiration_date': '2099-01-01',
+                'exp': '2099-01-01',
                 'classification': 'ONE-SUPERIOR-OR-STRONG+',
             }
 
@@ -1061,7 +1062,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('Authenticated POST'):
             self.client.force_login(self.user)
             response = self.client.post(self.url, data={})
-            self.assertEqual(response.status_code, 200)
+            self.assertRedirects(response, self.next_url)
 
         with self.subTest('Not authenticated GET'):
             self.client.logout()
