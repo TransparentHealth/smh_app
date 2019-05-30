@@ -27,8 +27,15 @@ To setup your local environment you can use the quickstart make target `setup`, 
 install Python (via pip) into a virtualenv named "smh_app",
 and create a database via Postgres named "smh_app" with all migrations run::
 
-    $ make setup
+    $ mkvirtualenv smh_app
     $ workon smh_app
+    $ cd .assets
+    $ make build
+    $ python manage.py migrate
+    $ python manage.oy runserver
+
+
+
 
 
 Development

@@ -15,7 +15,8 @@ $navy--border: transparentize($navy, .9);
 $white: #fff;
 $gray: #707070;
 $gray--light: #f3f3f6;
-$gray--medium: #e5e5e5;
+$gray--lighter: #c5c5c5;
+$gray--medium: #e5e5e5; // medium should be titles lightest
 $black: #000;
 $table-border-color: $navy--border;
 

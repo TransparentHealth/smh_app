@@ -7,17 +7,21 @@
 }
 
 .alert-item__image {
-  height: 40px;
+  height: 60px;
   margin-right: .75em;
-  width: 40px;
+  width: 60px;
+  border-radius: 50%
 }
 
 .alert-item__text {
   color: $navy--dark;
+  b {
+      color: $blue;
+    }
 }
 
 .alert-item__time {
-  color: $gray;
+  color: $gray--lighter;
   font-size: 90%;
   font-style: italic;
 }
