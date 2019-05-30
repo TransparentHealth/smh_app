@@ -22,12 +22,12 @@ class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
     def test_member_dashboard(self):
         """GETting member dashboard shows ResourceRequests for request.user's resources."""
         # Some ResourceRequests for the request.user that have not yet been granted
-        expected_resource_request_ids = [
-            ResourceRequestFactory(
-                member=self.user,
-                status=REQUEST_REQUESTED
-            ).id for i in range(0, 3)
-        ]
+        # expected_resource_request_ids = [
+        #     ResourceRequestFactory(
+        #         member=self.user,
+        #         status=REQUEST_REQUESTED
+        #     ).id for i in range(0, 3)
+        # ]
         # Some ResourceRequests for other users
         for i in range(0, 2):
             ResourceRequestFactory()
