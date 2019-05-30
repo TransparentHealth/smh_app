@@ -1,26 +1,91 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-
-The following organizations have requested access to your data:
-<ul>
-  {% for resource_request in resource_requests %}
-    <li>
-      <span>{{ resource_request }}</span>
-      <form action="{% url 'member:approve_resource_request' resource_request.id %}" method="post">{% csrf_token %}<button type="submit">approve</button></form>
-      <form action="{% url 'member:revoke_resource_request' resource_request.id %}" method="post">{% csrf_token %}<button type="submit">deny</button></form>
-    </li>
-  {% endfor %}
-</ul>
-
-
-The following organizations have been granted access to your data:
-<ul>
-  {% for resource_granted in resources_granted %}
-    <li>
-      <span>{{ resource_granted }}</span>
-      <form action="{% url 'member:revoke_resource_request' resource_granted.id %}" method="post">{% csrf_token %}<button type="submit">revoke</button></form>
-    </li>
-  {% endfor %}
-</ul>
+<div class="container mt-5 mb-5"><div class="row">
+  <div class="col-md-6 pr-4 pl-4">
+      <h2 class="mb-3 pb-3">Notifications <a href="#">View All Notifications</a></h2>
+      <div class="recent-alerts">
+        {% if resource_requests%}
+          {% for resource_request in resource_requests %}
+            <div class="tile undefined">
+                <div class="alert-item">
+                    <!-- TODO: add image to organization model perhaps. access resource_request.organization.picture?? -->
+                    <img src="{% static '/images/icons/organization_default.png' %}" alt="" class="alert-item__image">
+                    <div class="alert-item-content">
+                        <div class="alert-item__text">
+                            <p>{{ resource_request.notification_text }}</p>
+                        </div>
+                        <div class="alert-item__time">
+                          {{ resource_request.updated|timesince }} ago
+                        </div>
+                        <div class="alert-item__action-forms">
+                          {% for action in resource_request.actions %}
+                            <form action="{% url action.url resource_request.id %}" method="post">
+                              {% csrf_token %}
+                              <button class="alert-item__action" type="submit">{{ action.button_text}}</button>
+                            </form>
+                          {% endfor%}
+                        </div>
+                    </div>
+                </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="no-data">
+            <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
+            <div class="text">
+              <div class="title">No Notifications</div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      <h2 class="mb-3 pb-3">Organizations <a href="#">Edit</a></h2>
+      <div class="organization-list">
+        {% if organizations %}
+          {% for organization in organizations %}
+            <div class="organization-item">
+              <img src="{% static '/images/icons/organization_default.png' %}" alt="" class="alert-item__image">
+              <div class="title">{{ organization }}</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="no-data">
+            <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
+            <div class="text">
+              <div class="title">No Organizations</div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+  </div><!-- end of first column -->
+  <div class="member-data col-md-6 pr-4 pl-4">
+      <h2 class="mb-3 pb-3">Your Profile <a href="{% url 'member:member-update' pk=request.user.member.pk %}">Edit</a></h2>
+      <div class="profile">
+        <img src="{% static '/images/icons/avatar_default.png' %}" alt="" class="alert-item__image">
+        <div class="profile-text">
+          <div class="title">{{ request.user.first_name }} {{ request.user.last_name }}</div>
+          <div class="age">{{ request.user.member }}</div>
+        </div>
+      </div>
+      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' pk=request.user.member.pk %}">View All Records</a></h2>
+      <!-- Add records to contect when complete -->
+      <div class="no-data">
+        <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
+        <div class="text">
+          <div class="title">Identity Unverified</div>
+          <div class="age">No health records available</div>
+        </div>
+      </div>
+      <h2 class="mb-3 pb-3">Data Sources <a href="{% url 'member:data-sources' pk=request.user.member.pk %}">Edit</a></h2>
+      <!-- Add data sources when complete -->
+      <div class="no-data">
+        <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
+        <div class="text">
+          <div class="title">Identity Unverified</div>
+          <div class="age">No data sources available</div>
+        </div>
+      </div>
+  </div>
+</div>
 {% endblock content %}
