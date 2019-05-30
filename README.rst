@@ -1,19 +1,49 @@
 SMH App |build-status|
-------------------------
+----------------------
+
+Share My Health app is a front-facing application designed for use by Community
+Based Organizations (CBOs), care coordinators, and community members.
+Its primary purpose is to improve care coordination by sharing health information
+with relevant parties.
+
+* Allow a member(patient) to connect to their health information from one or more data source.
+* Allow a member(patient) view the health information information.
+* Allow a member to share access to the information with one or more Organizations.
+* Allow an agent of a community-based organization (CBO) to view the health information.
+
+The Share My Health App is a relying party to Verify My Identity, an OpenID Connect
+Identity Provider.  As a prerequisite to a Member gaining access to health
+information, and identity assurance level of 2 must first be established. While this
+can happen in multiple ways, the primary method for this application is an Organization's
+agent functions as a trusted referee and corroborates the claimed identity with some
+real-world evidence.  This will most often occur upon the initial organization-assisted
+member enrollment.
+
+The Share My Health App functions as an OAuth2 client for each data source a member connects. 
+Data sources typically expose health information in FHIR format.  This application will launch
+in the Capital region of New York.  The first data source will be the Health 
+Information Exchange of New York (HIXNY).
+
+For more background information, please see the following links:
+
+- https://www.hl7.org/fhir/overview.html
+- https://pages.nist.gov/800-63-3/
+- https://openid.net/connect/
+- https://www.carinalliance.com/
+
+ 
+
+
+Dependency Versions
+-------------------
 
 - Python 3.7.x
+- Django 2.1.7
 - `pip <http://www.pip-installer.org/>`_ >= 18.0
 - `virtualenv <http://www.virtualenv.org/>`_ >= 16.0.0
 - `virtualenvwrapper <http://pypi.python.org/pypi/virtualenvwrapper>`_ >= 4.8.2
 - Postgres >= 10.4 (latest for AWS RDS right now)
 - git >= 2.19.0
-
-
-Django version
-------------------------
-
-Django 2.1.7
-
 
 Getting Started
 ------------------------
