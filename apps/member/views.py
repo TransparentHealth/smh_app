@@ -1,6 +1,3 @@
-import requests
-import json
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles.templatetags.staticfiles import static
@@ -13,7 +10,7 @@ from django.views.generic.detail import DetailView
 
 from .constants import RECORDS
 from .models import Member
-from .utils import get_member_data, api_call, get_resource_data
+from .utils import api_call, get_resource_data  # get_member_data
 from apps.org.models import (
     ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED
 )
@@ -44,7 +41,7 @@ class RecordsView(LoginRequiredMixin, DetailView):
             observation_data = get_resource_data(data, 'Observation')
             all_records = RECORDS
             for record in all_records:
-            # adding data for each resoureType in response from endpoint
+                # adding data for each resoureType in response from endpoint
                 if record['name'] == 'Diagnoses':
                     record['count'] = len(conditions_data)
                     record['data'] = conditions_data
@@ -81,8 +78,7 @@ class RecordsView(LoginRequiredMixin, DetailView):
                 lab['Code'] = observation['code']['coding'][0].get('code', '-')
                 lab['Display'] = observation['code']['coding'][0].get('display', '-')
                 lab_value = observation.get('valueQuantity', None)
-                lab['Value'] = str(list(lab_value.values())[0]) + list(lab_value.values())[1] if lab_value else '-'  # observation['valueQuantity'].get('value', '-') + observation['valueQuantity'].get('unit', '-')
-
+                lab['Value'] = str(list(lab_value.values())[0]) + list(lab_value.values())[1] if lab_value else '-'
                 all_labs.append(lab)
 
             kwargs.setdefault('title', 'Lab Results')

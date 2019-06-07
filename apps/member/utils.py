@@ -86,11 +86,16 @@ def get_member_data(requesting_user, member, resource_name, record_type):
 
     return results
 
+
 def api_call():
     '''Making a call to get data from whatever the endpoint will be, who is to say'''
-    url = 'https://gist.githubusercontent.com/aviars/266ea80129819af9f0b83835bf78bfef/raw/493d8dbda82b923dce8c0ffdca8e8b79e76a47ba/hixny-everything-sample.json'
+    url = (
+        'https://gist.githubusercontent.com/aviars/266ea80129819af9f0b83835bf78bfef/raw/' +
+        '493d8dbda82b923dce8c0ffdca8e8b79e76a47ba/hixny-everything-sample.json'
+    )
     response = requests.get(url=url)
     return response.json()
+
 
 def get_resource_data(data, resource_type):
     return [item['resource'] for item in data['entry'] if item['resource']['resourceType'] == resource_type]
