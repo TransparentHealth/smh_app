@@ -12,10 +12,16 @@
                 {% for data_source in data_sources %}
                     {% if data_source.connected %}
                     <div class="tile-flex">
-                        <div class="tile tile-flex__item">
-                            <img src="{{ data_source.image_url }}" alt="data_source.name">
-                            <p>{{ data_source.name }}</p>
-                        </div>
+                        <form action="{% url 'social:disconnect' 'sharemyhealth' %}" method="post">
+                          {% csrf_token %}
+                          <input type="hidden" name="next" value="{{ request.path }}"/>
+                          <button type="submit">
+                            <div class="tile tile-flex__item">
+                                <img src="{{ data_source.image_url }}" alt="data_source.name">
+                                <p>{{ data_source.name }}</p>
+                            </div>
+                          </button>
+                        </form>
                     </div>
                     {% endif %}
                 {% endfor %}
