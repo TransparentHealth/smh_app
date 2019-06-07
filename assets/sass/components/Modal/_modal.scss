@@ -4,7 +4,7 @@
   left: 0;
   bottom: 0;
   right: 0;
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
   opacity: 0;
@@ -30,6 +30,7 @@
   }
 }
 #create-member-modal.show-modal {
+  display: flex;
   opacity: 1;
   visibility: visible;
 }
