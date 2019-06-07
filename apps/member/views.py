@@ -1,5 +1,3 @@
-import requests
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles.templatetags.staticfiles import static
@@ -12,7 +10,7 @@ from django.views.generic.detail import DetailView
 from jwkest.jwt import JWT
 from .constants import RECORDS
 from .models import Member
-from .utils import get_member_data
+from .utils import api_call, get_resource_data  # get_member_data
 from apps.org.models import (
     ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED
 )
@@ -36,33 +34,6 @@ def get_id_token_payload(user):
     return parsed_id_token
 
 
-def get_fake_context_data(context):
-    # just-for-show data from fake endpoint, unrelated to any user/member/org.
-    url_base = 'http://fhir-test.sharemy.health:8080/fhir/baseDstu3/'
-
-    patient_id = '304'
-
-    patient_url = url_base + 'Patient/' + patient_id
-    patient_response = requests.get(url=patient_url)
-    patient_data = patient_response.json()
-
-    organization_url = url_base + \
-        patient_data['generalPractitioner'][0]['reference']
-    organization_response = requests.get(url=organization_url)
-    organization_data = organization_response.json()
-
-    medication_request_url = url_base + 'MedicationRequest?patient=' + patient_id
-    medication_request_response = requests.get(url=medication_request_url)
-    medication_request_data = medication_request_response.json()
-
-    context['patient_data'] = patient_data
-    context['organization_data'] = organization_data
-    context['medication_request_data'] = medication_request_data
-    context['records_options'] = RECORDS
-
-    return context
-
-
 class RecordsView(LoginRequiredMixin, DetailView):
     model = Member
     template_name = "records.html"
@@ -72,13 +43,66 @@ class RecordsView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         """Add records data into the context."""
         # Get the data for the member, and set it in the context
-        results = get_member_data(
-            self.request.user,
-            kwargs.get('object'),
-            self.default_resource_name,
-            self.default_record_type
-        )
-        kwargs.setdefault('results', results)
+
+        # a potentially more legit way to get data from alpha.sharemyhealth
+        # results = get_member_data(
+        #     self.request.user,
+        #     kwargs.get('object'),
+        #     self.default_resource_name,
+        #     self.default_record_type
+        # )
+
+        # a less legit way to get data from test_data
+        data = api_call()
+        if self.kwargs['resource_name'] == 'list':
+            conditions_data = get_resource_data(data, 'Condition')
+            observation_data = get_resource_data(data, 'Observation')
+            all_records = RECORDS
+            for record in all_records:
+                # adding data for each resoureType in response from endpoint
+                if record['name'] == 'Diagnoses':
+                    record['count'] = len(conditions_data)
+                    record['data'] = conditions_data
+
+                if record['name'] == 'Lab Results':
+                    record['count'] = len(observation_data)
+                    record['data'] = observation_data
+
+                kwargs.setdefault('all_records', all_records)
+
+        elif self.kwargs['resource_name'] == 'diagnoses':
+            conditions_data = get_resource_data(data, 'Condition')
+            headers = ['Date', 'Code', 'Diagnosis', 'Provider']
+            all_diagnoses = []
+            for condition in conditions_data:
+                diagnoses = {}
+                diagnoses['Date'] = condition.get('assertedDate', '-')
+                diagnoses['Code'] = condition['code']['coding'][0].get('code', '-')
+                diagnoses['Diagnosis'] = condition['code']['coding'][0].get('display', '-')
+                diagnoses['Provider'] = condition.get('provider', '-')
+                all_diagnoses.append(diagnoses)
+
+            kwargs.setdefault('title', 'Diagnoses')
+            kwargs.setdefault('headers', headers)
+            kwargs.setdefault('content_list', all_diagnoses)
+
+        elif self.kwargs['resource_name'] == 'lab-results':
+            observation_data = get_resource_data(data, 'Observation')
+            headers = ['Date', 'Code', 'Lab Result', 'Value']
+            all_labs = []
+            for observation in observation_data:
+                lab = {}
+                lab['Date'] = observation['effectivePeriod'].get('start', '-').split('T')[0]
+                lab['Code'] = observation['code']['coding'][0].get('code', '-')
+                lab['Display'] = observation['code']['coding'][0].get('display', '-')
+                lab_value = observation.get('valueQuantity', None)
+                lab['Value'] = str(list(lab_value.values())[0]) + list(lab_value.values())[1] if lab_value else '-'
+                all_labs.append(lab)
+
+            kwargs.setdefault('title', 'Lab Results')
+            kwargs.setdefault('headers', headers)
+            kwargs.setdefault('content_list', all_labs)
+
         return super().get_context_data(**kwargs)
 
 

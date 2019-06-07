@@ -15,4 +15,16 @@
   li {
     list-style-type: none;
   }
+
+  .record-heading-wrapper {
+    a, a:link, a:visited {
+      font-size: $h4-font-size;
+      color: $blue;
+      cursor: pointer;
+    }
+    a:hover {
+      color: $navy;
+      text-decoration: none;
+    }
+  }
 }

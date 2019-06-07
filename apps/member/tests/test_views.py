@@ -277,7 +277,7 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         provider_name = Resource.name
         self.give_user_access_to_member_token(self.user, member, provider_name)
 
-        url = reverse(self.url_name, kwargs={'pk': member.pk})
+        url = reverse(self.url_name, kwargs={'pk': member.pk, 'resource_name': 'list'})
         # We mock the use of the requests library, so we don't make real
         # requests from within the test.
         with HTTMock(self.response_content_success):
@@ -285,11 +285,13 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
 
         # The response has data matches the mocked response.
         self.assertEqual(response.status_code, 200)
+
         # The self.expected_response_success includes 1 'Diagnoses' record
-        diagnoses_results = [
-            data for data in response.context_data.get('results') if data['name'] == 'Diagnoses'
-        ]
-        self.assertEqual(diagnoses_results[0]['total'], 1)
+        # save for possible future implementation
+        # diagnoses_results = [
+        #     data for data in response.context_data.get('results') if data['name'] == 'Diagnoses'
+        # ]
+        # self.assertEqual(diagnoses_results[0]['total'], 1)
 
     def test_authenticated(self):
         """The user must be authenticated to see records."""
@@ -298,7 +300,7 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         # Give the self.user access to the member's access_token.
         provider_name = Resource.name
         self.give_user_access_to_member_token(self.user, member, provider_name)
-        url = reverse(self.url_name, kwargs={'pk': member.pk})
+        url = reverse(self.url_name, kwargs={'pk': member.pk, 'resource_name': 'list'})
 
         with self.subTest('Authenticated'):
             self.client.force_login(self.user)

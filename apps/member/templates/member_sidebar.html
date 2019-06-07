@@ -21,7 +21,7 @@
                     <a href="#" data-rb-event-key="memberId" class="nav-link" role="button">Identification</a>
                     <div>
                         {# TODO: Change this link to 'member:summary' after url/view is created #}
-                        <a href="{% url 'member:data-sources' member.id %}" class="nav-link {% if url == 'data-sources' %}active{% endif %}" role="button">Medical Data</a>
+                        <a href="{% url 'member:records' member.id 'list' %}" class="nav-link {% if url == 'data-sources' %}active{% endif %}" role="button">Medical Data</a>
                         <a href="#" data-rb-event-key="memberNotes" class="nav-link" role="button">Notes</a>
                         <a href="#" data-rb-event-key="memberLockbox" class="nav-link" role="button">Lockbox</a>
                         <a href="#" data-rb-event-key="memberOrgs" class="nav-link" role="button">Organizations</a>
