@@ -190,6 +190,7 @@ SOCIAL_AUTH_VMI_PIPELINE = (
     'social_core.pipeline.user.user_details',
     'social_core.pipeline.debug.debug'
 )
+
 SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
@@ -201,6 +202,7 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
     'social_core.pipeline.user.user_details',
     'social_core.pipeline.debug.debug'
 )
+
 # Settings for our custom OAuth backends. Note: The name of the social auth
 # backend must come after 'SOCIAL_AUTH_' in these settings, in order for
 # social-auth-app-django to recognize it. For example, for VMI, we define
