@@ -10,7 +10,7 @@ from django.views.generic.detail import DetailView
 from jwkest.jwt import JWT
 from .constants import RECORDS
 from .models import Member
-from .utils import api_call, get_resource_data  # get_member_data
+from .utils import fetch_member_data, get_resource_data
 from apps.org.models import (
     ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED
 )
@@ -34,82 +34,7 @@ def get_id_token_payload(user):
     return parsed_id_token
 
 
-class RecordsView(LoginRequiredMixin, DetailView):
-    model = Member
-    template_name = "records.html"
-    default_resource_name = 'sharemyhealth'
-    default_record_type = 'Condition'
-
-    def get_context_data(self, **kwargs):
-        """Add records data into the context."""
-        # Get the data for the member, and set it in the context
-
-        # a potentially more legit way to get data from alpha.sharemyhealth
-        # results = get_member_data(
-        #     self.request.user,
-        #     kwargs.get('object'),
-        #     self.default_resource_name,
-        #     self.default_record_type
-        # )
-
-        # a less legit way to get data from test_data
-        data = api_call()
-        if self.kwargs['resource_name'] == 'list':
-            conditions_data = get_resource_data(data, 'Condition')
-            observation_data = get_resource_data(data, 'Observation')
-            all_records = RECORDS
-            for record in all_records:
-                # adding data for each resoureType in response from endpoint
-                if record['name'] == 'Diagnoses':
-                    record['count'] = len(conditions_data)
-                    record['data'] = conditions_data
-
-                if record['name'] == 'Lab Results':
-                    record['count'] = len(observation_data)
-                    record['data'] = observation_data
-
-                kwargs.setdefault('all_records', all_records)
-
-        elif self.kwargs['resource_name'] == 'diagnoses':
-            conditions_data = get_resource_data(data, 'Condition')
-            headers = ['Date', 'Code', 'Diagnosis', 'Provider']
-            all_diagnoses = []
-            for condition in conditions_data:
-                diagnoses = {}
-                diagnoses['Date'] = condition.get('assertedDate', '-')
-                diagnoses['Code'] = condition['code']['coding'][0].get('code', '-')
-                diagnoses['Diagnosis'] = condition['code']['coding'][0].get('display', '-')
-                diagnoses['Provider'] = condition.get('provider', '-')
-                all_diagnoses.append(diagnoses)
-
-            kwargs.setdefault('title', 'Diagnoses')
-            kwargs.setdefault('headers', headers)
-            kwargs.setdefault('content_list', all_diagnoses)
-
-        elif self.kwargs['resource_name'] == 'lab-results':
-            observation_data = get_resource_data(data, 'Observation')
-            headers = ['Date', 'Code', 'Lab Result', 'Value']
-            all_labs = []
-            for observation in observation_data:
-                lab = {}
-                lab['Date'] = observation['effectivePeriod'].get('start', '-').split('T')[0]
-                lab['Code'] = observation['code']['coding'][0].get('code', '-')
-                lab['Display'] = observation['code']['coding'][0].get('display', '-')
-                lab_value = observation.get('valueQuantity', None)
-                lab['Value'] = str(list(lab_value.values())[0]) + list(lab_value.values())[1] if lab_value else '-'
-                all_labs.append(lab)
-
-            kwargs.setdefault('title', 'Lab Results')
-            kwargs.setdefault('headers', headers)
-            kwargs.setdefault('content_list', all_labs)
-
-        return super().get_context_data(**kwargs)
-
-
-class DataSourcesView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
-    model = Member
-    template_name = "data_sources.html"
-
+class SelfOrApprovedOrgMixin:
     def test_func(self):
         """
         The request.user may see the member's data sources if:
@@ -128,6 +53,77 @@ class DataSourcesView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
                 member_id=member.id
             )
         return True
+
+
+class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
+    model = Member
+    template_name = "records.html"
+    default_resource_name = 'sharemyhealth'
+    default_record_type = 'Condition'
+
+    def get_context_data(self, **kwargs):
+        """Add records data into the context."""
+        context = super().get_context_data(**kwargs)
+
+        # Get the data for the member, and set it in the context
+        data = fetch_member_data(context['member'])
+        resource_name = self.kwargs.get('resource_name') or 'list'
+
+        if resource_name == 'list':
+            conditions_data = get_resource_data(data, 'Condition')
+            observation_data = get_resource_data(data, 'Observation')
+            all_records = RECORDS
+            for record in all_records:
+                # adding data for each resoureType in response from endpoint
+                if record['name'] == 'Diagnoses':
+                    record['count'] = len(conditions_data)
+                    record['data'] = conditions_data
+
+                if record['name'] == 'Lab Results':
+                    record['count'] = len(observation_data)
+                    record['data'] = observation_data
+
+                context.setdefault('all_records', all_records)
+
+        elif resource_name == 'diagnoses':
+            conditions_data = get_resource_data(data, 'Condition')
+            headers = ['Date', 'Code', 'Diagnosis', 'Provider']
+            all_diagnoses = []
+            for condition in conditions_data:
+                diagnoses = {}
+                diagnoses['Date'] = condition.get('assertedDate', '-')
+                diagnoses['Code'] = condition['code']['coding'][0].get('code', '-')
+                diagnoses['Diagnosis'] = condition['code']['coding'][0].get('display', '-')
+                diagnoses['Provider'] = condition.get('provider', '-')
+                all_diagnoses.append(diagnoses)
+
+            context.setdefault('title', 'Diagnoses')
+            context.setdefault('headers', headers)
+            context.setdefault('content_list', all_diagnoses)
+
+        elif resource_name == 'lab-results':
+            observation_data = get_resource_data(data, 'Observation')
+            headers = ['Date', 'Code', 'Lab Result', 'Value']
+            all_labs = []
+            for observation in observation_data:
+                lab = {}
+                lab['Date'] = observation['effectivePeriod'].get('start', '-').split('T')[0]
+                lab['Code'] = observation['code']['coding'][0].get('code', '-')
+                lab['Display'] = observation['code']['coding'][0].get('display', '-')
+                lab_value = observation.get('valueQuantity', None)
+                lab['Value'] = str(list(lab_value.values())[0]) + list(lab_value.values())[1] if lab_value else '-'
+                all_labs.append(lab)
+
+            context.setdefault('title', 'Lab Results')
+            context.setdefault('headers', headers)
+            context.setdefault('content_list', all_labs)
+
+        return context
+
+
+class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTestMixin, DetailView):
+    model = Member
+    template_name = "data_sources.html"
 
     def get_context_data(self, **kwargs):
         """Add current data sources and data into the context."""

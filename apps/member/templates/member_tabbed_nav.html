@@ -8,7 +8,7 @@
             class="nav-item nav-link {% if url_name == 'foo-bar' %}active{% endif %}">Summary</a>
             {# TODO: set these active classes based on urls/views not yet created #}
         <a
-            href="{% url 'member:records' member.id 'list' %}"
+            href="{% url 'member:records' member.id %}"
             role="tab"
             data-rb-event-key="records"
             tabindex="-1"

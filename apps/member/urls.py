@@ -11,7 +11,7 @@ from .views import (
 
 app_name = 'member'
 urlpatterns = [
-    url(r'^(?P<pk>[0-9]+)/records/(?P<resource_name>[\w-]+)/$',
+    url(r'^(?P<pk>[0-9]+)/records/(?P<resource_name>[\w-]+)?/?$',
         RecordsView.as_view(),
         name='records'),
     url(r'^(?P<pk>[0-9]+)/data-sources/$',
