@@ -8,9 +8,13 @@ You may connect to the following:
     <li>
       <span>{{ resource.name }}</span>
       {% if resource.connected %}
-        <form action="{{ resource.disconnect_url }}" method="post">{% csrf_token %}<button type="submit">disconnect</button></form>
+        <form action="{{ resource.disconnect_url }}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}"/>
+          <button type="submit">disconnect</button>
+        </form>
       {% else %}
-        <a href="{{ resource.connect_url }}">connect</a>
+        <a href="{{ resource.connect_url }}?next={{ request.path }}">connect</a>
       {% endif %}
     </li>
   {% endfor %}

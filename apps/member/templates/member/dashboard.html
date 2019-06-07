@@ -68,13 +68,15 @@
           <div class="age">{{ request.user.member }}</div>
         </div>
       </div>
-      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' request.user.member.pk 'list' %}">View All Records</a></h2>
+
+      {% ifequal id_token_payload.ial "1" %}
+      <h2 class="mb-3 pb-3">Health Records</h2>
       <!-- Add records to contect when complete -->
       <div class="no-data">
         <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
         <div class="text">
           <div class="title">Identity Unverified</div>
-          <div class="age">No health records available</div>
+          <div class="age">No health records available until identity verification is complete</div>
         </div>
       </div>
       <h2 class="mb-3 pb-3">Data Sources <a href="{% url 'member:data-sources' pk=request.user.member.pk %}">Edit</a></h2>
@@ -86,6 +88,28 @@
           <div class="age">No data sources available</div>
         </div>
       </div>
+      {% endifequal %}
+
+      {% ifequal id_token_payload.ial "2" %}
+      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' pk=request.user.member.pk %}">View All Records</a></h2>
+      <!-- Add records to contect when complete -->
+      <div class="no-data">
+        <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
+        <div class="text">
+          <div class="title">Identity Verified</div>
+          <div class="age"><a href="{% url 'member:records' pk=request.user.member.pk %}">View your records</a></div>
+        </div>
+      </div>
+      <h2 class="mb-3 pb-3">Data Sources <a href="{% url 'member:data-sources' pk=request.user.member.pk %}">Edit</a></h2>
+      <!-- Add data sources when complete -->
+      <div class="no-data">
+        <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
+        <div class="text">
+          <div class="title">Identity Verified</div>
+          <div class="age"><a href="{% url 'social:begin' 'sharemyhealth' %}">Connect to New York (HIXNY)</a></div>
+        </div>
+      </div>
+      {% endifequal %}
   </div>
 </div>
 {% endblock content %}

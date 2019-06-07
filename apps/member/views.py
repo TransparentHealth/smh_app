@@ -7,13 +7,31 @@ from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
-
+from jwkest.jwt import JWT
 from .constants import RECORDS
 from .models import Member
 from .utils import api_call, get_resource_data  # get_member_data
 from apps.org.models import (
     ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED
 )
+
+
+def get_id_token_payload(user):
+    # Get the ID Token and parse it.
+    try:
+        vmi = user.social_auth.filter(provider='vmi')[0]
+        extra_data = vmi.extra_data
+        if 'id_token' in vmi.extra_data.keys():
+            id_token = extra_data.get('id_token')
+            parsed_id_token = JWT().unpack(id_token)
+            parsed_id_token = parsed_id_token.payload()
+        else:
+            parsed_id_token = {'sub': '', 'ial': '1'}
+
+    except Exception:
+        parsed_id_token = {'sub': '', 'ial': '1'}
+
+    return parsed_id_token
 
 
 class RecordsView(LoginRequiredMixin, DetailView):
@@ -105,28 +123,35 @@ class DataSourcesView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             # an Organization that has been granted access to the member's data,
             # then return a 404 response.
             get_object_or_404(
-                ResourceGrant.objects.filter(organization__users=self.request.user),
+                ResourceGrant.objects.filter(
+                    organization__users=self.request.user),
                 member_id=member.id
             )
         return True
 
     def get_context_data(self, **kwargs):
         """Add current data sources and data into the context."""
-        # Add current data sources into context
-        current_data_sources = [
-            {
-                'resource_name': 'sharemyhealth',
-                'image_url': static('images/icons/hixny.png')
-            }
+        context = super().get_context_data(**kwargs)
+        available_sources = [{
+            'provider': 'sharemyhealth',
+            'name': 'Hixny',
+            'image_url': static('images/icons/hixny.png')
+        }]
+        connected_source_providers = [
+            source.provider for source in context['member'].user.social_auth.all()
         ]
-        kwargs.setdefault('current_data_sources', current_data_sources)
-
-        return super().get_context_data(**kwargs)
+        data_sources = [{
+            'connected': source['provider'] in connected_source_providers,
+            **source
+        } for source in available_sources]
+        context.setdefault('data_sources', data_sources)
+        return context
 
 
 class CreateMemberView(LoginRequiredMixin, CreateView):
     model = Member
-    fields = ['user', 'birth_date', 'phone_number', 'address', 'emergency_contact_name', 'emergency_contact_number']
+    fields = ['user', 'birth_date', 'phone_number', 'address',
+              'emergency_contact_name', 'emergency_contact_number']
     template_name = 'member.html'
 
     def get_success_url(self):
@@ -135,7 +160,8 @@ class CreateMemberView(LoginRequiredMixin, CreateView):
 
 class UpdateMemberView(LoginRequiredMixin, UpdateView):
     model = Member
-    fields = ['birth_date', 'phone_number', 'address', 'emergency_contact_name', 'emergency_contact_number']
+    fields = ['birth_date', 'phone_number', 'address',
+              'emergency_contact_name', 'emergency_contact_number']
     template_name = 'member.html'
 
     def get_success_url(self):
@@ -154,13 +180,16 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         """Add ResourceRequests for the user's resources to the context."""
-        # Get all of the ResourceRequests for access to the self.request.user's resources
+        # Get all of the ResourceRequests for access to the self.request.user's
+        # resources
         resource_requests = ResourceRequest.objects.filter(
-             member=self.request.user
+            member=self.request.user
         ).order_by('-updated')[:4]
         organizations = self.request.user.member.organizations.all()[:4]
         kwargs.setdefault('resource_requests', resource_requests)
         kwargs.setdefault('organizations', organizations)
+        id_token_payload = get_id_token_payload(self.request.user)
+        kwargs.setdefault('id_token_payload', id_token_payload)
         return super().get_context_data(**kwargs)
 
 
@@ -207,7 +236,8 @@ def revoke_resource_request(request, pk):
     # The ResourceRequest is for this member; set its status to REQUEST_DENIED.
     resource_request.status = REQUEST_DENIED
     resource_request.save()
-    # The ResourceRequest is for this member, so delete the relevant ResourceGrant
+    # The ResourceRequest is for this member, so delete the relevant
+    # ResourceGrant
     if getattr(resource_request, 'resourcegrant', None):
         resource_request.resourcegrant.delete()
     return redirect(reverse('member:dashboard'))
