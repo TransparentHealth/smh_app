@@ -277,7 +277,7 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         provider_name = Resource.name
         self.give_user_access_to_member_token(self.user, member, provider_name)
 
-        url = reverse(self.url_name, kwargs={'pk': member.pk})
+        url = reverse(self.url_name, kwargs={'pk': member.pk, 'resource_name': 'list'})
         # We mock the use of the requests library, so we don't make real
         # requests from within the test.
         with HTTMock(self.response_content_success):
@@ -298,7 +298,7 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         # Give the self.user access to the member's access_token.
         provider_name = Resource.name
         self.give_user_access_to_member_token(self.user, member, provider_name)
-        url = reverse(self.url_name, kwargs={'pk': member.pk})
+        url = reverse(self.url_name, kwargs={'pk': member.pk, 'resource_name': 'list'})
 
         with self.subTest('Authenticated'):
             self.client.force_login(self.user)
