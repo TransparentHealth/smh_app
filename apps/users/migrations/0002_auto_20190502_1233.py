@@ -7,10 +7,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     def create_root_user(apps, schema_editor):
-        if not os.getenv("ROOT_USER", False) or not os.getenv("ROOT_PASSWORD", False):
-            raise Exception("Misconfigured, initial root user name and password should be in the env")
-        from django.contrib.auth.models import User
-        User.objects.create_superuser(os.getenv("ROOT_USER"), os.getenv("ROOT_USER"), os.getenv("ROOT_PASSWORD"))
+        try:
+            if not os.getenv("ROOT_USER", False) or not os.getenv("ROOT_PASSWORD", False):
+                raise Exception("Misconfigured, initial root user name and password should be in the env")
+            from django.contrib.auth.models import User
+            User.objects.create_superuser(os.getenv("ROOT_USER"), os.getenv("ROOT_USER"), os.getenv("ROOT_PASSWORD"))
+        except:
+            pass
 
     dependencies = [
         ('users', '0001_initial'),

@@ -107,16 +107,21 @@ class DataSourcesView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         """Add current data sources and data into the context."""
-        # Add current data sources into context
-        current_data_sources = [
-            {
-                'resource_name': 'sharemyhealth',
-                'image_url': static('images/icons/hixny.png')
-            }
+        context = super().get_context_data(**kwargs)
+        available_sources = [{
+            'provider': 'sharemyhealth',
+            'name': 'Hixny',
+            'image_url': static('images/icons/hixny.png')
+        }]
+        connected_source_providers = [
+            source.provider for source in context['member'].user.social_auth.all()
         ]
-        kwargs.setdefault('current_data_sources', current_data_sources)
-
-        return super().get_context_data(**kwargs)
+        data_sources = [{
+            'connected': source['provider'] in connected_source_providers,
+            **source
+        } for source in available_sources]
+        context.setdefault('data_sources', data_sources)
+        return context
 
 
 class CreateMemberView(LoginRequiredMixin, CreateView):

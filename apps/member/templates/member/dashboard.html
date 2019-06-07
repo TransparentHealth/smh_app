@@ -69,9 +69,9 @@
         </div>
       </div>
 
-
       {% ifequal id_token_payload.ial "1" %}
       <h2 class="mb-3 pb-3">Health Records</h2>
+
       <!-- Add records to contect when complete -->
       <div class="no-data">
         <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
@@ -92,8 +92,6 @@
       {% endifequal %}
 
       {% ifequal id_token_payload.ial "2" %}
-
-
       <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' pk=request.user.member.pk %}">View All Records</a></h2>
       <!-- Add records to contect when complete -->
       <div class="no-data">
@@ -112,16 +110,7 @@
           <div class="age"><a href="{% url 'social:begin' 'sharemyhealth' %}">Connect to New York (HIXNY)</a></div>
         </div>
       </div>
-
-
-
-
       {% endifequal %}
-
-
-
-
-
   </div>
 </div>
 {% endblock content %}

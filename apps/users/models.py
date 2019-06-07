@@ -7,6 +7,10 @@ from django.dispatch import receiver
 class UserProfile(models.Model):
     """Data for a user of the smh_app."""
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    subject = models.CharField(max_length=64, blank=True,
+                               null=True,
+                               help_text='Subject for identity token',
+                               db_index=True)
     picture_url = models.CharField(
         max_length=255,
         blank=True,
