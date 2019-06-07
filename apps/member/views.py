@@ -121,7 +121,6 @@ class DataSourcesView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
             **source
         } for source in available_sources]
         context.setdefault('data_sources', data_sources)
-        print("CONTEXT =", context)
         return context
 
 
