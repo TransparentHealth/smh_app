@@ -285,11 +285,13 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
 
         # The response has data matches the mocked response.
         self.assertEqual(response.status_code, 200)
+
         # The self.expected_response_success includes 1 'Diagnoses' record
-        diagnoses_results = [
-            data for data in response.context_data.get('results') if data['name'] == 'Diagnoses'
-        ]
-        self.assertEqual(diagnoses_results[0]['total'], 1)
+        # save for possible future implementation
+        # diagnoses_results = [
+        #     data for data in response.context_data.get('results') if data['name'] == 'Diagnoses'
+        # ]
+        # self.assertEqual(diagnoses_results[0]['total'], 1)
 
     def test_authenticated(self):
         """The user must be authenticated to see records."""
