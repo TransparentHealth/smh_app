@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5 mb-5"><div class="row">
+<div class="container member-dashboard mt-5 mb-5"><div class="row">
   <div class="col-md-6 pr-4 pl-4">
       <h2 class="mb-3 pb-3">Notifications <a href="#">View All Notifications</a></h2>
       <div class="recent-alerts">
@@ -68,7 +68,7 @@
           <div class="age">{{ request.user.member }}</div>
         </div>
       </div>
-      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' pk=request.user.member.pk %}">View All Records</a></h2>
+      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' request.user.member.pk 'list' %}">View All Records</a></h2>
       <!-- Add records to contect when complete -->
       <div class="no-data">
         <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">

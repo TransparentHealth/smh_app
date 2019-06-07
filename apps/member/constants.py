@@ -1,64 +1,50 @@
 RECORDS = [
   {
     'name': 'Diagnoses',
-    'icon': 'diagnoses',
-    'disabled': False,
-    'number': 1
+    'slug': 'diagnoses',
   },
   {
     'name': 'Prescriptions',
-    'icon': 'prescriptions',
-    'disabled': False,
-    'number': 4
+    'slug': 'prescriptions',
   },
   {
     'name': 'Allergies',
-    'icon': 'allergies',
-    'disabled': True
+    'slug': 'allergies',
   },
   {
     'name': 'Procedures',
-    'icon': 'procedures',
-    'disabled': True
+    'slug': 'procedures',
   },
   {
     'name': 'ED Reports',
-    'icon': 'ed-reports',
-    'disabled': True
+    'slug': 'ed-reports',
   },
   {
     'name': 'Family History',
-    'icon': 'family-history',
-    'disabled': True
+    'slug': 'family-history',
   },
   {
     'name': 'Demographics',
-    'icon': 'demographics',
-    'disabled': True
+    'slug': 'demographics',
   },
   {
     'name': 'Discharge Summaries',
-    'icon': 'discharge-summaries',
-    'disabled': True
+    'slug': 'discharge-summaries',
   },
   {
     'name': 'Immunizations',
-    'icon': 'immunizations',
-    'disabled': True
+    'slug': 'immunizations',
   },
   {
     'name': 'Lab Results',
-    'icon': 'lab-results',
-    'disabled': True
+    'slug': 'lab-results',
   },
   {
     'name': 'Progress Notes',
-    'icon': 'progress-notes',
-    'disabled': True
+    'slug': 'progress-notes',
   },
   {
     'name': 'Vital Signs',
-    'icon': 'vital-signs',
-    'disabled': True
+    'slug': 'vital-signs',
   },
 ]

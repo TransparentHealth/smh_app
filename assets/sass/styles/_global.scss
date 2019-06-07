@@ -16,7 +16,6 @@ h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid $gray--medium; // typically, we'll have grey bottom border
   img {
     width: $h2-font-size;
     height: $h2-font-size;
