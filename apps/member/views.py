@@ -21,16 +21,7 @@ from apps.org.models import (
 def get_id_token_payload(user):
     # Get the ID Token and parse it.
     try:
-        print("gere")
-        sa = user.social_auth.all()
-        for p in sa:
-            print(p)
         vmi = user.social_auth.filter(provider='vmi')[0]
-        print("hrere")
-        sa = user.social_auth.all()
-        for p in sa:
-            print(p)
-        print(vmi)
         extra_data = vmi.extra_data
         if 'id_token' in vmi.extra_data.keys():
             id_token = extra_data.get('id_token')
