@@ -92,7 +92,7 @@ def get_member_data(requesting_user, member, resource_name, record_type):
 def fetch_member_data(member, provider):
     '''Fetch FHIR data from provider'''
     social = member.user.social_auth.filter(provider=provider).first()
-    if bool(social) == False or bool(social.access_token) == False:
+    if bool(social) is False or bool(social.access_token) is False:
         return {}
     else:
         url = (
