@@ -62,7 +62,13 @@
   <div class="member-data col-md-6 pr-4 pl-4">
       <h2 class="mb-3 pb-3">Your Profile <a href="{% url 'member:member-update' pk=request.user.member.pk %}">Edit</a></h2>
       <div class="profile">
-        <img src="{% static '/images/icons/avatar_default.png' %}" alt="" class="alert-item__image">
+                          {% if request.user.userprofile.picture_url %}
+                      <img src="{{ request.user.userprofile.picture_url }}" alt="Account menu icon", class="alert-item__image">
+                    {% else %}
+                      <img src="{% static '/images/icons/avatar_default.png' %}" alt="Account menu icon", class="alert-item__image">
+                    {% endif %}
+        
+      
         <div class="profile-text">
           <div class="title">{{ request.user.first_name }} {{ request.user.last_name }}</div>
           <div class="age">{{ request.user.member }}</div>
