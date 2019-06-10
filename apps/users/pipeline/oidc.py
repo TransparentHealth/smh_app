@@ -9,7 +9,7 @@ __author__ = "Alan Viars"
 
 
 def save_profile(backend, user, response, *args, **kwargs):
-    if backend.name == 'verifymyidentity-openidconnect':
+    if backend.name == 'vmi':
 
         profile, g_o_c = UserProfile.objects.get_or_create(user=user)
 
