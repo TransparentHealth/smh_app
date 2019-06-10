@@ -4,16 +4,22 @@ from django.conf.urls import url
 from .views import (
     approve_resource_request, revoke_resource_request,
     CreateMemberView, DashboardView, DataSourcesView, DeleteMemberView, RecordsView,
-    UpdateMemberView
+    SummaryView, ProvidersView, UpdateMemberView
 )
 
 # Copyright Videntity Systems Inc.
 
 app_name = 'member'
 urlpatterns = [
+    url(r'^(?P<pk>[0-9]+)/summary/$',
+        SummaryView.as_view(),
+        name='summary'),
     url(r'^(?P<pk>[0-9]+)/records/(?P<resource_name>[\w-]+)?/?$',
         RecordsView.as_view(),
         name='records'),
+    url(r'^(?P<pk>[0-9]+)/providers/$',
+        ProvidersView.as_view(),
+        name='providers'),
     url(r'^(?P<pk>[0-9]+)/data-sources/$',
         DataSourcesView.as_view(),
         name='data-sources'),
