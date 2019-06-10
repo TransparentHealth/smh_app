@@ -111,12 +111,9 @@ def get_resource_data(data, resource_type):
 
 
 def get_id_token_payload(user):
-    print("here", user)
     # Get the ID Token and parse it.
     try:
         vmi = user.social_auth.filter(provider='vmi')[0]
-        print("here2", vmi)
-
         extra_data = vmi.extra_data
         if 'id_token' in vmi.extra_data.keys():
             id_token = extra_data.get('id_token')
@@ -125,8 +122,7 @@ def get_id_token_payload(user):
         else:
             parsed_id_token = {'sub': '', 'ial': '1'}
 
-    except Exception as e:
-        print(e)
+    except Exception:
         parsed_id_token = {'sub': '', 'ial': '1'}
 
     return parsed_id_token
