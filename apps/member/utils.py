@@ -91,16 +91,12 @@ def get_member_data(requesting_user, member, resource_name, record_type):
 @memoize(timeout=300)  # 5 minutes is a reasonable first approximation
 def fetch_member_data(member, provider):
     '''Fetch FHIR data from provider'''
-    social = member.user.social_auth.filter(provider=provider).first()
-    if bool(social) is False or bool(social.access_token) is False:
-        return {}
-    else:
-        url = (
-            'https://gist.githubusercontent.com/aviars/266ea80129819af9f0b83835bf78bfef/raw/' +
-            '493d8dbda82b923dce8c0ffdca8e8b79e76a47ba/hixny-everything-sample.json'
-        )
-        response = requests.get(url=url)
-        return response.json()
+    url = (
+        'https://gist.githubusercontent.com/aviars/266ea80129819af9f0b83835bf78bfef/raw/' +
+        '493d8dbda82b923dce8c0ffdca8e8b79e76a47ba/hixny-everything-sample.json'
+    )
+    response = requests.get(url=url)
+    return response.json()
 
 
 def get_resource_data(data, resource_type):
