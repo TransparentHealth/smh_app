@@ -33,7 +33,7 @@ class Member(models.Model):
             born = datetime.strptime(bd, '%Y-%m-%d').date()
             today = date.today()
             return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-        except:
+        except Exception:
             return "Unknown"
 
 
