@@ -66,7 +66,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         context = super().get_context_data(**kwargs)
 
         # Get the data for the member, and set it in the context
-        data = fetch_member_data(context['member'])
+        data = fetch_member_data(context['member'], 'sharemyhealth')
         resource_name = self.kwargs.get('resource_name') or 'list'
 
         if resource_name == 'list':
