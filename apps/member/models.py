@@ -27,11 +27,14 @@ class Member(models.Model):
         return get_id_token_payload(self.user)
 
     def age(self):
-        idt = get_id_token_payload(self.user)
-        bd = idt['birthdate']
-        born = datetime.strptime(bd, '%Y-%m-%d').date()
-        today = date.today()
-        return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+        try:
+            idt = get_id_token_payload(self.user)
+            bd = idt['birthdate']
+            born = datetime.strptime(bd, '%Y-%m-%d').date()
+            today = date.today()
+            return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+        except:
+            return "Unknown"
 
 
 @receiver(post_save, sender=User)
