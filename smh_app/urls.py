@@ -17,6 +17,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.views.generic.base import TemplateView
 from django.urls import include, path
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
@@ -28,6 +29,8 @@ urlpatterns = [
         ),
         name='home'
     ),
+    path('logout/', auth_views.LogoutView.as_view(),
+         {'next_page': '/'}, name='logout'),
     path('accounts/', include('django.contrib.auth.urls')),
     path(r'resources/', include('apps.resources.urls')),
     path(r'org/', include('apps.org.urls')),
