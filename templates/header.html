@@ -119,13 +119,15 @@
                 </div>
             </div>
             <div class="account-menu dropdown nav-item">
-                <a aria-haspopup="true" aria-expanded="false" href="#" class="dropdown-toggle nav-link" role="button">
+                <a aria-haspopup="true" aria-expanded="false" href="#" class="dropdown-toggle nav-link" role="button" data-toggle="dropdown">
                     {% if request.user.userprofile.picture_url %}
                       <img src="{{ request.user.userprofile.picture_url }}" alt="Account menu icon">
                     {% else %}
                       <img src="{% static '/images/icons/avatar_default.png' %}" alt="Account menu icon">
                     {% endif %}
                 </a><div class="dropdown-menu" aria-labelledby="">
+                    <a class="dropdown-item" href="#">Action</a> 
+                
                     <span class="navbar-text">
                         <a href="#/">Dashboard</a>
                     </span><div role="separator" class="dropdown-divider">
@@ -135,7 +137,7 @@
                     </span>
                     <div role="separator" class="dropdown-divider"></div>
                     <span class="navbar-text">
-                        <a href="/">Log Out</a>
+                        <a href="/logout">Log Out</a>
                     </span>
                 </div>
             </div>
