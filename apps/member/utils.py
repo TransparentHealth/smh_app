@@ -1,8 +1,9 @@
 from collections import defaultdict
 from importlib import import_module
 import json
-import requests
 
+from memoize import memoize
+import requests
 from django.conf import settings
 from django.shortcuts import Http404
 
@@ -87,7 +88,8 @@ def get_member_data(requesting_user, member, resource_name, record_type):
     return results
 
 
-def api_call():
+@memoize(timeout=300)
+def fetch_member_data(member):
     '''Making a call to get data from whatever the endpoint will be, who is to say'''
     url = (
         'https://gist.githubusercontent.com/aviars/266ea80129819af9f0b83835bf78bfef/raw/' +

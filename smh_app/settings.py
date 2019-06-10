@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'apps.users',
 
     'social_django',
+    'memoize',
 ]
 
 MIDDLEWARE = [
