@@ -1,13 +1,21 @@
 {% load static %}
 <div class="member-sidebar col-lg-3 pl-0 pb-5 pr-0">
     <div class="member-sidebar__image">
-        <img src="{% static '/images/icons/avatar_default.png' %}" alt="Stephanie McNabb" class="member-avatar">
+        
+        
+         {% if request.user.userprofile.picture_url %}
+                      <img src="{{ member.user.userprofile.picture_url }}" alt="{{ member.user.first_name }} {{ member.user.last_name }}",  class="member-avatar">
+                    {% else %}
+                      <img src="{% static '/images/icons/avatar_default.png' %}" alt=">{{ member.user.first_name }} {{ member.user.last_name }}", c class="member-avatar">
+                    {% endif %}
+        
+            
         <p class="member-avatar__overlay mb-0"><img src="/images/icons/star.png" alt="">ID Verified</p>
     </div>
     <div class="member-sidebar__nav">
         <div class="member-sidebar__heading">
             <h1>{{ member.user.first_name }} {{ member.user.last_name }}</h1>
-            <p>Gender <span class="mr-2 ml-2">·</span> Age ??</p>
+            <p>Gender {{ member.parsed_id_token.gender }}  <span class="mr-2 ml-2">·</span> Age  {{ member.age }}</p>
         </div>
         {% with request.resolver_match.url_name as url %}
             <div class="flex-column nav">
