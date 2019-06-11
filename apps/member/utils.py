@@ -2,7 +2,6 @@ from collections import defaultdict
 from importlib import import_module
 import json
 
-from memoize import memoize
 import requests
 from django.conf import settings
 from django.shortcuts import Http404
