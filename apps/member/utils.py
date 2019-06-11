@@ -88,15 +88,16 @@ def get_member_data(requesting_user, member, resource_name, record_type):
     return results
 
 
-@memoize(timeout=300)  # 5 minutes is a reasonable first approximation
-def fetch_member_data(member, provider):
-    '''Fetch FHIR data from provider'''
-    url = (
-        'https://gist.githubusercontent.com/aviars/266ea80129819af9f0b83835bf78bfef/raw/' +
-        '493d8dbda82b923dce8c0ffdca8e8b79e76a47ba/hixny-everything-sample.json'
-    )
-    response = requests.get(url=url)
-    return response.json()
+def fetch_hixny_member_data(member):
+    '''Fetch FHIR data from HIXNY provider (sharemyhealth)'''
+    url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything"
+    sa = member.user.social_auth.filter(provider='sharemyhealth').first()
+    if sa is not None:
+        access_token = sa.extra_data.get('access_token')
+        if access_token is not None:
+            r = requests.get(url, headers={'Authorization': 'Bearer %s' % access_token})
+            if r.status_code == 200:
+                return r.json()
 
 
 def get_resource_data(data, resource_type):

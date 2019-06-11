@@ -4,13 +4,13 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
 from jwkest.jwt import JWT
 from .constants import RECORDS
 from .models import Member
-from .utils import fetch_member_data, get_resource_data
+from .utils import fetch_hixny_member_data, get_resource_data
 from apps.org.models import (
     ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED
 )
@@ -19,7 +19,7 @@ from apps.org.models import (
 def get_id_token_payload(user):
     # Get the ID Token and parse it.
     try:
-        vmi = user.social_auth.filter(provider='vmi')[0]
+        vmi = user.social_auth.filter(provider='vmi').first()
         extra_data = vmi.extra_data
         if 'id_token' in vmi.extra_data.keys():
             id_token = extra_data.get('id_token')
@@ -64,61 +64,70 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     def get_context_data(self, **kwargs):
         """Add records data into the context."""
         context = super().get_context_data(**kwargs)
-
-        # Get the data for the member, and set it in the context
-        data = fetch_member_data(context['member'], 'sharemyhealth')
         resource_name = self.kwargs.get('resource_name') or 'list'
 
-        if resource_name == 'list':
-            conditions_data = get_resource_data(data, 'Condition')
-            observation_data = get_resource_data(data, 'Observation')
-            all_records = RECORDS
-            for record in all_records:
-                # adding data for each resoureType in response from endpoint
-                if record['name'] == 'Diagnoses':
-                    record['count'] = len(conditions_data)
-                    record['data'] = conditions_data
+        # Get the data for the member, and set it in the context
+        data = fetch_hixny_member_data(context['member'])
+        if data is not None:
+            if resource_name == 'list':
+                conditions_data = get_resource_data(data, 'Condition')
+                observation_data = get_resource_data(data, 'Observation')
+                all_records = RECORDS
+                for record in all_records:
+                    # adding data for each resoureType in response from endpoint
+                    if record['name'] == 'Diagnoses':
+                        record['count'] = len(conditions_data)
+                        record['data'] = conditions_data
 
-                if record['name'] == 'Lab Results':
-                    record['count'] = len(observation_data)
-                    record['data'] = observation_data
+                    if record['name'] == 'Lab Results':
+                        record['count'] = len(observation_data)
+                        record['data'] = observation_data
 
-                context.setdefault('all_records', all_records)
+                    context.setdefault('all_records', all_records)
 
-        elif resource_name == 'diagnoses':
-            conditions_data = get_resource_data(data, 'Condition')
-            headers = ['Date', 'Code', 'Diagnosis', 'Provider']
-            all_diagnoses = []
-            for condition in conditions_data:
-                diagnoses = {}
-                diagnoses['Date'] = condition.get('assertedDate', '-')
-                diagnoses['Code'] = condition['code']['coding'][0].get('code', '-')
-                diagnoses['Diagnosis'] = condition['code']['coding'][0].get('display', '-')
-                diagnoses['Provider'] = condition.get('provider', '-')
-                all_diagnoses.append(diagnoses)
+            elif resource_name == 'diagnoses':
+                conditions_data = get_resource_data(data, 'Condition')
+                headers = ['Date', 'Code', 'Diagnosis', 'Provider']
+                all_diagnoses = []
+                for condition in conditions_data:
+                    diagnoses = {}
+                    diagnoses['Date'] = condition.get('assertedDate', '-')
+                    diagnoses['Code'] = condition['code']['coding'][0].get('code', '-')
+                    diagnoses['Diagnosis'] = condition['code']['coding'][0].get('display', '-')
+                    diagnoses['Provider'] = condition.get('provider', '-')
+                    all_diagnoses.append(diagnoses)
 
-            context.setdefault('title', 'Diagnoses')
-            context.setdefault('headers', headers)
-            context.setdefault('content_list', all_diagnoses)
+                context.setdefault('title', 'Diagnoses')
+                context.setdefault('headers', headers)
+                context.setdefault('content_list', all_diagnoses)
 
-        elif resource_name == 'lab-results':
-            observation_data = get_resource_data(data, 'Observation')
-            headers = ['Date', 'Code', 'Lab Result', 'Value']
-            all_labs = []
-            for observation in observation_data:
-                lab = {}
-                lab['Date'] = observation['effectivePeriod'].get('start', '-').split('T')[0]
-                lab['Code'] = observation['code']['coding'][0].get('code', '-')
-                lab['Display'] = observation['code']['coding'][0].get('display', '-')
-                lab_value = observation.get('valueQuantity', None)
-                lab['Value'] = str(list(lab_value.values())[0]) + list(lab_value.values())[1] if lab_value else '-'
-                all_labs.append(lab)
+            elif resource_name == 'lab-results':
+                observation_data = get_resource_data(data, 'Observation')
+                headers = ['Date', 'Code', 'Lab Result', 'Value']
+                all_labs = []
+                for observation in observation_data:
+                    lab = {}
+                    lab['Date'] = observation['effectivePeriod'].get('start', '-').split('T')[0]
+                    lab['Code'] = observation['code']['coding'][0].get('code', '-')
+                    lab['Display'] = observation['code']['coding'][0].get('display', '-')
+                    lab_value = observation.get('valueQuantity', None)
+                    lab['Value'] = str(list(lab_value.values())[0]) + list(lab_value.values())[1] if lab_value else '-'
+                    all_labs.append(lab)
 
-            context.setdefault('title', 'Lab Results')
-            context.setdefault('headers', headers)
-            context.setdefault('content_list', all_labs)
+                context.setdefault('title', 'Lab Results')
+                context.setdefault('headers', headers)
+                context.setdefault('content_list', all_labs)
+        else:
+            redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].user.pk})
+            context.setdefault('redirect_url', redirect_url)
 
         return context
+
+    def render_to_response(self, context, **kwargs):
+        if context.get('redirect_url'):
+            return redirect(context.get('redirect_url'))
+        else:
+            return super().render_to_response(context, **kwargs)
 
 
 class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTestMixin, DetailView):
