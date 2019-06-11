@@ -1711,20 +1711,20 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
 
         with self.subTest('Authenticated POST'):
             self.client.force_login(self.user)
-            response = self.client.post(self.url, data={})
+            response = self.client.post(self.url, data={}, follow=True)
             self.assertEqual(response.status_code, 200)
 
         with self.subTest('Not authenticated GET'):
             self.client.logout()
 
-            response = self.client.get(self.url)
+            response = self.client.get(self.url, follow=True)
 
             self.assertEqual(response.status_code, 200)
 
         with self.subTest('Not authenticated POST'):
             self.client.logout()
 
-            response = self.client.post(self.url, data={})
+            response = self.client.post(self.url, data={}, follow=True)
 
             self.assertEqual(response.status_code, 200)
 

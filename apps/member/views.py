@@ -10,7 +10,7 @@ from django.views.generic.detail import DetailView
 from jwkest.jwt import JWT
 from .constants import RECORDS
 from .models import Member
-from .utils import fetch_hixny_member_data, get_resource_data
+from .utils import fetch_member_data, get_resource_data
 from apps.org.models import (
     ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED
 )
@@ -55,6 +55,42 @@ class SelfOrApprovedOrgMixin:
         return True
 
 
+class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
+    model = Member
+    template_name = "summary.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Get the data for the member, and set it in the context
+        data = fetch_member_data(context['member'], 'sharemyhealth')
+
+        # put the current resources in the summary tab.  We will not show the other options in this tab.
+        conditions_data = get_resource_data(data, 'Condition')
+        observation_data = get_resource_data(data, 'Observation')
+        all_records = RECORDS
+        summarized_records = []
+        notes_headers = ['Agent Name', 'Organization', 'Date']
+        for record in all_records:
+            # adding data for each resoureType in response from endpoint
+            if record['name'] == 'Diagnoses':
+                record['count'] = len(conditions_data)
+                record['data'] = conditions_data
+                summarized_records.append(record)
+
+            if record['name'] == 'Lab Results':
+                record['count'] = len(observation_data)
+                record['data'] = observation_data
+                summarized_records.append(record)
+
+            context.setdefault('summarized_records', summarized_records)
+
+        context.setdefault('notes_headers', notes_headers)
+        # TODO: include notes in the context data.
+
+        return context
+
+
 class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     model = Member
     template_name = "records.html"
@@ -67,7 +103,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         resource_name = self.kwargs.get('resource_name') or 'list'
 
         # Get the data for the member, and set it in the context
-        data = fetch_hixny_member_data(context['member'])
+        data = fetch_member_data(context['member'], 'sharemyhealth')
         if data is not None:
             if resource_name == 'list':
                 conditions_data = get_resource_data(data, 'Condition')
@@ -128,6 +164,43 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             return redirect(context.get('redirect_url'))
         else:
             return super().render_to_response(context, **kwargs)
+
+
+class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
+    model = Member
+    template_name = "providers.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = fetch_member_data(context['member'], 'sharemyhealth')
+
+        # if in the future we need more info
+        # location_data = get_resource_data(data, 'Location')
+        # provider_data = get_resource_data(data, 'Practitioner')
+
+        # encounter resourceType seems to hold enough info to show provider name, location name and date of visit info
+        encounter_data = get_resource_data(data, 'Encounter')
+        providers_headers = ['Doctor Name', 'Clinic', 'Date Last Seen']
+
+        providers = []
+        for encounter in encounter_data:
+            provider = {}
+            provider['doctor-name'] = encounter['participant'][0]['individual']['display']
+            provider['clinic'] = encounter['location'][0]['location']['display']
+            provider['date-last-seen'] = encounter['period']['start'].split('T')[0]
+            providers.append(provider)
+
+            # A way to get more provider info from provider_data
+            # provider_id = encounter['participant'][0]['individual']['reference'].split('/')[1]
+            # [provider for provider in provider_data if provider['id'] == provider_id][0]
+
+            # A way to get more location info from location_data
+            # location_id = encounter['location'][0]['location']['reference'].split('/')[1]
+            # [location for location in location_data if location['id'] == location_id][0]
+
+        context.setdefault('providers_headers', providers_headers)
+        context.setdefault('providers', providers)
+        return context
 
 
 class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTestMixin, DetailView):
