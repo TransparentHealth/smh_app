@@ -3,6 +3,7 @@ from importlib import import_module
 import json
 
 import requests
+from memoize import memoize
 from django.conf import settings
 from django.shortcuts import Http404
 from jwkest.jwt import JWT
@@ -94,9 +95,10 @@ def get_member_data(requesting_user, member, resource_name, record_type):
     return results
 
 
+@memoize(timeout=60)
 def fetch_member_data(member, provider):
     '''Fetch FHIR data from HIXNY data provider (sharemyhealth)'''
-    url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything"
+    url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything?refresh=true"
     sa = member.user.social_auth.filter(provider=provider).first()
     if sa is not None:
         access_token = sa.extra_data.get('access_token')
@@ -104,10 +106,16 @@ def fetch_member_data(member, provider):
             r = requests.get(url, headers={'Authorization': 'Bearer %s' % access_token})
             if r.status_code == 200:
                 return r.json()
+    # fallback: empty member data
+    return {'entry': []}
 
 
 def get_resource_data(data, resource_type):
-    return [item['resource'] for item in data['entry'] if item['resource']['resourceType'] == resource_type]
+    return [
+        item['resource']
+        for item in data.get('entry', [])
+        if item['resource']['resourceType'] == resource_type
+    ]
 
 
 def get_id_token_payload(user):
