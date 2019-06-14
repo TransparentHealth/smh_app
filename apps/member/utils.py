@@ -104,10 +104,16 @@ def fetch_member_data(member, provider):
             r = requests.get(url, headers={'Authorization': 'Bearer %s' % access_token})
             if r.status_code == 200:
                 return r.json()
+    # fallback: empty member data
+    return {'entry': []}
 
 
 def get_resource_data(data, resource_type):
-    return [item['resource'] for item in data['entry'] if item['resource']['resourceType'] == resource_type]
+    return [
+        item['resource']
+        for item in data.get('entry', [])
+        if item['resource']['resourceType'] == resource_type
+    ]
 
 
 def get_id_token_payload(user):
