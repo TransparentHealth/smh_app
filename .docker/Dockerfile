@@ -58,6 +58,9 @@ RUN make build
 WORKDIR /home/docker/code
 RUN python manage.py collectstatic --no-input
 
+# Create a superuser from environment variables
+RUN python manage.py create_super_user_from_envars
+
 WORKDIR /home/docker/
 EXPOSE 80
 CMD ["supervisord", "-n", "-c", "/home/docker/code/supervisor-app.conf"]
