@@ -27,15 +27,21 @@ RESOURCE_REQUEST_STATUSES = [
 
 class Organization(CreatedUpdatedModel, models.Model):
     """An Organization."""
-    slug = models.SlugField(unique=True, max_length=255)
-    name = models.CharField(unique=True, max_length=255)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+    slug = models.SlugField(unique=True, max_length=255, db_index=True)
+    name = models.CharField(max_length=255, blank=True)
+    sub = models.CharField(max_length=255, blank=True)
+    users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True, verbose_name="Agents")
     phone = PhoneNumberField(blank=True)
     street_line_1 = models.CharField(max_length=255, blank=True)
     street_line_2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=80, blank=True)
     state = USStateField(blank=True)
     zipcode = USZipCodeField(blank=True)
+    website = models.TextField(
+        null=True, blank=True, help_text="Populated from VMI.")
+    picture_url = models.TextField(
+        null=True, blank=True, help_text="The URL of Organization's logo (from VMI)")
 
     def __str__(self):
         return self.name
@@ -160,7 +166,8 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
         if self.status == REQUEST_REQUESTED:
             return [
                 {'url': 'member:revoke_resource_request', 'button_text': 'Dismiss'},
-                {'url': 'member:approve_resource_request', 'button_text': 'Accept Request'},
+                {'url': 'member:approve_resource_request',
+                    'button_text': 'Accept Request'},
             ]
         elif self.status == REQUEST_APPROVED:
             return [{'url': 'member:revoke_resource_request', 'button_text': 'Revoke'}]
