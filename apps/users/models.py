@@ -11,11 +11,16 @@ class UserProfile(models.Model):
                                null=True,
                                help_text='Subject for identity token',
                                db_index=True)
-    picture_url = models.CharField(
-        max_length=255,
+    picture_url = models.TextField(
         blank=True,
         help_text="The URL of the User's image (from VMI)"
     )
+    user_type = models.CharField(max_length=255, blank=True, choices=(('', 'Other'),
+                                                                      ('M', 'Member'),
+                                                                      ('O', 'Organization Agent')),
+                                 default="M",
+                                 help_text="What kind of user is this? This controls what dashboard the user sees."
+                                 )
 
     def __str__(self):
         return self.user.username
