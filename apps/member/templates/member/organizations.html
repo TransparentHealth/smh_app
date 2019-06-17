@@ -21,7 +21,12 @@
                     <div class="col-6 col-sm-4 col-md-3">
                         <a class="current-organization" data-toggle="modal" data-target="#organization-current-{{org.id}}" href="#">
                             <div class="tile tile-flex__item tile-flex__item--add">
-                                <p>{{ org.name }}</p>
+                                <p>
+                                    {% if org.picture_url %}
+                                    <img src="{org.picture_url}"/><br/>
+                                    {% endif %}
+                                    {{ org.name }}
+                                </p>
                             </div>
                         </a>
                     </div>
