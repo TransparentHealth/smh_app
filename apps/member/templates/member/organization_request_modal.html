@@ -1,20 +1,31 @@
+{% load static %}
 <!-- Modal -->
 <div class="modal" id="organization-{{status}}-{{organization.id}}" tabindex="-1" role="dialog" aria-labelledby="organization-{{status}}-{{organization.id}}-title" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+  <div class="modal-organization-request" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="organization-{{status}}-{{organization.id}}-title">{{organization.name}}</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
-        </button>
+        </button> -->
       </div>
       <div class="modal-body">
         {% ifequal status 'current' %}
         <h2>Revoke Access</h2>
-        <p>Revoke from {{organization.name}} access to your medical files including mental health records?</p>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-3 col-sm-2"><img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image"/></div>
+            <div class="col-9 col-sm-10"><p>Revoke from {{organization.name}} access to your medical files including mental health records?</p></div>
+          </div>
+        </div>
         {% else %}
         <h2>{% ifequal status 'requested' %}Approve{% else %}Grant{% endifequal %} Access</h2>
-        <p>Allow {{organization.name}} to access your medical files including mental health records?</p>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-3 col-sm-2"><img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image"/></div>
+            <div class="col-9 col-sm-10"><p>Allow {{organization.name}} to access your medical files including mental health records?</p></div>
+          </div>
+        </div>
         {% endifequal %}
       </div>
       <div class="modal-footer">
@@ -32,8 +43,7 @@
           {% ifequal status 'available' %}
           <input type="submit" name="approve" class="btn btn-primary" value="Grant Access"></input>
           {% endifequal %}
-          &#x00a0;&#x00a0;
-          <a class="cancel" href="#" data-dismiss="modal">Cancel</a>
+          <button class="btn btn-secondary" data-dismiss="modal">Cancel</input>
         </form>
       </div>
     </div>

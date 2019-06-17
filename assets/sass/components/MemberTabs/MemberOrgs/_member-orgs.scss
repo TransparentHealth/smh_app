@@ -1,7 +1,43 @@
-.member-orgs .modal a.cancel {
-    color: $blue;
-    border-bottom-color: rgba(0,0,0,0);
-    &:hover {
-        border-bottom-color: $blue;
+.modal-organization-request {
+    @extend .modal-dialog;
+    max-width: 600px;
+
+    a.cancel {
+        color: $blue;
+        border-bottom-color: rgba(0,0,0,0);
+        &:hover {
+            border-bottom-color: $blue;
+        }
     }
+
+    .btn-primary, .btn-secondary {
+        background-color: rgba(0,0,0,0);
+        border: 0;
+        color: $blue;
+    }
+
+    .modal-body {
+        padding: 1rem 4rem;
+        h2 {
+            justify-content: space-around;
+            margin-bottom: 1rem;
+        }
+    }
+
+    .modal-footer {
+        border-top: 0;
+    }
+
+    .modal-header > *,
+    .modal-body > *, 
+    .modal-footer > * {
+        margin: 0 auto;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 500;        
+        text-transform: none;
+    }
+
 }
