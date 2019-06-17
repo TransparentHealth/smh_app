@@ -1,0 +1,7 @@
+.member-orgs .modal a.cancel {
+    color: $blue;
+    border-bottom-color: rgba(0,0,0,0);
+    &:hover {
+        border-bottom-color: $blue;
+    }
+}

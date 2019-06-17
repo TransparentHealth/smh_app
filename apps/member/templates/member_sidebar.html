@@ -1,15 +1,15 @@
 {% load static %}
 <div class="member-sidebar col-lg-3 pl-0 pb-5 pr-0">
     <div class="member-sidebar__image">
-        
-        
+
+
          {% if request.user.userprofile.picture_url %}
                       <img src="{{ member.user.userprofile.picture_url }}" alt="{{ member.user.first_name }} {{ member.user.last_name }}",  class="member-avatar">
                     {% else %}
                       <img src="{% static '/images/icons/avatar_default.png' %}" alt=">{{ member.user.first_name }} {{ member.user.last_name }}", c class="member-avatar">
                     {% endif %}
-        
-            
+
+
         <p class="member-avatar__overlay mb-0"><img src="/images/icons/star.png" alt="">ID Verified</p>
     </div>
     <div class="member-sidebar__nav">
@@ -32,7 +32,7 @@
                         <a href="{% url 'member:records' member.id 'list' %}" class="nav-link {% if url == 'data-sources' %}active{% endif %}" role="button">Medical Data</a>
                         <a href="#" data-rb-event-key="memberNotes" class="nav-link" role="button">Notes</a>
                         <a href="#" data-rb-event-key="memberLockbox" class="nav-link" role="button">Lockbox</a>
-                        <a href="#" data-rb-event-key="memberOrgs" class="nav-link" role="button">Organizations</a>
+                        <a href="{% url 'member:organizations' member.id %}" data-rb-event-key="memberOrgs" class="nav-link  {% if url == 'organizations' %}active{% endif %}" role="button">Organizations</a>
                     </div>
                 {% endif %}
             </div>
