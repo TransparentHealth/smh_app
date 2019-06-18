@@ -32,8 +32,8 @@
       display: flex;
       padding: 1rem;
       img.alert-item__image {
-        width: 80px;
         height: 80px;
+        max-width: 80px;
       }
       .title {
         color: $blue;
@@ -53,8 +53,8 @@
       align-items: center;
       padding: 1rem 0;
       .alert-item__image {
-        width: 100px;
         height: 100px;
+        max-width: 100px;
       }
       .profile-text {
         padding-left: 1rem;
