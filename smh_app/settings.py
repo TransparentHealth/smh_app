@@ -166,12 +166,12 @@ STATIC_URL = '/static/'
 
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
+    'apps.vmi.backends.VMIOAuth2Backend',
     'apps.sharemyhealth.backends.ShareMyHealthOAuth2Backend',
-    'apps.vmi.backends.VMIOAuth2Backend'
+    'django.contrib.auth.backends.ModelBackend',
 )
 
-# When a user logs in, they are redirected to the appropriate page by the user_member_router
+# # When a user logs in, they are redirected to the appropriate page by the user_member_router
 LOGIN_REDIRECT_URL = 'users:user_member_router'
 LOGIN_URL = '/social-auth/login/vmi'
 
