@@ -33,7 +33,7 @@
       padding: 1rem;
       img.alert-item__image {
         height: 80px;
-        width: 80px;
+        width: auto;
       }
       .title {
         color: $blue;
@@ -54,7 +54,7 @@
       padding: 1rem 0;
       .alert-item__image {
         height: 100px;
-        width: 100px;
+        width: auto;
       }
       .profile-text {
         padding-left: 1rem;
