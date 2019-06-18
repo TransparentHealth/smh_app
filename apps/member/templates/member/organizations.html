@@ -17,52 +17,57 @@
             <div class="mt-5">
                 <h2>Current Organizations</h2>
                 <div class="row">
-                    {% for org in organizations.current %}
+                    {% for organization in organizations.current %}
                     <div class="col-6 col-sm-4 col-md-3">
-                        <a class="current-organization" data-toggle="modal" data-target="#organization-current-{{org.id}}" href="#">
-                            <div class="tile tile-flex__item tile-flex__item--add">
-                                <p>
-                                    {% if org.picture_url %}
-                                    <img src="{org.picture_url}"/><br/>
-                                    {% endif %}
-                                    {{ org.name }}
-                                </p>
+                        <a class="current-organization" data-toggle="modal" data-target="#organization-current-{{organization.id}}" href="#">
+                            <div class="organization__tile">
+                                <div class="tile__action">&#x2715;</div>
+                                {% if organization.picture_url %}
+                                <img class="tile__logo" src="{{organization.picture_url}}"/>
+                                {% endif %}
+                                <p class="tile__label">{{ organization.name }}</p>
                             </div>
                         </a>
                     </div>
-                    {% include "member/organization_request_modal.html" with member=member organization=org status="current" %}
+                    {% include "member/organization_request_modal.html" with member=member organization=organization status="current" %}
                     {% endfor %}
                 </div>
             </div>
             <div class="mt-5">
                 <h2>Requests Waiting</h2>
                 <div class="row">
-                    {% for org in organizations.requested %}
+                    {% for organization in organizations.requested %}
                     <div class="col-6 col-sm-4 col-md-3">
-                        <a class="requested-organization" data-toggle="modal" data-target="#organization-requested-{{org.id}}" href="#">
-                            <div class="tile tile-flex__item tile-flex__item--add">
-                                <img src="{% static '/images/icons/add.png' %}" alt="">
-                                <p>{{ org.name }}</p>
+                        <a class="requested-organization" data-toggle="modal" data-target="#organization-requested-{{organization.id}}" href="#">
+                            <div class="organization__tile">
+                                <div class="tile__action"><img src="{% static '/images/icons/add.png' %}" alt=""></div>
+                                {% if organization.picture_url %}
+                                <img class="tile__logo" src="{{organization.picture_url}}"/>
+                                {% endif %}
+                                <p class="tile__label">{{ organization.name }}</p>
                             </div>
                         </a>
                     </div>
-                    {% include "member/organization_request_modal.html" with member=member organization=org  status="requested" %}
+                    {% include "member/organization_request_modal.html" with member=member organization=organization  status="requested" %}
                     {% endfor %}
                 </div>
             </div>
             <div class="mt-5">
                 <h2>Other Organizations</h2>
                 <div class="row">
-                    {% for org in organizations.available %}
+                    {% for organization in organizations.available %}
                     <div class="col-6 col-sm-4 col-md-3">
-                        <a class="available-organization" data-toggle="modal" data-target="#organization-available-{{org.id}}" href="#">
-                            <div class="tile tile-flex__item tile-flex__item--add">
-                                <img src="{% static '/images/icons/add.png' %}" alt="">
-                                <p>{{ org.name }}</p>
+                        <a class="available-organization" data-toggle="modal" data-target="#organization-available-{{organization.id}}" href="#">
+                            <div class="organization__tile">
+                                <div class="tile__action"><img src="{% static '/images/icons/add.png' %}" alt=""></div>
+                                {% if organization.picture_url %}
+                                <img class="tile__logo" src="{{organization.picture_url}}"/>
+                                {% endif %}
+                                <p class="tile__label">{{ organization.name }}</p>
                             </div>
                         </a>
                     </div>
-                    {% include "member/organization_request_modal.html" with member=member organization=org status="available" %}
+                    {% include "member/organization_request_modal.html" with member=member organization=organization status="available" %}
                     {% endfor %}
                 </div>
             </div>
