@@ -283,9 +283,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Get all of the ResourceRequests for access to the self.request.user's
         # resources
         resource_requests = ResourceRequest.objects.filter(
-            member=self.request.user
-        ).order_by('-updated')[:4]
-        organizations = self.request.user.member.organizations.all()[:4]
+            member=self.request.user).order_by('-updated')[:4]
+        organizations = [
+            resource_grant.organization
+            for resource_grant in ResourceGrant.objects.filter(member=self.request.user)
+        ][:4]
         kwargs.setdefault('resource_requests', resource_requests)
         kwargs.setdefault('organizations', organizations)
         id_token_payload = get_id_token_payload(self.request.user)
