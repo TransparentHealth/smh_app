@@ -20,9 +20,9 @@
     .tile__logo {
         margin-top: 1rem;
         height: 80px;
-        max-width: 80px;
+        width: 80px;
         border: 1px solid $blue;
-        border-radius: 50px;
+        border-radius: 50%;
     }
 
     .tile__label {
@@ -74,7 +74,7 @@
         img {
             max-height: 1.5em;
             border: 1px solid $blue;
-            border-radius: 0.75em;
+            border-radius: 50%;
             margin-right: 0.5em;
         }
     }
