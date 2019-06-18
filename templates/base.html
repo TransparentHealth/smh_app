@@ -32,7 +32,9 @@
             work correctly both with client-side routing and a non-root public URL.
             Learn how to configure a non-root public URL by running `npm run build`.
         -->
-        <title>Share My Health</title>
+        <title>{% block page_title %}Share My Health{% endblock %}</title>
+
+        {% block extra_head %}{% endblock %}
     </head>
 
     <body>

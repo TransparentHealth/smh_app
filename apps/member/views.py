@@ -12,8 +12,10 @@ from .constants import RECORDS
 from .models import Member
 from .utils import fetch_member_data, get_resource_data
 from apps.org.models import (
-    ResourceGrant, ResourceRequest, REQUEST_APPROVED, REQUEST_DENIED
+    Organization, ResourceGrant, ResourceRequest, RESOURCE_CHOICES,
+    REQUEST_REQUESTED, REQUEST_APPROVED, REQUEST_DENIED,
 )
+from .forms import ResourceRequestForm
 
 
 def get_id_token_payload(user):
@@ -226,6 +228,26 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTest
         return context
 
 
+class OrganizationsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
+    model = Member
+    template_name = "member/organizations.html"
+
+    def get_context_data(self, **kwargs):
+        """Add organizations data into the context."""
+        context = super().get_context_data(**kwargs)
+        orgs = Organization.objects.all().order_by('name')
+        resources = ResourceRequest.objects.filter(member=context['member'].user)
+        current = [r.organization for r in resources if r.status == REQUEST_APPROVED]
+        requested = [r.organization for r in resources if r.status == REQUEST_REQUESTED]
+        available = [org for org in orgs if org not in current and org not in requested]
+        context['organizations'] = {
+            'current': current,
+            'requested': requested,
+            'available': available,
+        }
+        return context
+
+
 class CreateMemberView(LoginRequiredMixin, CreateView):
     model = Member
     fields = ['user', 'birth_date', 'phone_number', 'address',
@@ -261,9 +283,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Get all of the ResourceRequests for access to the self.request.user's
         # resources
         resource_requests = ResourceRequest.objects.filter(
-            member=self.request.user
-        ).order_by('-updated')[:4]
-        organizations = self.request.user.member.organizations.all()[:4]
+            member=self.request.user).order_by('-updated')[:4]
+        organizations = [
+            resource_grant.organization
+            for resource_grant in ResourceGrant.objects.filter(member=self.request.user)
+        ][:4]
         kwargs.setdefault('resource_requests', resource_requests)
         kwargs.setdefault('organizations', organizations)
         id_token_payload = get_id_token_payload(self.request.user)
@@ -287,6 +311,7 @@ def approve_resource_request(request, pk):
     )
     resource_request.status = REQUEST_APPROVED
     resource_request.save()
+
     # The ResourceRequest is for this member, so create a ResourceGrant for it
     ResourceGrant.objects.create(
         organization=resource_request.organization,
@@ -294,28 +319,98 @@ def approve_resource_request(request, pk):
         resource_class_path=resource_request.resource_class_path,
         resource_request=resource_request
     )
-    return redirect(reverse('member:dashboard'))
+
+    if request.GET.get('next'):
+        return redirect(request.GET['next'])
+    else:
+        return redirect(reverse('member:dashboard'))
+
+
+@require_POST
+@login_required(login_url='home')
+def resource_request_response(request):
+    """
+    A member can directly create a ResourceGrant to an organization who has not requested it.
+    This requires having both the 'member' and the 'organization' ids in the POST data.
+    """
+    if request.POST.get('approve'):
+        status = REQUEST_APPROVED
+    elif request.POST.get('deny') or request.POST.get('revoke'):
+        status = REQUEST_DENIED
+    else:
+        status = None
+    form = ResourceRequestForm({
+        'user': request.user.id,
+        'status': status,
+        'resource_class_path': RESOURCE_CHOICES[0][0],
+        'member': request.POST.get('member'),
+        'organization': request.POST.get('organization'),
+    })
+    if form.is_valid():
+        resource_request = ResourceRequest.objects.filter(
+            member=form.cleaned_data['member'],
+            organization=form.cleaned_data['organization'],
+            resource_class_path=form.cleaned_data['resource_class_path'],
+        ).first()
+        if resource_request is None:
+            resource_request = ResourceRequest.objects.create(
+                member=form.cleaned_data['member'],
+                organization=form.cleaned_data['organization'],
+                resource_class_path=form.cleaned_data['resource_class_path'],
+                user=request.user,
+            )
+        resource_request.status = form.cleaned_data['status']
+        resource_request.save()
+
+        if resource_request.status == REQUEST_DENIED:
+            # delete any existing ResourceGrant objects associated with this request
+            ResourceGrant.objects.filter(
+                member=resource_request.member,
+                organization=resource_request.organization,
+                resource_class_path=resource_request.resource_class_path,
+                resource_request=resource_request).delete()
+        elif resource_request.status == REQUEST_APPROVED:
+            # make sure there is a ResourceGrant object associated with this ResourceRequest
+            ResourceGrant.objects.get_or_create(
+                member=resource_request.member,
+                organization=resource_request.organization,
+                resource_class_path=resource_request.resource_class_path,
+                resource_request=resource_request)
+    else:
+        # create an error message indicating the error that occurred.
+        pass
+
+    if request.GET.get('next'):
+        return redirect(request.GET['next'])
+    else:
+        return redirect(reverse('member:dashboard'))
 
 
 @require_POST
 @login_required(login_url='home')
 def revoke_resource_request(request, pk):
     """
-    A view for a member to revoke access to a resource (after an approved ResourceRequest).
+    A view for a member to revoke access to a resource 
+    (either before or after an approved ResourceRequest).
 
     Revoking a ResourceRequest means setting its status to 'Denied', and
-    deleting the related ResourceGrant.
+    deleting the related ResourceGrant, if any.
     """
     # Is the ResourceRequest for this member?
     resource_request = get_object_or_404(
         ResourceRequest.objects.filter(member=request.user),
         pk=pk
     )
+    
     # The ResourceRequest is for this member; set its status to REQUEST_DENIED.
     resource_request.status = REQUEST_DENIED
     resource_request.save()
-    # The ResourceRequest is for this member, so delete the relevant
-    # ResourceGrant
+    
+    # The ResourceRequest is for this member, so delete the relevant ResourceGrant, if any
     if getattr(resource_request, 'resourcegrant', None):
         resource_request.resourcegrant.delete()
-    return redirect(reverse('member:dashboard'))
+
+    if request.GET.get('next'):
+        return redirect(request.GET['next'])
+    else:
+        return redirect(reverse('member:dashboard'))

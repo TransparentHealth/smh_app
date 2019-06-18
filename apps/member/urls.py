@@ -2,9 +2,10 @@
 from django.conf.urls import url
 
 from .views import (
-    approve_resource_request, revoke_resource_request,
-    CreateMemberView, DashboardView, DataSourcesView, DeleteMemberView, RecordsView,
-    SummaryView, ProvidersView, UpdateMemberView
+    approve_resource_request, revoke_resource_request, resource_request_response,
+    CreateMemberView, DeleteMemberView, UpdateMemberView,
+    DashboardView, DataSourcesView, RecordsView, OrganizationsView,
+    SummaryView, ProvidersView,
 )
 
 # Copyright Videntity Systems Inc.
@@ -29,6 +30,9 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/data-sources/(?P<resource_name>[\w]+)/(?P<record_type>[\w]+)/$',
         DataSourcesView.as_view(),
         name='data-sources'),
+    url(r'^(?P<pk>[0-9]+)/organizations/$',
+        OrganizationsView.as_view(),
+        name='organizations'),
     url(r'^new/$',
         CreateMemberView.as_view(),
         name='member-create'),
@@ -40,6 +44,9 @@ urlpatterns = [
         name='member-delete'),
     url(r'^$',
         DashboardView.as_view(), name='dashboard'),
+
+    # Member/Org ResourceRequests
+    url(r'^resource_request_response/$', resource_request_response, name='resource_request_response'),
     url(r'^approve_resource_request/(?P<pk>[0-9]+)/$',
         approve_resource_request,
         name='approve_resource_request'),

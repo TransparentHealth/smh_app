@@ -11,7 +11,11 @@
             <div class="tile undefined">
                 <div class="alert-item">
                     <!-- TODO: add image to organization model perhaps. access resource_request.organization.picture?? -->
+                    {% if resource_request.organization.picture_url %}
+                    <img src="{{ organization.picture_url }}" alt="" class="alert-item__image"/>
+                    {% else %}
                     <img src="{% static '/images/icons/organization_default.png' %}" alt="" class="alert-item__image">
+                    {% endif %}
                     <div class="alert-item-content">
                         <div class="alert-item__text">
                             <p>{{ resource_request.notification_text }}</p>
@@ -40,12 +44,16 @@
           </div>
         {% endif %}
       </div>
-      <h2 class="mb-3 pb-3">Organizations <a href="#">Edit</a></h2>
+      <h2 class="mb-3 pb-3">Organizations <a href="{% url 'member:organizations' pk=request.user.member.pk %}">Edit</a></h2>
       <div class="organization-list">
         {% if organizations %}
           {% for organization in organizations %}
             <div class="organization-item">
+              {% if organization.picture_url %}
+              <img src="{{ organization.picture_url }}" alt="" class="alert-item__image">
+              {% else %}
               <img src="{% static '/images/icons/organization_default.png' %}" alt="" class="alert-item__image">
+              {% endif %}
               <div class="title">{{ organization }}</div>
             </div>
           {% endfor %}
@@ -67,8 +75,8 @@
                     {% else %}
                       <img src="{% static '/images/icons/avatar_default.png' %}" alt="Account menu icon", class="alert-item__image">
                     {% endif %}
-        
-      
+
+
         <div class="profile-text">
           <div class="title">{{ request.user.first_name }} {{ request.user.last_name }}</div>
           <div class="age">{{ request.user.member }}</div>

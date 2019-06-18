@@ -1,0 +1,58 @@
+{% load static %}
+<!-- Modal -->
+<div class="modal" id="organization-{{status}}-{{organization.id}}" tabindex="-1" role="dialog" aria-labelledby="organization-{{status}}-{{organization.id}}-title" aria-hidden="true">
+  <div class="organization-request__modal" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="organization-{{status}}-{{organization.id}}-title">
+          {% if organization.picture_url %}
+          <img src="{{organization.picture_url}}"/>
+          {% else %}
+          <img src="{% static '/images/icons/organization_default.png' %}"/>
+          {% endif %}
+          {{organization.name}}
+        </h5>
+        <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button> -->
+      </div>
+      <div class="modal-body">
+        {% ifequal status 'current' %}
+        <h2>Revoke Access</h2>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-3 col-sm-2"><img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image"/></div>
+            <div class="col-9 col-sm-10"><p>Revoke from {{organization.name}} access to your medical files including mental health records?</p></div>
+          </div>
+        </div>
+        {% else %}
+        <h2>{% ifequal status 'requested' %}Approve{% else %}Grant{% endifequal %} Access</h2>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-3 col-sm-2"><img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image"/></div>
+            <div class="col-9 col-sm-10"><p>Allow {{organization.name}} to access your medical files including mental health records?</p></div>
+          </div>
+        </div>
+        {% endifequal %}
+      </div>
+      <div class="modal-footer">
+        <form method="POST" action="{% url 'member:resource_request_response' %}?next={{request.path}}">
+          {% csrf_token %}
+          <input type="hidden" name="organization" value="{{organization.id}}"></input>
+          <input type="hidden" name="member" value="{{member.id}}"></input>
+          {% ifequal status 'current' %}
+          <input type="submit" name="revoke" class="btn btn-primary" value="Yes, Revoke"></input>
+          {% endifequal %}
+          {% ifequal status 'requested' %}
+          <input type="submit" name="approve" class="btn btn-primary" value="Yes, Approve"></input>
+          <input type="submit" name="deny" class="btn btn-secondary" value="No, Deny"></input>
+          {% endifequal %}
+          {% ifequal status 'available' %}
+          <input type="submit" name="approve" class="btn btn-primary" value="Grant Access"></input>
+          {% endifequal %}
+          <button class="btn btn-secondary" data-dismiss="modal">Cancel</input>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

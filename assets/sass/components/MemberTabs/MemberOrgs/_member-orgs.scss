@@ -1,0 +1,82 @@
+.organization__tile {
+    @extend .tile;
+    @extend .tile-flex__item;
+
+    align-items: flex-end !important;
+    min-height: 200px;
+
+    .tile__action {
+        color: $blue;   /* for when it's text rather than an image */
+        font-size: 1.5rem;
+        line-height: 1.0;
+
+        position: absolute;
+        /*right: 1.5rem;*/
+        text-align: right;
+        top: 1rem;
+        width: calc(100% - 30px - 2em);
+    }
+
+    .tile__logo {
+        margin-top: 1rem;
+        height: 80px;
+        max-width: 80px;
+        border: 1px solid $blue;
+        border-radius: 50px;
+    }
+
+    .tile__label {
+        margin-top: 0.5rem;
+    }
+}
+
+.organization-request__modal {
+    @extend .modal-dialog;
+    max-width: 600px;
+
+    a.cancel {
+        color: $blue;
+        border-bottom-color: rgba(0,0,0,0);
+        &:hover {
+            border-bottom-color: $blue;
+        }
+    }
+
+    .btn-primary, .btn-secondary {
+        background-color: rgba(0,0,0,0);
+        border: 0;
+        color: $blue;
+    }
+
+    .modal-body {
+        padding: 1rem 4rem;
+        h2 {
+            justify-content: space-around;
+            margin-bottom: 1rem;
+        }
+    }
+
+    .modal-footer {
+        border-top: 0;
+    }
+
+    .modal-header > *,
+    .modal-body > *, 
+    .modal-footer > * {
+        margin: 0 auto;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 500;        
+        text-transform: none;
+
+        img {
+            max-height: 1.5em;
+            border: 1px solid $blue;
+            border-radius: 0.75em;
+            margin-right: 0.5em;
+        }
+    }
+}
+
