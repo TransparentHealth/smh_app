@@ -11,7 +11,11 @@
             <div class="tile undefined">
                 <div class="alert-item">
                     <!-- TODO: add image to organization model perhaps. access resource_request.organization.picture?? -->
+                    {% if resource_request.organization.picture_url %}
+                    <img src="{{ organization.picture_url }}" alt="" class="alert-item__image"/>
+                    {% else %}
                     <img src="{% static '/images/icons/organization_default.png' %}" alt="" class="alert-item__image">
+                    {% endif %}
                     <div class="alert-item-content">
                         <div class="alert-item__text">
                             <p>{{ resource_request.notification_text }}</p>
@@ -45,7 +49,11 @@
         {% if organizations %}
           {% for organization in organizations %}
             <div class="organization-item">
+              {% if organization.picture_url %}
+              <img src="{{ organization.picture_url }}" alt="" class="alert-item__image">
+              {% else %}
               <img src="{% static '/images/icons/organization_default.png' %}" alt="" class="alert-item__image">
+              {% endif %}
               <div class="title">{{ organization }}</div>
             </div>
           {% endfor %}
