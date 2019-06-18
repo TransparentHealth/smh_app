@@ -23,7 +23,11 @@ def create_or_update_org(backend, user, response, *args, **kwargs):
                     org.sub = organization['sub']
                     org.website = organization['website']
                     org.phone = organization['phone_number']
-                    org.picture_url = organization['picture']
+                    # Make sure we don't have a 'no-img.jpg' in the org picture_url
+                    if 'no-img.jpg' in organization['picture']:
+                        org.picture_url = None
+                    else:
+                        org.picture_url = organization['picture']
                     org.save()
                     print(org, "Saved!")
 
