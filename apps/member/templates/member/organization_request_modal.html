@@ -5,7 +5,11 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="organization-{{status}}-{{organization.id}}-title">
-          {% if organization.picture_url %}<img src="{{organization.picture_url}}"/>{% endif %}
+          {% if organization.picture_url %}
+          <img src="{{organization.picture_url}}"/>
+          {% else %}
+          <img src="{% static '/images/icons/organization_default.png' %}"/>
+          {% endif %}
           {{organization.name}}
         </h5>
         <!-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">

@@ -23,7 +23,9 @@
                             <div class="organization__tile">
                                 <div class="tile__action">&#x2715;</div>
                                 {% if organization.picture_url %}
-                                <img class="tile__logo" src="{{organization.picture_url}}"/>
+                                <img class="tile__logo" src="{{ organization.picture_url }}"/>
+                                {% else %}
+                                <img class="tile__logo" src="{% static '/images/icons/organization_default.png' %}"/>
                                 {% endif %}
                                 <p class="tile__label">{{ organization.name }}</p>
                             </div>
@@ -42,7 +44,9 @@
                             <div class="organization__tile">
                                 <div class="tile__action"><img src="{% static '/images/icons/add.png' %}" alt=""></div>
                                 {% if organization.picture_url %}
-                                <img class="tile__logo" src="{{organization.picture_url}}"/>
+                                <img class="tile__logo" src="{{ organization.picture_url }}"/>
+                                {% else %}
+                                <img class="tile__logo" src="{% static '/images/icons/organization_default.png' %}"/>
                                 {% endif %}
                                 <p class="tile__label">{{ organization.name }}</p>
                             </div>
@@ -61,7 +65,9 @@
                             <div class="organization__tile">
                                 <div class="tile__action"><img src="{% static '/images/icons/add.png' %}" alt=""></div>
                                 {% if organization.picture_url %}
-                                <img class="tile__logo" src="{{organization.picture_url}}"/>
+                                <img class="tile__logo" src="{{ organization.picture_url }}"/>
+                                {% else %}
+                                <img class="tile__logo" src="{% static '/images/icons/organization_default.png' %}"/>
                                 {% endif %}
                                 <p class="tile__label">{{ organization.name }}</p>
                             </div>
