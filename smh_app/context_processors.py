@@ -1,5 +1,5 @@
 from apps.org.models import ResourceRequest
-from apps.member.models import Member
+
 
 def resource_requests(request):
     if not request.user.is_anonymous:
