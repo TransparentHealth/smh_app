@@ -1,5 +1,6 @@
 from httmock import HTTMock
 
+from django.contrib.messages import get_messages
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -520,3 +521,158 @@ class OrganizationsViewTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(len(response.context_data['organizations']['requested']), 0)
             self.assertEqual(len(response.context_data['organizations']['available']), 2)
 
+
+@override_settings(LOGIN_URL='/accounts/login/')
+class ResourceRequestResponseTestCase(SMHAppTestMixin, TestCase):
+    url_name = 'member:resource_request_response'
+
+    def setUp(self):
+        """set up organizations that will be used in the tests."""
+        super().setUp()
+        # 3 orgs is sufficient
+        self.organizations = [OrganizationFactory(name="Org %d" % i) for i in range(1, 4)]
+
+    def test_post_valid(self):
+        """Posting changes in a member's organizations should result in ResourceRequest changes."""
+        # start with 1 requested organization
+        resource_class_path = RESOURCE_CHOICES[0][0]
+        request_url = reverse(self.url_name)
+
+        with self.subTest('POST approval for a requested resource '
+                          'should result in approved status and a new ResourceGrant'):
+            ResourceRequestFactory(
+                organization=self.organizations[0],
+                user=self.user,
+                member=self.user,
+                resource_class_path=resource_class_path,
+                status=REQUEST_REQUESTED)
+
+            response = self.client.post(
+                request_url,
+                {
+                    'approve': 'Approve It',  # value doesn't matter, just the key
+                    'member': self.user.pk,
+                    'organization': self.organizations[0].pk,  # same as the requested org above
+                },
+            )
+            resource_request = ResourceRequest.objects.filter(member=self.user).first()
+            resource_grant = ResourceGrant.objects.filter(resource_request=resource_request).first()
+
+            self.assertEqual(response.status_code, 302)  # redirects, we don't care where
+            self.assertEqual(resource_request.status, REQUEST_APPROVED)
+            self.assertIsNotNone(resource_grant)
+
+        with self.subTest('POST approve for available resource '
+                          'should result in approved status and a new ResourceGrant'):
+            response = self.client.post(
+                request_url,
+                {
+                    'approve': 'Approve It',  # value doesn't matter, just the key
+                    'member': self.user.pk,
+                    'organization': self.organizations[1].pk,  # no ResourceRequest
+                },
+            )
+            resource_request = ResourceRequest.objects.filter(
+                member=self.user, organization=self.organizations[1]).first()
+            resource_grant = ResourceGrant.objects.filter(resource_request=resource_request).first()
+
+            self.assertEqual(response.status_code, 302)  # redirects, we don't care where
+            self.assertEqual(resource_request.status, REQUEST_APPROVED)
+            self.assertIsNotNone(resource_grant)
+
+        with self.subTest('POST deny for requested resource '
+                          'should result in denied status and no ResourceGrants'):
+            ResourceRequestFactory(
+                organization=self.organizations[2],
+                user=self.user,
+                member=self.user,
+                resource_class_path=resource_class_path,
+                status=REQUEST_REQUESTED)
+            organization = self.organizations[2]
+            response = self.client.post(
+                request_url,
+                {
+                    'deny': 'No way!',  # value doesn't matter, just the key
+                    'member': self.user.pk,
+                    'organization': organization.pk,  # requested
+                },
+            )
+            resource_request = ResourceRequest.objects.filter(
+                member=self.user, organization=organization).first()
+            resource_grant = ResourceGrant.objects.filter(resource_request=resource_request).first()
+
+            self.assertEqual(resource_request.status, REQUEST_DENIED)
+            self.assertIsNone(resource_grant)
+
+        with self.subTest('POST revoke for approved resource '
+                          'should result in denied status and no ResourceGrants'):
+            # starting state: approved and granted (from above subTest)
+            organization = self.organizations[1]
+            resource_request = ResourceRequest.objects.filter(
+                member=self.user, organization=organization).first()
+            resource_grant = ResourceGrant.objects.filter(resource_request=resource_request).first()
+            self.assertEqual(resource_request.status, REQUEST_APPROVED)
+            self.assertIsNotNone(resource_grant)  # should exist from earlier subTest
+
+            response = self.client.post(
+                request_url,
+                {
+                    'deny': 'No way!',  # value doesn't matter, just the key
+                    'member': self.user.pk,
+                    'organization': organization.pk,  # requested
+                },
+            )
+            resource_request = ResourceRequest.objects.filter(
+                member=self.user, organization=organization).first()
+            resource_grant = ResourceGrant.objects.filter(resource_request=resource_request).first()
+
+            self.assertEqual(resource_request.status, REQUEST_DENIED)
+            self.assertIsNone(resource_grant)  # should have been deleted
+
+    def test_post_invalid(self):
+        """Invalid post conditions should results HTTP 422 Unprocessable entity
+        * 'member' does not exist
+        * 'organization' does not exist
+        * 'status' is not in ['approve', 'deny', 'revoke']
+        """
+        request_url = reverse(self.url_name)
+        with self.subTest('post with non-existing member results in error message'):
+            new_user = UserFactory()
+            new_user_pk = new_user.pk
+            new_user.delete()  # now we know they don't exist.
+            response = self.client.post(
+                request_url,
+                {
+                    'approve': 'Not gonna work',
+                    'member': new_user_pk,
+                    'organization': self.organizations[0].pk,
+                },
+            )
+            self.assertEqual(response.status_code, 422)
+            self.assertIn(b'member', response.content)  # error with the member field
+
+        with self.subTest('post with non-existing organization results in error message'):
+            new_org = OrganizationFactory()
+            new_org_pk = new_org.pk
+            new_org.delete()  # now we know they don't exist.
+            response = self.client.post(
+                request_url,
+                {
+                    'approve': 'Not gonna work',
+                    'member': self.user.pk,
+                    'organization': new_org_pk,
+                },
+            )
+            self.assertEqual(response.status_code, 422)
+            self.assertIn(b'organization', response.content)  # error with the organization field
+
+        with self.subTest('post with wrong status results in error message'):
+            response = self.client.post(
+                request_url,
+                {
+                    'member': self.user.pk,
+                    'organization': self.organizations[0].pk,
+                },
+            )
+            self.assertEqual(response.status_code, 422)
+            self.assertIn(b'status', response.content)  # error with the status field
