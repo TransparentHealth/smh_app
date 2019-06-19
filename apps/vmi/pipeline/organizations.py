@@ -23,13 +23,17 @@ def create_or_update_org(backend, user, response, *args, **kwargs):
                     org.sub = organization['sub']
                     org.website = organization['website']
                     org.phone = organization['phone_number']
-                    # Make sure we don't have a 'no-img.jpg' in the org picture_url
+                    # Make sure we don't have a 'no-img.jpg' in the org
+                    # picture_url
                     if 'no-img.jpg' in organization['picture']:
                         org.picture_url = None
                     else:
                         org.picture_url = organization['picture']
+
+                    # Now add the user to the Organization
+                    org.users.add(user)
                     org.save()
-                    print(org, "Saved!")
+                    # print(org, "Saved!")
 
 
 def set_user_type(backend, user, response, *args, **kwargs):
