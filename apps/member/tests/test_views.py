@@ -6,7 +6,8 @@ from django.urls import reverse
 from apps.common.tests.base import MockResourceDataMixin, SMHAppTestMixin
 from apps.common.tests.factories import UserFactory
 from apps.org.models import (
-    ResourceGrant, REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED
+    ResourceGrant, ResourceRequest, RESOURCE_CHOICES, 
+    REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED,
 )
 from apps.org.tests.factories import (
     OrganizationFactory, ResourceGrantFactory, ResourceRequestFactory,
@@ -456,3 +457,66 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             with HTTMock(self.response_content_success):
                 response = self.client.get(member_data_url)
             self.assertEqual(response.status_code, 200)
+
+
+@override_settings(LOGIN_URL='/accounts/login/')
+class OrganizationsViewTestCase(SMHAppTestMixin, TestCase):
+    url_name = 'member:organizations'
+
+    def setUp(self):
+        """set up organizations that will be used in the tests."""
+        super().setUp()
+        # 3 orgs is sufficient
+        self.organizations = [OrganizationFactory(name="Org %d" % i) for i in range(1, 4)]
+
+    def test_get(self):
+        """The organizations GET view includes context['organizations'], with three values
+        for the current (logged-in) request.user.member: 
+            {'current': [list of REQUEST_APPROVED ResourceRequests], 
+            'requested': [list of REQUEST_REQUESTED ResourceRequests], 
+            'available': [list of REQUEST_DENIED ResourceRequests + orgs w/no ResourceRequest]}, 
+        which is based on the status of the ResourceRequests for the member.
+        Only test GET member orgs data for the (logged-in) request.user.
+        """
+        member_orgs_url = reverse(self.url_name, kwargs={'pk': self.user.pk})
+        resource_class_path = RESOURCE_CHOICES[0][0]
+        
+        with self.subTest('User should have no org ResourceRequests'):
+            response = self.client.get(member_orgs_url)
+            self.assertEqual(len(response.context_data['organizations']['current']), 0)
+            self.assertEqual(len(response.context_data['organizations']['requested']), 0)
+            self.assertEqual(len(response.context_data['organizations']['available']), 3)
+        
+        # create 1 approved and 1 requested resource request for the user
+        resource_requests = [
+            ResourceRequest.objects.create(
+                organization=self.organizations[0],
+                member=self.user,
+                user=self.user,
+                status=REQUEST_REQUESTED,
+                resource_class_path=resource_class_path),
+            ResourceRequest.objects.create(
+                organization=self.organizations[1],
+                member=self.user,
+                user=self.user,
+                status=REQUEST_APPROVED,
+                resource_class_path=resource_class_path),
+        ]
+
+        with self.subTest('User should have 1 requested and 1 approved organization'):
+            response = self.client.get(member_orgs_url)
+            self.assertEqual(len(response.context_data['organizations']['current']), 1)
+            self.assertEqual(len(response.context_data['organizations']['requested']), 1)
+            self.assertEqual(len(response.context_data['organizations']['available']), 1)
+
+        # now make the 'requested' request 'denied'
+        resource_requests[0].status = REQUEST_DENIED
+        resource_requests[0].save()
+
+        with self.subTest('User should have 1 approved and 2 available organizations'):
+            # one of the 'available' organizations has been denied
+            response = self.client.get(member_orgs_url)
+            self.assertEqual(len(response.context_data['organizations']['current']), 1)
+            self.assertEqual(len(response.context_data['organizations']['requested']), 0)
+            self.assertEqual(len(response.context_data['organizations']['available']), 2)
+
