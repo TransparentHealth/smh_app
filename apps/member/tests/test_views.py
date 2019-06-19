@@ -1,6 +1,5 @@
 from httmock import HTTMock
 
-from django.contrib.messages import get_messages
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
