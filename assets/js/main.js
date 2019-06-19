@@ -73,6 +73,28 @@ function populateSearchPage () {
 	})
 }
 
+// -------------------------- notification and profile dropdown menus ------------------------------ //
+
+function hideDropdownMenus () {
+	const header = document.querySelector("header")
+	const dropdownList = header.querySelectorAll(".dropdown-menu")
+	for (i in dropdownList) {
+		if(dropdownList[i].classList) {
+			dropdownList[i].classList.remove('show')
+		}
+	}
+}
+
+function toggleDropdownMenu (e) {
+	if (e.target.classList.contains('dropdown')) {
+		hideDropdownMenus()
+		const menu = e.target.querySelector(".dropdown-menu")
+		menu.classList.add('show')
+	} else {
+		hideDropdownMenus()
+	}
+}
+
 window.addEventListener('DOMContentLoaded', () => {
 
 	// ------------------------- search functionality in the header ------------------------- //
@@ -95,6 +117,9 @@ window.addEventListener('DOMContentLoaded', () => {
 		populateSearchPage()
 		sortOption.onchange = populateSearchPage
 	}
+
+	// --------------------------- notification and profile dropdowns ------------------------ //
+	window.onclick = toggleDropdownMenu
 
 	// open and close modal
 	const memberModal = document.getElementById('create-member-modal')
