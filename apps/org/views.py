@@ -108,6 +108,7 @@ class JoinOrganizationView(LoginRequiredMixin, BaseDetailView):
 
 class OrgCreateMemberMixin:
     """A mixin for the create member views."""
+
     def get_organization(self, request, org_slug):
         """Get the Organization object that the org_slug refers to, or return a 404 response."""
         return get_object_or_404(
@@ -671,6 +672,7 @@ class OrgCreateMemberSuccessView(OrgCreateMemberMixin, TemplateView):
 
 class LocalUserAPI(LoginRequiredMixin, View):
     ''' Setting up a local endpoint for users here. '''
+
     def get(self, request, *args, **kwargs):
         # picking the first organization here
         members = Member.objects.all()

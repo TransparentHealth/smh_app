@@ -6,7 +6,7 @@ from django.urls import reverse
 from apps.common.tests.base import MockResourceDataMixin, SMHAppTestMixin
 from apps.common.tests.factories import UserFactory
 from apps.org.models import (
-    ResourceGrant, ResourceRequest, RESOURCE_CHOICES, 
+    ResourceGrant, ResourceRequest, RESOURCE_CHOICES,
     REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED,
 )
 from apps.org.tests.factories import (
@@ -471,22 +471,22 @@ class OrganizationsViewTestCase(SMHAppTestMixin, TestCase):
 
     def test_get(self):
         """The organizations GET view includes context['organizations'], with three values
-        for the current (logged-in) request.user.member: 
-            {'current': [list of REQUEST_APPROVED ResourceRequests], 
-            'requested': [list of REQUEST_REQUESTED ResourceRequests], 
-            'available': [list of REQUEST_DENIED ResourceRequests + orgs w/no ResourceRequest]}, 
+        for the current (logged-in) request.user.member:
+            {'current': [list of REQUEST_APPROVED ResourceRequests],
+            'requested': [list of REQUEST_REQUESTED ResourceRequests],
+            'available': [list of REQUEST_DENIED ResourceRequests + orgs w/no ResourceRequest]},
         which is based on the status of the ResourceRequests for the member.
         Only test GET member orgs data for the (logged-in) request.user.
         """
         member_orgs_url = reverse(self.url_name, kwargs={'pk': self.user.pk})
         resource_class_path = RESOURCE_CHOICES[0][0]
-        
+
         with self.subTest('User should have no org ResourceRequests'):
             response = self.client.get(member_orgs_url)
             self.assertEqual(len(response.context_data['organizations']['current']), 0)
             self.assertEqual(len(response.context_data['organizations']['requested']), 0)
             self.assertEqual(len(response.context_data['organizations']['available']), 3)
-        
+
         # create 1 approved and 1 requested resource request for the user
         resource_requests = [
             ResourceRequest.objects.create(
