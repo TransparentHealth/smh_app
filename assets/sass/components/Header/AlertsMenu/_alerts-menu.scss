@@ -1,5 +1,6 @@
 .alerts {
   padding: 0 1em;
+  cursor: pointer;
 
   @include media-breakpoint-up(lg) {
     padding: 0;
@@ -11,6 +12,18 @@
     &:last-child {
       border-bottom: 0;
     }
+  }
+
+  form {
+    text-align: right;
+    button {
+      border: none;
+      margin-top: 10px;
+    }
+  }
+
+  img, a {
+    pointer-events: none;
   }
 
   .dropdown-menu::after {
