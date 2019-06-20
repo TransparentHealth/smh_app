@@ -597,7 +597,7 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
 
         # also ensure the association between the member and the organization
         if self.organization not in self.member.organizations.all():
-            self.member.organizations.add(organization)
+            self.member.organizations.add(self.organization)
 
         # 3.) Create a ResourceGrant object for the ResourceRequest and the Member
         ResourceGrant.objects.get_or_create(
