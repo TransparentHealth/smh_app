@@ -1,6 +1,8 @@
+import json
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
@@ -328,6 +330,36 @@ def approve_resource_request(request, pk):
 
 @require_POST
 @login_required(login_url='home')
+def revoke_resource_request(request, pk):
+    """
+    A view for a member to revoke access to a resource
+    (either before or after an approved ResourceRequest).
+
+    Revoking a ResourceRequest means setting its status to 'Denied', and
+    deleting the related ResourceGrant, if any.
+    """
+    # Is the ResourceRequest for this member?
+    resource_request = get_object_or_404(
+        ResourceRequest.objects.filter(member=request.user),
+        pk=pk
+    )
+
+    # The ResourceRequest is for this member; set its status to REQUEST_DENIED.
+    resource_request.status = REQUEST_DENIED
+    resource_request.save()
+
+    # The ResourceRequest is for this member, so delete the relevant ResourceGrant, if any
+    if getattr(resource_request, 'resourcegrant', None):
+        resource_request.resourcegrant.delete()
+
+    if request.GET.get('next'):
+        return redirect(request.GET['next'])
+    else:
+        return redirect(reverse('member:dashboard'))
+
+
+@require_POST
+@login_required(login_url='home')
 def resource_request_response(request):
     """
     A member can directly create a ResourceGrant to an organization who has not requested it.
@@ -377,38 +409,7 @@ def resource_request_response(request):
                 resource_class_path=resource_request.resource_class_path,
                 resource_request=resource_request)
     else:
-        # create an error message indicating the error that occurred.
-        pass
-
-    if request.GET.get('next'):
-        return redirect(request.GET['next'])
-    else:
-        return redirect(reverse('member:dashboard'))
-
-
-@require_POST
-@login_required(login_url='home')
-def revoke_resource_request(request, pk):
-    """
-    A view for a member to revoke access to a resource
-    (either before or after an approved ResourceRequest).
-
-    Revoking a ResourceRequest means setting its status to 'Denied', and
-    deleting the related ResourceGrant, if any.
-    """
-    # Is the ResourceRequest for this member?
-    resource_request = get_object_or_404(
-        ResourceRequest.objects.filter(member=request.user),
-        pk=pk
-    )
-
-    # The ResourceRequest is for this member; set its status to REQUEST_DENIED.
-    resource_request.status = REQUEST_DENIED
-    resource_request.save()
-
-    # The ResourceRequest is for this member, so delete the relevant ResourceGrant, if any
-    if getattr(resource_request, 'resourcegrant', None):
-        resource_request.resourcegrant.delete()
+        return HttpResponse(json.dumps(form.errors), status=422)
 
     if request.GET.get('next'):
         return redirect(request.GET['next'])
