@@ -98,6 +98,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django_settings_export.settings_export',
+                'smh_app.context_processors.resource_requests'
             ],
         },
     },
@@ -212,7 +213,7 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
 # social-auth-app-django to recognize it. For example, for VMI, we define
 # settings that begin with 'SOCIAL_AUTH_VMI_'.
 SOCIAL_AUTH_NAME = env('VMI_OAUTH_NAME', 'vmi')
-SOCIAL_AUTH_VMI_HOST = env('VMI_OAUTH_HOST', 'http://localhost:8000')
+SOCIAL_AUTH_VMI_HOST = env('VMI_OAUTH_HOST', 'http://verifymyidentity:8001')
 SOCIAL_AUTH_VMI_KEY = env('VMI_OAUTH_KEY', '')
 SOCIAL_AUTH_VMI_SECRET = env('VMI_OAUTH_SECRET', '')
 SOCIAL_AUTH_SHAREMYHEALTH_HOST = env('SMH_OAUTH_HOST', 'http://localhost:8000')

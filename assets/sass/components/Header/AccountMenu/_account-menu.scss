@@ -1,12 +1,18 @@
 .account-menu {
   padding: 0 1em;
+  cursor: pointer;
 
-  img{
+  img {
     border-radius: 50%;
     width: 40px;
     height: 40px;
     background-color: #dbe1fa; //
-    padding: 4px;
+    padding: 1px;
+    pointer-events: none;
+  }
+
+  > a {
+    pointer-events: none;
   }
 
   @include media-breakpoint-up(lg) {

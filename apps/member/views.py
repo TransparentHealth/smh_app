@@ -332,7 +332,7 @@ def approve_resource_request(request, pk):
 @login_required(login_url='home')
 def revoke_resource_request(request, pk):
     """
-    A view for a member to revoke access to a resource 
+    A view for a member to revoke access to a resource
     (either before or after an approved ResourceRequest).
 
     Revoking a ResourceRequest means setting its status to 'Denied', and
@@ -343,11 +343,11 @@ def revoke_resource_request(request, pk):
         ResourceRequest.objects.filter(member=request.user),
         pk=pk
     )
-    
+
     # The ResourceRequest is for this member; set its status to REQUEST_DENIED.
     resource_request.status = REQUEST_DENIED
     resource_request.save()
-    
+
     # The ResourceRequest is for this member, so delete the relevant ResourceGrant, if any
     if getattr(resource_request, 'resourcegrant', None):
         resource_request.resourcegrant.delete()

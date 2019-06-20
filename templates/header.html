@@ -42,98 +42,59 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="">
                             <h2 class="text-center pt-3 pb-3">Recent Notifications</h2>
-                            <span class="navbar-text">
-                                <div class="alert-item">
-                                    <img src="/images/avatars/sloan.png" alt="" class="alert-item__image">
-                                    <div>
-                                        <div class="alert-item__text">
-                                            <p><strong>Danielle Sloan</strong> accepted your request.</p>
+                            {% if resource_requests %}
+                                {% for resource_request in resource_requests %}
+                                    <span class="navbar-text">
+                                        <div class="alert-item">
+                                            {% if resource_request.organization.picture_url %}
+                                                <img src="{{ resource_request.organization.picture_url }}" alt="" class="alert-item__image"/>
+                                            {% else %}
+                                                <img src="{% static '/images/icons/organization_default.png' %}" alt="" class="alert-item__image">
+                                            {% endif %}
+                                            <div>
+                                                <div class="alert-item__text">
+                                                    <p>{{ resource_request.notification_text }}</p>
+                                                </div>
+                                                <div class="alert-item__time">
+                                                  {{ resource_request.updated|timesince }} ago
+                                                </div>
+                                                <div class="alert-item__action-forms">
+                                                  {% for action in resource_request.actions %}
+                                                    <form action="{% url action.url resource_request.id %}" method="post">
+                                                      {% csrf_token %}
+                                                      <button class="alert-item__action" type="submit">{{ action.button_text}}</button>
+                                                    </form>
+                                                  {% endfor%}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="alert-item__time">3 minutes ago</div>
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="navbar-text">
+                                    <div class="alert-item">
+                                        <p class="text-center">No notifications</p>
                                     </div>
-                                </div>
-                            </span>
-                            <span class="navbar-text">
-                                <div class="alert-item">
-                                    <img src="/images/avatars/mcnabb.png" alt="" class="alert-item__image">
-                                    <div>
-                                        <div class="alert-item__text">
-                                            <p><strong>Stephanie McNabb</strong> hasn't accepted your request yet.</p>
-                                        </div>
-                                        <div class="alert-item__time">1 hour ago</div>
-                                        <div class="alert-item__action">Send Reminder</div>
-                                    </div>
-                                </div>
-                            </span>
-                            <span class="navbar-text">
-                                <div class="alert-item">
-                                    <img src="/images/avatars/arthur.png" alt="" class="alert-item__image">
-                                    <div>
-                                        <div class="alert-item__text">
-                                            <p><strong>Trinity Health</strong> left a note for <strong>Dennis Arthur</strong></p>
-                                        </div>
-                                        <div class="alert-item__time">3 hours ago</div>
-                                    </div>
-                                </div>
-                            </span>
-                            <span class="navbar-text">
-                                <div class="alert-item">
-                                    <img src="/images/avatars/deets.png" alt="" class="alert-item__image">
-                                    <div>
-                                        <div class="alert-item__text">
-                                            <p><strong>Ricky Deets</strong> accepted your request.</p>
-                                        </div><div class="alert-item__time">3 hours ago</div>
-                                    </div>
-                                </div>
-                            </span>
-                            <span class="navbar-text">
-                                <div class="alert-item">
-                                    <img src="/images/avatars/westenheimer.png" alt="" class="alert-item__image">
-                                    <div>
-                                        <div class="alert-item__text">
-                                            <p><strong>Samantha Westenheimer</strong> accepted your request.</p>
-                                        </div>
-                                        <div class="alert-item__time">6 hours ago</div>
-                                    </div>
-                                </div>
-                            </span>
-                            <span class="navbar-text">
-                                <div class="alert-item"><img src="/images/avatars/arthur.png" alt="" class="alert-item__image">
-                                    <div>
-                                        <div class="alert-item__text">
-                                            <p><strong>Dennis Arthur</strong> accepted your request.</p>
-                                        </div>
-                                        <div class="alert-item__time">3 minutes ago</div>
-                                    </div>
-                                </div>
-                            </span>
-                            <span class="navbar-text"><div class="alert-item">
-                                <img src="/images/avatars/lender.png" alt="" class="alert-item__image">
-                                <div><div class="alert-item__text">
-                                    <p><strong>Abbey Lender</strong> accepted your request.</p>
-                                </div>
-                                <div class="alert-item__time">3 minutes ago</div>
-                            </div>
-                        </div>
-                    </span>
+                                </span>
+                            {% endif %}
+                    </div>
                 </div>
             </div>
-            <div class="account-menu dropdown nav-item">
+            <div id="profile-dropdown" class="account-menu dropdown nav-item">
                 <a aria-haspopup="true" aria-expanded="false" href="#" class="dropdown-toggle nav-link" role="button" data-toggle="dropdown">
                     {% if request.user.userprofile.picture_url %}
-                      <img src="{{ request.user.userprofile.picture_url }}" alt="Account menu icon">
+                      <img src="{{ request.user.userprofile.picture_url }}" >
                     {% else %}
-                      <img src="{% static '/images/icons/avatar_default.png' %}" alt="Account menu icon">
+                      <img src="{% static '/images/icons/avatar_default.png' %}" >
                     {% endif %}
                 </a><div class="dropdown-menu" aria-labelledby="">
-                    <a class="dropdown-item" href="#">Action</a> 
-                
                     <span class="navbar-text">
-                        <a href="#/">Dashboard</a>
+                        <!-- use "org/dashboard" href if this is an org agent -->
+                        <a href="/member">Dashboard</a>
                     </span><div role="separator" class="dropdown-divider">
 
                     </div>
-                    <span class="navbar-text"><a href="#/settings">Settings</a>
+                    <span class="navbar-text"><a href="/user/settings">Settings</a>
                     </span>
                     <div role="separator" class="dropdown-divider"></div>
                     <span class="navbar-text">
