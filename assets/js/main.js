@@ -8,17 +8,21 @@ const memberResults = document.getElementById('autocomplete-user-results')
 const memberSearchForm = document.getElementById('header-search-form')
 
 function formatListResults (members) {
-	return members.map(mem => {
-		// `mem.extra_data.picture` does not currently work, but in the future extra_data should include this picture url from the vmi server
-		return '<li class="user-link"><a href="/member/' + mem.id + '"><img src="' + mem.extra_data.picture + '" class="mr-3">' + mem.user.first_name + ' ' + mem.user.last_name +'</a></li>'
+	return members.map(member => {
+		return (
+			'<li class="user-link"><a href="/member/' + member.member.id + '">'
+			+ '<img src="' + (member.profile.picture_url || '/static/images/icons/avatar_default.png') + '" class="mr-3">' 
+			+ member.user.first_name + ' ' + member.user.last_name 
+			+'</a></li>'
+		)
 	}).join('')
 }
 
 function getUserData (val) {
 	return axios.get('/org/org-member-api').then( response => {
+		console.log(response.data);
 		const members = response.data.filter(
     		member => {
-
 				const first_name = member.user.first_name.toLowerCase()
 				const last_name = member.user.last_name.toLowerCase()
     			const email = member.user.email.toLowerCase()

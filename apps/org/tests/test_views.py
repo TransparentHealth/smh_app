@@ -532,10 +532,10 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             # Is the request.user  | Is the Member      |  Should the
             # associated with the  | associated with    |  request
             # Organization?        | the Organization?  |  succeed?
-            (True,                     True,                True),
-            (False,                    True,                False),
-            (True,                     False,               False),
-            (False,                    False,               False),
+            (True, True, True),
+            (False, True, False),
+            (True, False, False),
+            (False, False, False),
         )
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
@@ -839,10 +839,10 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             # Is the request.user  | Is the Member      |  Should the
             # associated with the  | associated with    |  request
             # Organization?        | the Organization?  |  succeed?
-            (True,                     True,                True),
-            (False,                    True,                False),
-            (True,                     False,               False),
-            (False,                    False,               False),
+            (True, True, True),
+            (False, True, False),
+            (True, False, False),
+            (False, False, False),
         )
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
@@ -1109,10 +1109,10 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
             # Is the request.user  | Is the Member      |  Should the
             # associated with the  | associated with    |  request
             # Organization?        | the Organization?  |  succeed?
-            (True,                     True,                True),
-            (False,                    True,                False),
-            (True,                     False,               False),
-            (False,                    False,               False),
+            (True, True, True),
+            (False, True, False),
+            (True, False, False),
+            (False, False, False),
         )
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
@@ -1211,10 +1211,10 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
             # Is the request.user  | Is the Member      |  Should the
             # associated with the  | associated with    |  request
             # Organization?        | the Organization?  |  succeed?
-            (True,                     True,                True),
-            (False,                    True,                False),
-            (True,                     False,               False),
-            (False,                    False,               False),
+            (True, True, True),
+            (False, True, False),
+            (True, False, False),
+            (False, False, False),
         )
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
@@ -1352,14 +1352,14 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # Is the request.user  | Is the Member      | is the token |  The expected
             # associated with the  | associated with    | valid?       |  status code of the
             # Organization?        | the Organization?  |              |  response?
-            (True,                     True,                 True,         200),
-            (True,                     True,                 False,        302),
-            (False,                    True,                 True,         200),
-            (False,                    True,                 False,        302),
-            (True,                     False,                True,         404),
-            (True,                     False,                False,        404),
-            (False,                    False,                True,         404),
-            (False,                    False,                False,        404),
+            (True, True, True, 200),
+            (True, True, False, 302),
+            (False, True, True, 200),
+            (False, True, False, 302),
+            (True, False, True, 404),
+            (True, False, False, 404),
+            (False, False, True, 404),
+            (False, False, False, 404),
         )
         for (user_at_org, member_at_org, valid_token, expected_status_code) in subtests:
             if user_at_org:
@@ -1756,10 +1756,10 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
             # Is the request.user  | Is the Member      |  Should the
             # associated with the  | associated with    |  request
             # Organization?        | the Organization?  |  succeed?
-            (True,                     True,                True),
-            (False,                    True,                True),
-            (True,                     False,               False),
-            (False,                    False,               False),
+            (True, True, True),
+            (False, True, True),
+            (True, False, False),
+            (False, False, False),
         )
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
@@ -1841,10 +1841,10 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
             # Is the request.user  | Is the Member      |  Should the
             # associated with the  | associated with    |  request
             # Organization?        | the Organization?  |  succeed?
-            (True,                     True,                True),
-            (False,                    True,                True),
-            (True,                     False,               False),
-            (False,                    False,               False),
+            (True, True, True),
+            (False, True, True),
+            (True, False, False),
+            (False, False, False),
         )
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
@@ -1896,3 +1896,40 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
             response = self.client.post(self.url, data={})
 
             self.assertEqual(response.status_code, 405)
+
+
+@override_settings(LOGIN_URL='/accounts/login/')
+class OrgLocalUserAPITestCase(SMHAppTestMixin, TestCase):
+    url_name = 'org:org_member_api'
+
+    def test_get(self):
+        """GET should return only data for members who are not org agents
+        * Users for whom UserProfile.user_type='M'
+        * Data is formatted as {'user': ..., 'profile': ..., 'member': ...}.
+        * 'user' data should not include password (even hashed)
+        """
+
+        # (there's already a self.user whose .userprofile.user_type should default to 'M')
+        # add a 'regular' member
+        member = UserFactory()
+        member.userprofile.user_type = 'M'
+        member.userprofile.save()
+
+        # add an org agent
+        agent = UserFactory()
+        agent.userprofile.user_type = 'O'
+        agent.userprofile.save()
+
+        response = self.client.get(reverse(self.url_name))
+        data = response.json()
+        usernames = [member['user']['username'] for member in data]
+
+        self.assertEqual(len(data), 2)  # self.user + the local member.
+        self.assertIn(member.username, usernames)
+        self.assertIn(self.user.username, usernames)
+        self.assertNotIn(agent.username, usernames)
+        for member in data:
+            self.assertIn('user', member.keys())
+            self.assertIn('profile', member.keys())
+            self.assertIn('member', member.keys())
+            self.assertNotIn('password', member['user'].keys())

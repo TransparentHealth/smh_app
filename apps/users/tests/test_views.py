@@ -224,13 +224,13 @@ class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
             # request.user have   | request.user| Member have an association | the user should
             # an association with | have a      | with an Organization?      | be redirected to
             # an Organization?    | Member?     |                            |
-            (True,                    False,         False,                    'org:dashboard'),
-            (True,                    True,          False,                    'org:dashboard'),
-            (True,                    True,          True,                     'org:dashboard'),
+            (True, False, False, 'org:dashboard'),
+            (True, True, False, 'org:dashboard'),
+            (True, True, True, 'org:dashboard'),
 
-            (False,                   True,          False,                    'member:dashboard'),
-            (False,                   True,          True,                     'member:dashboard'),
-            (False,                   False,         False,                    'org:dashboard'),
+            (False, True, False, 'member:dashboard'),
+            (False, True, True, 'member:dashboard'),
+            (False, False, False, 'org:dashboard'),
         )
 
         for (has_org, has_member, member_has_org, expected_redirect) in subtests:
