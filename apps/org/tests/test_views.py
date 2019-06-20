@@ -1641,13 +1641,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 response = self.client.post(self.url, data=data)
 
             url_vmi_auth = reverse('social:begin', args=(settings.SOCIAL_AUTH_NAME,))
-            url_next_page = reverse(
-                'org:org_create_member_success',
-                kwargs={
-                    'org_slug': self.organization.slug,
-                    'username': self.member.user.username
-                }
-            )
+            url_next_page = reverse('home')
             expected_redirect_url = '{}?next={}'.format(url_vmi_auth, url_next_page)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, expected_redirect_url)
@@ -1685,8 +1679,9 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password2': 'password1',
             }
 
-            # Since the member set their password in the previous subtest, their
-            # token has expired.
+            # Make the token expire
+            self.user.set_password('anewpassword12345!')
+            self.user.save()
             self.assertFalse(token_generator.check_token(self.user, self.member_token))
 
             response = self.client.post(self.url, data=data)

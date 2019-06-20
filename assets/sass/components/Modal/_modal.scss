@@ -46,6 +46,11 @@
   border: none;
   background-color: $blue;
   overflow: scroll;
+  em {
+    font-style: normal;
+    font-weight: bold;
+    color: $gold;
+  }
   h1 {
     padding: 1rem;
     margin-bottom: 2rem;
@@ -53,10 +58,6 @@
     width: 100%;
     display: flex;
     justify-content: space-between;
-    em {
-      font-style: normal;
-      color: $gold;
-    }
     button.close-btn {
       color: #fff;
       font-size: 1.5rem;

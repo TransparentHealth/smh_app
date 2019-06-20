@@ -20,6 +20,11 @@
   {{ form }}
   <button type="submit">Submit</button>
 </form>
+<script>
+  // include the org name in the label for the give_org_access checkbox.
+  var give_org_access_label = document.querySelectorAll("label[for='id_give_org_access_to_data']")[0];
+  give_org_access_label.innerHTML = 'Give <em>{{ organization.name }}</em> access to your data:';
+</script>
 
 <div class="terms-and-conditions">
     <h3>Terms and conditions</h3>
