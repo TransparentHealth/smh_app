@@ -32,6 +32,7 @@ from .models import (
 )
 from libs.qrcode import make_qr_code
 from apps.member.models import Member
+from apps.users.models import UserProfile
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -674,25 +675,25 @@ class LocalUserAPI(LoginRequiredMixin, View):
     ''' Setting up a local endpoint for users here. '''
 
     def get(self, request, *args, **kwargs):
-        # picking the first organization here
-        members = Member.objects.all()
-        members_data = list(members.values())
+        # get Member objects that are members, not orgs (user_type='M', not 'O')
+        # along with related User and UserProfile objects
+        members = Member.objects.filter(user__userprofile__user_type='M')
+        users = get_user_model().objects.filter(member__in=members)
+        profiles = UserProfile.objects.filter(user__in=users)
 
-        user_id_list = [mem.user.id for mem in members]
+        # Create list of data objects, one per member
+        user_data = {
+            user['id']: {k: v for k, v in user.items() if k not in 'password'
+                         } for user in list(users.values())
+        }
+        profile_data = {profile['user_id']: profile for profile in list(profiles.values())}
+        member_values = [{
+            'user': user_data.get(member['user_id'], {}),
+            'profile': profile_data.get(member['user_id'], {}),
+            'member': member,
+        } for member in list(members.values())]
 
-        users = get_user_model().objects.filter(pk__in=user_id_list)
-        user_data = {user['id']: user for user in list(users.values())}
-
-        # TODO: Save all the extra_data from vmi when we create member and link to VMI, including `picture`
-
-        social_auth_data = list(get_user_model().social_auth.rel.related_model.objects.filter(user__pk__in=user_id_list).values())
-        extra_data = {user['user_id']: user['extra_data'] for user in social_auth_data}
-
-        for member in members_data:
-            member['user'] = user_data.get(member['user_id'], {})
-            member['extra_data'] = extra_data.get(member['user_id'], {})
-
-        return JsonResponse(members_data, safe=False)
+        return JsonResponse(member_values, safe=False)
 
 
 class SearchView(LoginRequiredMixin, TemplateView):

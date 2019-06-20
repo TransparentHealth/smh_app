@@ -1896,3 +1896,40 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
             response = self.client.post(self.url, data={})
 
             self.assertEqual(response.status_code, 405)
+
+
+@override_settings(LOGIN_URL='/accounts/login/')
+class OrgLocalUserAPITestCase(SMHAppTestMixin, TestCase):
+    url_name = 'org:org_member_api'
+
+    def test_get(self):
+        """GET should return only data for members who are not org agents
+        * Users for whom UserProfile.user_type='M'
+        * Data is formatted as {'user': ..., 'profile': ..., 'member': ...}.
+        * 'user' data should not include password (even hashed)
+        """
+
+        # (there's already a self.user whose .userprofile.user_type should default to 'M')
+        # add a 'regular' member
+        member = UserFactory()
+        member.userprofile.user_type = 'M'
+        member.userprofile.save()
+
+        # add an org agent
+        agent = UserFactory()
+        agent.userprofile.user_type = 'O'
+        agent.userprofile.save()
+
+        response = self.client.get(reverse(self.url_name))
+        data = response.json()
+        usernames = [member['user']['username'] for member in data]
+
+        self.assertEqual(len(data), 2)  # self.user + the local member.
+        self.assertIn(member.username, usernames)
+        self.assertIn(self.user.username, usernames)
+        self.assertNotIn(agent.username, usernames)
+        for member in data:
+            self.assertIn('user', member.keys())
+            self.assertIn('profile', member.keys())
+            self.assertIn('member', member.keys())
+            self.assertNotIn('password', member['user'].keys())

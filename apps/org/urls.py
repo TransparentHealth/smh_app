@@ -56,7 +56,7 @@ urlpatterns = [
         name='org_create_member_success'),
     url(r'^org-member-api$',
         LocalUserAPI.as_view(),
-        name='org-member-api'),
+        name='org_member_api'),
     url(r'^search$',
         SearchView.as_view(),
         name='search'),
