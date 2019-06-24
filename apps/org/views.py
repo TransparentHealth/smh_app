@@ -171,7 +171,7 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
          1.) Verify that the request.user has a UserSocialAuth object for VMI
          2.) make a request to VMI to create the new user in VMI
          3.) create a new Member with the response from VMI
-         4.) create a ResourceRequest for the new Member's data from the relavant Organization
+         4.) create a ResourceRequest for the new Member's data from the relevant Organization
          5.) redirect the user to the next step in the Member-creation process
         """
         # 1.) Verify that the request.user has a UserSocialAuth object for VMI
@@ -227,11 +227,11 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
                 username=response_data_dict['preferred_username'],
             )
             new_member = new_user.member
-            organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
-            new_member.organizations.add(organization)
+
             # Save the member's picture URL
             new_user.userprofile.picture_url = response_data_dict['picture']
             new_user.userprofile.save()
+
             # Create a UserSocialAuth for the new Member
             UserSocialAuth.objects.create(
                 user_id=new_user.id,
@@ -239,7 +239,9 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
                 uid=response_data_dict['sub']
             )
 
-            # 4.) create a ResourceRequest for the new Member's data from the relavant Organization
+            # 4.) Associate the member with this organization
+            organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
+            new_member.organizations.add(organization)
             ResourceRequest.objects.create(
                 organization=self.organization,
                 member=new_user,
@@ -250,6 +252,7 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
 
             # 5.) Redirect the user to the next step in the Member-creation process
             return HttpResponseRedirect(self.get_success_url(organization.slug, new_user.username))
+
         else:
             # The request to create a user in VMI did not succeed. Show the errors
             # to the user.
@@ -505,11 +508,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         )
 
     def get_success_url(self, org_slug, username):
-        """A successful verification redirects to the next step in the process."""
-        return reverse(
-            'org:org_create_member_success',
-            kwargs={'org_slug': org_slug, 'username': username}
-        )
+        """A successful verification redirects to home: goes to dashboard or prompts login."""
+        return reverse('home')
 
     def token_is_valid(self, uidb64, token):
         """Return whether the token is valid (for the user)."""
@@ -585,8 +585,19 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             member=self.member.user,
             organization=self.organization,
         ).first()
+        if resource_request is None:
+            resource_request = ResourceRequest(
+                member=self.member.user,
+                organization=self.organization,
+                user=self.request.user,
+                resource_class_path=RESOURCE_CHOICES[0][0],
+            )
         resource_request.status = REQUEST_APPROVED
         resource_request.save()
+
+        # also ensure the association between the member and the organization
+        if self.organization not in self.member.organizations.all():
+            self.member.organizations.add(self.organization)
 
         # 3.) Create a ResourceGrant object for the ResourceRequest and the Member
         ResourceGrant.objects.get_or_create(
