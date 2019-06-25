@@ -687,13 +687,13 @@ class MemberNotificationsTestCase(SMHAppTestMixin, TestCase):
         but not the notifications created for another user.
         """
         for i in range(3):
-            n = Notification.objects.create(notify=self.user, actor=self.user, message="Notify %d" % i)
+            Notification.objects.create(notify=self.user, actor=self.user, message="Notify %d" % i)
         other_user = UserFactory()
         for i in range(1):
-            n = Notification.objects.create(notify=other_user, actor=self.user, message="Notify %d" % i)
+            Notification.objects.create(notify=other_user, actor=self.user, message="Notify %d" % i)
 
         response = self.client.get(reverse(self.url_name))
 
-        self.assertEqual(response.status_code, 200)            
+        self.assertEqual(response.status_code, 200)
         for notification in response.context_data['notifications']:
             self.assertEqual(notification.notify, self.user)

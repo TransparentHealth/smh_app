@@ -61,6 +61,7 @@ class DismissNotificationTestCase(SMHAppTestMixin, TestCase):
             reverse('notifications:dismiss', kwargs={'pk': notification.pk}))
         notification.refresh_from_db()
 
+        self.assertEqual(response.status_code, 302)
         self.assertTrue(notification.dismissed)
 
     def test_post_org_unauthorized(self):
