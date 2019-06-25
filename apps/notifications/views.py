@@ -1,4 +1,4 @@
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views import View
@@ -15,7 +15,7 @@ class DismissNotificationView(LoginRequiredMixin, View):
         form = DismissNotificationForm(kwargs)
         if not form.is_valid():
             # Notification.pk missing or invalid
-            raise Notification.DoesNotExist
+            raise HttpResponse(status=422)
         else:
             try:
                 notification = Notification.objects.get(pk=form.cleaned_data.get('pk'))
