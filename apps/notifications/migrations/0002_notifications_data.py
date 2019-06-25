@@ -33,6 +33,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('notifications', '0001_notifications'),
+        ('org', '0007_organization_sub'),
+        ('users', '0004_auto_20190616_1737'),
     ]
 
     operations = [

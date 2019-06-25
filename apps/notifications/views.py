@@ -15,21 +15,21 @@ class DismissNotificationView(LoginRequiredMixin, View):
         form = DismissNotificationForm(kwargs)
         if not form.is_valid():
             # Notification.pk missing or invalid
-            raise HttpResponse(status=422)
+            return HttpResponse(status=422)
         else:
             try:
                 notification = Notification.objects.get(pk=form.cleaned_data.get('pk'))
 
                 # the request.user must be the notify user, or an agent of the notify org.
                 if (
-                    notification.notify_content_type == 'auth.user'
+                    'user' in str(notification.notify_content_type)
                     and notification.notify_id != request.user.id
                 ) or (
-                    notification.notify_content_type == 'org.organization'
+                    'organization' in str(notification.notify_content_type)
                     and notification.notify_id
                     not in [org.pk for org in request.user.organization_set.all()]
                 ):
-                    raise Notification.DoesNotExist
+                    raise Notification.DoesNotExist()
 
                 notification.dismissed = True
                 notification.save()
