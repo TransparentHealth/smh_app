@@ -2,6 +2,9 @@ from importlib import import_module
 
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.urls import reverse
 from django.utils.html import mark_safe
 
 from localflavor.us.models import USStateField, USZipCodeField
@@ -153,26 +156,75 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
         return getattr(import_module(resource_module), resource_class_name)
 
     @property
-    def notification_text(self):
+    def member_notification_message(self):
         if self.status == REQUEST_REQUESTED:
             return mark_safe("<b>{}</b> requested access to your data".format(self.organization))
         elif self.status == REQUEST_APPROVED:
             return mark_safe("You allowed <b>{}</b> to access your data".format(self.organization))
         elif self.status == REQUEST_DENIED:
-            return mark_safe("You revoked access to <b>{}</b> to your data".format(self.organization))
+            return mark_safe("You revoked access to your data from <b>{}</b>".format(
+                self.organization))
 
     @property
-    def actions(self):
+    def member_notification_actions(self):
         if self.status == REQUEST_REQUESTED:
             return [
-                {'url': 'member:revoke_resource_request', 'button_text': 'Dismiss'},
-                {'url': 'member:approve_resource_request',
-                    'button_text': 'Accept Request'},
+                {
+                    'url': reverse('member:revoke_resource_request', args=[self.pk]),
+                    'text': 'Deny Access',
+                },
+                {
+                    'url': reverse('member:approve_resource_request', args=[self.pk]),
+                    'text': 'Accept Request',
+                },
             ]
         elif self.status == REQUEST_APPROVED:
-            return [{'url': 'member:revoke_resource_request', 'button_text': 'Revoke'}]
+            return [{
+                'url': reverse('member:revoke_resource_request', args=[self.pk]),
+                'text': 'Revoke Access',
+            }]
         elif self.status == REQUEST_DENIED:
-            return [{'url': 'member:approve_resource_request', 'button_text': 'Re-Approve Access'}]
+            return [{
+                'url': reverse('member:approve_resource_request', args=[self.pk]),
+                'text': 'Re-Approve Access',
+            }]
 
     class Meta:
         verbose_name_plural = "Resource Requests"
+
+
+@receiver(post_save, sender=ResourceRequest)
+def create_or_update_resource_request_notifications(sender, instance, created, **kwargs):
+    """Create Notifications related to the ResourceRequest, while deleting existing notifications"""
+    Notification = import_module('apps.notifications.models').Notification
+
+    # notify the User
+    Notification.objects.filter(notify_id=instance.member.id, instance_id=instance.id).delete()
+    notification = Notification.objects.create(
+        notify=instance.member,
+        actor=instance.organization,
+        instance=instance,
+        actions=instance.member_notification_actions,
+        message=instance.member_notification_message,
+        picture_url=instance.organization.picture_url,
+    )
+    notification.created = instance.updated
+    notification.save()
+
+    # if approved, notify the Org
+    if instance.status == REQUEST_APPROVED:
+        Notification.objects.filter(
+            notify_id=instance.organization.id, instance_id=instance.id).delete()
+        notification = Notification.objects.create(
+            notify=instance.organization,
+            actor=instance.member,
+            instance=instance,
+            actions=[{
+                'url': reverse('member:records', args=[instance.member.pk]),
+                'text': 'View Health Records',
+            }],
+            message="<b>{instance.member.name}</b> accepted your request",
+            picture_url=instance.member.userprofile.picture_url,
+        )
+        notification.created = instance.updated
+        notification.save()
