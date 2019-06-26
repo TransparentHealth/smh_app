@@ -300,8 +300,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
 @login_required(login_url='home')
 def redirect_subject_url_to_member(request, subject, rest=''):
-    """If one of the above member views is given with subject_id (== 15 digits), 
-    interpret it as the UserProfile.subject and redirect to the corresponding pk URL 
+    """If one of the above member views is given with subject_id (== 15 digits),
+    interpret it as the UserProfile.subject and redirect to the corresponding pk URL
     """
     try:
         user_profile = UserProfile.objects.get(subject=subject)

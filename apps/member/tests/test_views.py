@@ -676,6 +676,7 @@ class ResourceRequestResponseTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 422)
             self.assertIn(b'status', response.content)  # error with the status field
 
+
 @override_settings(LOGIN_URL='/accounts/login/')
 class RedirectSubjectURLTestCase(SMHAppTestMixin, TestCase):
     url_name = 'member:subject_url'
@@ -695,4 +696,3 @@ class RedirectSubjectURLTestCase(SMHAppTestMixin, TestCase):
         subject_url = reverse(self.url_name, kwargs={'subject': '012345678901234'})
         response = self.client.get(subject_url)
         self.assertEqual(response.status_code, 404)
-
