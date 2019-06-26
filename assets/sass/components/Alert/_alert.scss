@@ -8,8 +8,10 @@
 
 .alert-item__image {
   height: 60px;
+  width: 60px;
+  object-fit: cover;
+  object-position: 50% 50%;
   margin-right: .75em;
-  width: auto;
   border-radius: 50%
 }
 

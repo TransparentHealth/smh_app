@@ -20,14 +20,10 @@
     .tile__logo {
         margin-top: 1rem;
         height: 80px;
-        width: auto;
-    }
-
-    .tile__logo--default {
-        margin-top: 1rem;
-        height: 80px;
-        width: auto;
+        width: 80px;
         border-radius: 50%;
+        object-fit: cover;
+        object-position: 50% 50%;
     }
 
     .tile__label {
