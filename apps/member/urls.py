@@ -6,12 +6,21 @@ from .views import (
     CreateMemberView, DeleteMemberView, UpdateMemberView,
     DashboardView, DataSourcesView, RecordsView, OrganizationsView,
     SummaryView, ProvidersView,
+    redirect_subject_url_to_member
 )
 
 # Copyright Videntity Systems Inc.
 
 app_name = 'member'
 urlpatterns = [
+    # A member url with a 15-digit id is interpreted as a subject_id, redirected to a url below
+    url(r'^(?P<subject>[0-9]{15})/$',
+        redirect_subject_url_to_member,
+        name='subject_url'),
+    url(r'^(?P<subject>[0-9]{15})/(?P<rest>.*)$',
+        redirect_subject_url_to_member),
+
+    # Member urls (using pk)
     url(r'^(?P<pk>[0-9]+)/summary/$',
         SummaryView.as_view(),
         name='summary'),

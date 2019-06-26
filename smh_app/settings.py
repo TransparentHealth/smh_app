@@ -18,6 +18,7 @@ from getenv import env
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+HOSTNAME_URL = env('HOSTNAME_URL', 'http://sharemyhealthapp:8002').rstrip('/')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -292,6 +293,7 @@ SETTINGS_EXPORT = [
     'DEBUG',
     'ALLOWED_HOSTS',
     'APPLICATION_TITLE',
+    'HOSTNAME_URL',
     'STATIC_URL',
     'STATIC_ROOT',
     'ORGANIZATION_TITLE',
