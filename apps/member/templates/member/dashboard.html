@@ -4,45 +4,9 @@
 {% block content %}
 <div class="container member-dashboard mt-5 mb-5"><div class="row">
   <div class="col-md-6 pr-4 pl-4">
-      <h2 class="mb-3 pb-3">Notifications <a href="#">View All Notifications</a></h2>
+      <h2 class="mb-3 pb-3">Notifications <a href="{% url 'member:notifications' %}">View All Notifications</a></h2>
       <div class="recent-alerts">
-        {% if resource_requests%}
-          {% for resource_request in resource_requests %}
-            <div class="tile undefined">
-                <div class="alert-item">
-                    <!-- TODO: add image to organization model perhaps. access resource_request.organization.picture?? -->
-                    {% if resource_request.organization.picture_url %}
-                    <img src="{{ resource_request.organization.picture_url }}" alt="" class="alert-item__image"/>
-                    {% else %}
-                    <img src="{% static '/images/icons/organization_default.png' %}" alt="" class="alert-item__image">
-                    {% endif %}
-                    <div class="alert-item-content">
-                        <div class="alert-item__text">
-                            <p>{{ resource_request.notification_text }}</p>
-                        </div>
-                        <div class="alert-item__time">
-                          {{ resource_request.updated|timesince }} ago
-                        </div>
-                        <div class="alert-item__action-forms">
-                          {% for action in resource_request.actions %}
-                            <form action="{% url action.url resource_request.id %}" method="post">
-                              {% csrf_token %}
-                              <button class="alert-item__action" type="submit">{{ action.button_text}}</button>
-                            </form>
-                          {% endfor%}
-                        </div>
-                    </div>
-                </div>
-            </div>
-          {% endfor %}
-        {% else %}
-          <div class="no-data">
-            <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
-            <div class="text">
-              <div class="title">No Notifications</div>
-            </div>
-          </div>
-        {% endif %}
+        {% include 'member/notifications-list.html' %}
       </div>
       <h2 class="mb-3 pb-3">Organizations <a href="{% url 'member:organizations' pk=request.user.member.pk %}">Edit</a></h2>
       <div class="organization-list">
@@ -93,15 +57,6 @@
           <div class="age">No health records available until identity verification is complete</div>
         </div>
       </div>
-      <h2 class="mb-3 pb-3">Data Sources <a href="{% url 'member:data-sources' pk=request.user.member.pk %}">Edit</a></h2>
-      <!-- Add data sources when complete -->
-      <div class="no-data">
-        <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
-        <div class="text">
-          <div class="title">Identity Unverified</div>
-          <div class="age">No data sources available</div>
-        </div>
-      </div>
       {% endifequal %}
 
       {% ifequal id_token_payload.ial "2" %}
@@ -112,15 +67,6 @@
         <div class="text">
           <div class="title">Identity Verified</div>
           <div class="age"><a href="{% url 'member:records' pk=request.user.member.pk %}">View your records</a></div>
-        </div>
-      </div>
-      <h2 class="mb-3 pb-3">Data Sources <a href="{% url 'member:data-sources' pk=request.user.member.pk %}">Edit</a></h2>
-      <!-- Add data sources when complete -->
-      <div class="no-data">
-        <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
-        <div class="text">
-          <div class="title">Identity Verified</div>
-          <div class="age"><a href="{% url 'social:begin' 'sharemyhealth' %}">Connect to New York (HIXNY)</a></div>
         </div>
       </div>
       {% endifequal %}

@@ -18,6 +18,7 @@ from apps.org.models import (
     REQUEST_REQUESTED, REQUEST_APPROVED, REQUEST_DENIED,
 )
 from apps.users.models import UserProfile
+from apps.notifications.models import Notification
 from .forms import ResourceRequestForm
 
 
@@ -282,16 +283,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "member/dashboard.html"
 
     def get_context_data(self, **kwargs):
-        """Add ResourceRequests for the user's resources to the context."""
-        # Get all of the ResourceRequests for access to the self.request.user's
-        # resources
-        resource_requests = ResourceRequest.objects.filter(
-            member=self.request.user).order_by('-updated')[:4]
+        notifications = Notification.objects.filter(
+            notify_id=self.request.user.id, dismissed=False).order_by('-created')[:4]
         organizations = [
             resource_grant.organization
             for resource_grant in ResourceGrant.objects.filter(member=self.request.user)
         ][:4]
-        kwargs.setdefault('resource_requests', resource_requests)
+        kwargs.setdefault('notifications', notifications)
         kwargs.setdefault('organizations', organizations)
         id_token_payload = get_id_token_payload(self.request.user)
         kwargs.setdefault('id_token_payload', id_token_payload)
@@ -310,6 +308,17 @@ def redirect_subject_url_to_member(request, subject, rest=''):
     pk = user_profile.user.member.pk
     url = f"/member/{pk}/{rest}"
     return redirect(url)
+
+
+class NotificationsView(LoginRequiredMixin, TemplateView):
+    template_name = "member/notifications.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        notifications = Notification.objects.filter(
+            notify_id=self.request.user.id, dismissed=False).order_by('-created')
+        context.setdefault('notifications', notifications)
+        return context
 
 
 @require_POST

@@ -1,0 +1,40 @@
+{% load static %}
+        {% if notifications %}
+          {% for notification in notifications %}
+            <div class="tile undefined">
+                <div class="alert-item">
+                    {% if notification.picture_url %}
+                    <img src="{{ notification.picture_url }}" alt="" class="alert-item__image"/>
+                    {% else %}
+                    <img src="{% static '/images/icons/avatar_default.png' %}" alt="" class="alert-item__image">
+                    {% endif %}
+                    <div class="alert-item-content">
+                        <p>
+                            <span class="alert-item__text">{{ notification.render_message }}</span>
+                            <span class="alert-item__time">{{ notification.created|timesince }} ago</span>
+                        </p>
+                        <div class="alert-item__action-forms">
+                          <form action="{% url 'notifications:dismiss' pk=notification.id %}?next={% url 'member:notifications' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="notification_id" value="{{ notification.id }}"/>
+                            <button class="alert-item__action" type="submit">Dismiss</button>
+                          </form>
+                          {% for action in notification.actions %}
+                            <form action="{{ action.url }}" method="{% firstof action.method 'post' %}">
+                              {% ifnotequal action.method 'get' %}{% csrf_token %}{% endifnotequal %}
+                              <button class="alert-item__action" type="submit">{{ action.text }}</button>
+                            </form>
+                          {% endfor%}
+                        </div>
+                    </div>
+                </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="no-data">
+            <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
+            <div class="text">
+              <div class="title">No Notifications</div>
+            </div>
+          </div>
+        {% endif %}

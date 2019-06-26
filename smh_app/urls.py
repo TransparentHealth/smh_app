@@ -17,6 +17,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.views.generic.base import TemplateView
 from django.urls import include, path
+
 # from django.contrib.auth import views as auth_views
 from apps.users.views import authenticated_home, mylogout
 
@@ -35,6 +36,7 @@ urlpatterns = [
     path(r'resources/', include('apps.resources.urls')),
     path(r'org/', include('apps.org.urls')),
     path(r'member/', include('apps.member.urls')),
+    path(r'notifications/', include('apps.notifications.urls')),
     path(r'user/', include('apps.users.urls')),
     path('social-auth/', include('social_django.urls', namespace='social')),
     path('admin/', admin.site.urls),

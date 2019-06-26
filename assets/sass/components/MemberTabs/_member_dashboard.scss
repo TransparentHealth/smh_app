@@ -16,6 +16,9 @@
             button.alert-item__action {
               border: none;
               color: $blue;
+              background-color: $white;
+              margin-top: 1em;
+              margin-left: 1em;
             }
             button.alert-item__action:hover {
               color: $navy;
@@ -33,7 +36,7 @@
       padding: 1rem;
       img.alert-item__image {
         height: 80px;
-        width: auto;
+        width: 80px;
       }
       .title {
         color: $blue;
@@ -54,7 +57,7 @@
       padding: 1rem 0;
       .alert-item__image {
         height: 100px;
-        width: auto;
+        width: 100px;
       }
       .profile-text {
         padding-left: 1rem;

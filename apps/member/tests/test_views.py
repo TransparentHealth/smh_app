@@ -14,6 +14,7 @@ from apps.org.tests.factories import (
     UserSocialAuthFactory
 )
 from apps.sharemyhealth.resources import Resource
+from apps.notifications.models import Notification
 
 
 @override_settings(LOGIN_URL='/accounts/login/')
@@ -21,7 +22,7 @@ class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
     url_name = 'member:dashboard'
 
     def test_member_dashboard(self):
-        """GETting member dashboard shows ResourceRequests for request.user's resources."""
+        """GETting member dashboard shows notifications for request.user's resources."""
         # Some ResourceRequests for the request.user that have not yet been granted
         # expected_resource_request_ids = [
         #     ResourceRequestFactory(
@@ -696,3 +697,24 @@ class RedirectSubjectURLTestCase(SMHAppTestMixin, TestCase):
         subject_url = reverse(self.url_name, kwargs={'subject': '012345678901234'})
         response = self.client.get(subject_url)
         self.assertEqual(response.status_code, 404)
+
+
+@override_settings(LOGIN_URL='/accounts/login/')
+class MemberNotificationsTestCase(SMHAppTestMixin, TestCase):
+    url_name = 'member:notifications'
+
+    def test_get(self):
+        """The response context_data should include the notifications for request.user,
+        but not the notifications created for another user.
+        """
+        for i in range(3):
+            Notification.objects.create(notify=self.user, actor=self.user, message="Notify %d" % i)
+        other_user = UserFactory()
+        for i in range(1):
+            Notification.objects.create(notify=other_user, actor=self.user, message="Notify %d" % i)
+
+        response = self.client.get(reverse(self.url_name))
+
+        self.assertEqual(response.status_code, 200)
+        for notification in response.context_data['notifications']:
+            self.assertEqual(notification.notify, self.user)

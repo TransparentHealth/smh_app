@@ -5,8 +5,8 @@ from .views import (
     approve_resource_request, revoke_resource_request, resource_request_response,
     CreateMemberView, DeleteMemberView, UpdateMemberView,
     DashboardView, DataSourcesView, RecordsView, OrganizationsView,
-    SummaryView, ProvidersView,
-    redirect_subject_url_to_member
+    SummaryView, ProvidersView, NotificationsView,
+    redirect_subject_url_to_member,
 )
 
 # Copyright Videntity Systems Inc.
@@ -51,6 +51,9 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/delete/$',
         DeleteMemberView.as_view(),
         name='member-delete'),
+    url(r'^notifications/$',
+        NotificationsView.as_view(),
+        name='notifications'),
     url(r'^$',
         DashboardView.as_view(), name='dashboard'),
 
