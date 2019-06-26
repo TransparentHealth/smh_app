@@ -1,7 +1,9 @@
+import json
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.db.models.signals import pre_save, post_save, post_init
+from django.dispatch import receiver
 from django.utils.safestring import mark_safe
 from apps.common.models import CreatedModel
 
@@ -60,7 +62,7 @@ class Notification(CreatedModel, models.Model):
 
     message = models.TextField()
     picture_url = models.TextField(null=True)
-    actions = JSONField(default=list)
+    actions = models.TextField(default='[]')
     dismissed = models.BooleanField(default=False)
 
     def render_message(self, **kwargs):
@@ -72,3 +74,20 @@ class Notification(CreatedModel, models.Model):
                 target=self.target,
                 **kwargs,
             ))
+
+
+# Notification.actions should be a list, but we can't use the postgres JSONField, so we do it here.
+
+
+@receiver(pre_save, sender=Notification)
+def notification_actions_to_json_string(sender, instance, **kwargs):
+    """make sure instance.actions is a string before we try to save it."""
+    if not isinstance(instance.actions, str):
+        instance.actions = json.dumps(instance.actions)
+
+
+@receiver([post_init, post_save], sender=Notification)
+def notification_actions_from_json_string(sender, instance, **kwargs):
+    """make sure instance.actions is data (list) after we initialize or save it."""
+    if isinstance(instance.actions, str):
+        instance.actions = json.loads(instance.actions)
