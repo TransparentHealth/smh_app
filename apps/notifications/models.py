@@ -9,11 +9,8 @@ from apps.common.models import CreatedModel
 # -- we're building this dynamically because we have to refer to it by PK, which we don't know
 # (but which shouldn't change for a given installation unless this definition is changed.)
 
-NOTIFICATION_ENTITY_CONTENT_TYPE_CHOICES = [(ct.pk, f"{ct.app_label}.{ct.model}")
-                                            for ct in ContentType.objects.filter(
-                                                models.Q(
-                                                    models.Q(app_label='org', model='organization')
-                                                    | models.Q(app_label='auth', model='user')))]
+NOTIFICATION_ENTITY_CONTENT_TYPE_CHOICES = (models.Q(app_label='org', model='organization')
+                                            | models.Q(app_label='auth', model='user'))
 
 
 class Notification(CreatedModel, models.Model):
@@ -31,7 +28,7 @@ class Notification(CreatedModel, models.Model):
     notify_content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
-        choices=NOTIFICATION_ENTITY_CONTENT_TYPE_CHOICES,
+        limit_choices_to=NOTIFICATION_ENTITY_CONTENT_TYPE_CHOICES,
         related_name="+",
     )
     notify_id = models.PositiveIntegerField()
@@ -40,7 +37,7 @@ class Notification(CreatedModel, models.Model):
     actor_content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
-        choices=NOTIFICATION_ENTITY_CONTENT_TYPE_CHOICES,
+        limit_choices_to=NOTIFICATION_ENTITY_CONTENT_TYPE_CHOICES,
         related_name="+",
     )
     actor_id = models.PositiveIntegerField()
@@ -49,7 +46,7 @@ class Notification(CreatedModel, models.Model):
     target_content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
-        choices=NOTIFICATION_ENTITY_CONTENT_TYPE_CHOICES,
+        limit_choices_to=NOTIFICATION_ENTITY_CONTENT_TYPE_CHOICES,
         related_name="+",
         null=True,
     )
