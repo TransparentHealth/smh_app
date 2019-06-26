@@ -16,6 +16,9 @@
             button.alert-item__action {
               border: none;
               color: $blue;
+              background-color: $white;
+              margin-top: 1em;
+              margin-left: 1em;
             }
             button.alert-item__action:hover {
               color: $navy;

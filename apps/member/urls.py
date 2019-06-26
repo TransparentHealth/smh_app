@@ -6,6 +6,7 @@ from .views import (
     CreateMemberView, DeleteMemberView, UpdateMemberView,
     DashboardView, DataSourcesView, RecordsView, OrganizationsView,
     SummaryView, ProvidersView,
+    NotificationsView,
 )
 
 # Copyright Videntity Systems Inc.
@@ -42,6 +43,9 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/delete/$',
         DeleteMemberView.as_view(),
         name='member-delete'),
+    url(r'^notifications/$',
+        NotificationsView.as_view(),
+        name='notifications'),
     url(r'^$',
         DashboardView.as_view(), name='dashboard'),
 
