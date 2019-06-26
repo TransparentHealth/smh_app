@@ -28,6 +28,15 @@
                         <dd class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.user.errors }}</dd>
                     {% endif %}
 
+                    {% if member.user.userprofile.subject %}
+                    <dt>Permanent Link:</dt>
+                    <dd>
+                        <a class="member-tabs__link" href="{% url 'member:subject_url' subject=member.user.userprofile.subject %}">
+                            {{ settings.HOSTNAME_URL }}{% url 'member:subject_url' subject=member.user.userprofile.subject %}
+                        </a>
+                    </dd>
+                    {% endif %}
+
                     <dt>{{ form.birth_date.label_tag|title }}</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">{{ form.birth_date }}</dd>
                     <dd class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.birth_date.errors }}</dd>

@@ -58,6 +58,9 @@
 
 .member-avatar {
   width: 100%;
+  height: 250px;
+  object-fit: cover;
+  object-position: 50% 30%;
 }
 
 .sidebar-background {

@@ -679,6 +679,27 @@ class ResourceRequestResponseTestCase(SMHAppTestMixin, TestCase):
 
 
 @override_settings(LOGIN_URL='/accounts/login/')
+class RedirectSubjectURLTestCase(SMHAppTestMixin, TestCase):
+    url_name = 'member:subject_url'
+
+    def test_exists(self):
+        user_profile = self.user.userprofile
+        user_profile.subject = '012345678901234'
+        user_profile.save()
+
+        subject_url = reverse(self.url_name, kwargs={'subject': user_profile.subject})
+        member_url = reverse('member:member-update', kwargs={'pk': self.user.member.pk})
+        response = self.client.get(subject_url)
+
+        self.assertRedirects(response, member_url, fetch_redirect_response=False)
+
+    def test_not_exists(self):
+        subject_url = reverse(self.url_name, kwargs={'subject': '012345678901234'})
+        response = self.client.get(subject_url)
+        self.assertEqual(response.status_code, 404)
+
+
+@override_settings(LOGIN_URL='/accounts/login/')
 class MemberNotificationsTestCase(SMHAppTestMixin, TestCase):
     url_name = 'member:notifications'
 

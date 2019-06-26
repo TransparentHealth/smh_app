@@ -2,7 +2,7 @@ import json
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles.templatetags.staticfiles import static
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
@@ -17,6 +17,7 @@ from apps.org.models import (
     Organization, ResourceGrant, ResourceRequest, RESOURCE_CHOICES,
     REQUEST_REQUESTED, REQUEST_APPROVED, REQUEST_DENIED,
 )
+from apps.users.models import UserProfile
 from apps.notifications.models import Notification
 from .forms import ResourceRequestForm
 
@@ -293,6 +294,20 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         id_token_payload = get_id_token_payload(self.request.user)
         kwargs.setdefault('id_token_payload', id_token_payload)
         return super().get_context_data(**kwargs)
+
+
+@login_required(login_url='home')
+def redirect_subject_url_to_member(request, subject, rest=''):
+    """If one of the above member views is given with subject_id (== 15 digits),
+    interpret it as the UserProfile.subject and redirect to the corresponding pk URL
+    """
+    try:
+        user_profile = UserProfile.objects.get(subject=subject)
+    except UserProfile.DoesNotExist:
+        raise Http404('Member does not exist')
+    pk = user_profile.user.member.pk
+    url = f"/member/{pk}/{rest}"
+    return redirect(url)
 
 
 class NotificationsView(LoginRequiredMixin, TemplateView):
