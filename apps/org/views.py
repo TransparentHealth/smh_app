@@ -229,8 +229,9 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
             new_member = new_user.member
 
             # Save the member's picture URL
-            new_user.userprofile.picture_url = response_data_dict['picture']
-            new_user.userprofile.save()
+            if 'picture' in response_data_dict and '/None/' not in response_data_dict['picture']:
+                new_user.userprofile.picture_url = response_data_dict['picture']
+                new_user.userprofile.save()
 
             # Create a UserSocialAuth for the new Member
             UserSocialAuth.objects.create(
