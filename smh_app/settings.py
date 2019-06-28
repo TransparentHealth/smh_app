@@ -229,12 +229,31 @@ RESOURCE_NAME_AND_CLASS_MAPPING = {
 
 # Valid record types for member data
 VALID_MEMBER_DATA_RECORD_TYPES = [
-    'prescriptions', 'Condition', 'allergies', 'procedures', 'ed_reports',
+    'prescriptions', 'diagnoses', 'allergies', 'procedures', 'ed_reports',
     'family_history', 'demographics', 'discharge_summaries', 'immunizations',
     'lab_results', 'progress_notes', 'vital_signs'
 ]
+
+# see http://www.hl7.org/fhir/resourcelist.html
 MEMBER_DATA_RECORD_TYPE_MAPPING = {
-    'Condition': 'diagnoses'
+    "AllergyIntolerance": "Allergies",
+    "Composition": "Discharge Summaries",
+    "Condition": "Diagnoses",
+    "Device": None,
+    "DiagnosticReport": None,
+    "DocumentReference": None,
+    "Encounter": None,
+    "Location": None,
+    "Medication": None,
+    "MedicationDispense": None,
+    "MedicationRequest": "Prescriptions",
+    "MedicationStatement": None,
+    "Observation": "Lab Results",
+    "Organization": "Providers",    # Social Providers
+    "Patient": None,
+    "Practitioner": "Providers",    # Physician Providers
+    "Procedure": "Procedures",
+    "Provenance": None,
 }
 
 # Static files (CSS, JavaScript, Images)
