@@ -14,8 +14,7 @@ def get_member_data(requesting_user, member, resource_name, record_type):
 
     # Get the path to the resource class from the settings, based on the
     # resource_name.
-    resource_class_path = settings.RESOURCE_NAME_AND_CLASS_MAPPING.get(
-        resource_name, None)
+    resource_class_path = settings.RESOURCE_NAME_AND_CLASS_MAPPING.get(resource_name, None)
     # If there is not a path for the resource_name, raise an error
     if not resource_class_path:
         raise Http404
@@ -30,26 +29,23 @@ def get_member_data(requesting_user, member, resource_name, record_type):
     if requesting_user == member.user:
         resource_module = '.'.join(resource_class_path.split('.')[:-1])
         resource_class_name = resource_class_path.split('.')[-1]
-        resource_class = getattr(import_module(
-            resource_module), resource_class_name)
+        resource_class = getattr(import_module(resource_module), resource_class_name)
 
         response = resource_class(member.user).get(record_type)
     else:
         resource_grants = ResourceGrant.objects.filter(
             member=member.user,
             resource_class_path=resource_class_path,
-            organization__users=requesting_user
-        )
+            organization__users=requesting_user)
         if not resource_grants.exists():
             raise Http404
         else:
             resource_grant = resource_grants.first()
-        response = resource_grant.resource_class(
-            resource_grant.member).get(record_type)
+        response = resource_grant.resource_class(resource_grant.member).get(record_type)
 
-    # Loop through the content of the response, and put the fields that will need
-    # to be shown in the template into a dictionary, where the keys are record
-    # types.
+    # Loop through the content of the response, and put the fields that will
+    # need to be shown in the template into a dictionary, where the keys are
+    # record types.
     records_dict = defaultdict(list)
     for record in json.loads(response.content)['entry']:
         # These are the data that will be needed for the template
@@ -72,8 +68,7 @@ def get_member_data(requesting_user, member, resource_name, record_type):
     for valid_record_type in settings.VALID_MEMBER_DATA_RECORD_TYPES:
         # Find the record type name that will be used in the template
         if valid_record_type in settings.MEMBER_DATA_RECORD_TYPE_MAPPING.keys():
-            record_type_name = settings.MEMBER_DATA_RECORD_TYPE_MAPPING[
-                valid_record_type]
+            record_type_name = settings.MEMBER_DATA_RECORD_TYPE_MAPPING[valid_record_type]
         else:
             record_type_name = valid_record_type
 
