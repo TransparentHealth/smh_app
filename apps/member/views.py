@@ -12,7 +12,7 @@ from django.views.generic.detail import DetailView
 from jwkest.jwt import JWT
 from .constants import RECORDS
 from .models import Member
-from .utils import fetch_member_data, get_resource_data
+from .utils import fetch_member_data, get_resource_data, get_prescriptions
 from apps.org.models import (
     Organization, ResourceGrant, ResourceRequest, RESOURCE_CHOICES,
     REQUEST_REQUESTED, REQUEST_APPROVED, REQUEST_DENIED,
@@ -58,20 +58,20 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         # put the current resources in the summary tab.  We will not show the
         # other options in this tab.
         conditions_data = get_resource_data(data, 'Condition')
-        observation_data = get_resource_data(data, 'Observation')
+        prescription_data = get_prescriptions(data)
         all_records = RECORDS
         summarized_records = []
         notes_headers = ['Agent Name', 'Organization', 'Date']
         for record in all_records:
-            # adding data for each resoureType in response from endpoint
+            # adding data for each resourceType in response from endpoint
             if record['name'] == 'Diagnoses':
                 record['count'] = len(conditions_data)
                 record['data'] = conditions_data
                 summarized_records.append(record)
 
-            if record['name'] == 'Lab Results':
-                record['count'] = len(observation_data)
-                record['data'] = observation_data
+            if record['name'] == 'Prescriptions':
+                record['count'] = len(prescription_data)
+                record['data'] = prescription_data
                 summarized_records.append(record)
 
             context.setdefault('summarized_records', summarized_records)
@@ -99,6 +99,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             if resource_name == 'list':
                 conditions_data = get_resource_data(data, 'Condition')
                 observation_data = get_resource_data(data, 'Observation')
+                prescription_data = get_prescriptions(data)
                 all_records = RECORDS
                 for record in all_records:
                     # adding data for each resoureType in response from
@@ -110,6 +111,10 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                     if record['name'] == 'Lab Results':
                         record['count'] = len(observation_data)
                         record['data'] = observation_data
+
+                    if record['name'] == 'Prescriptions':
+                        record['count'] = len(prescription_data)
+                        record['data'] = prescription_data
 
                     context.setdefault('all_records', all_records)
 
@@ -151,6 +156,23 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                 context.setdefault('title', 'Lab Results')
                 context.setdefault('headers', headers)
                 context.setdefault('content_list', all_labs)
+
+            elif resource_name == 'prescriptions':
+                prescription_data = get_prescriptions(data)
+                headers = ['Date', 'Record Name', 'Provider']
+                all_records = []
+                for id, prescription in prescription_data.items():
+                    record = {
+                        'Date': prescription.get('effectivePeriod', {}).get('start', '—'),
+                        'Record Name': prescription['name'],
+                        'Provider': prescription.get('agent', {}).get('display', '—'),
+                    }
+                    all_records.append(record)
+
+                context.setdefault('title', 'Prescriptions')
+                context.setdefault('headers', headers)
+                context.setdefault('content_list', all_records)
+
         else:
             redirect_url = reverse('member:data-sources',
                                    kwargs={'pk': context['member'].user.pk})

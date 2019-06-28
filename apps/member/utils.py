@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import datetime
 from importlib import import_module
 import json
 
@@ -7,6 +8,58 @@ from django.conf import settings
 from django.shortcuts import Http404
 from jwkest.jwt import JWT
 from apps.org.models import ResourceGrant
+
+
+def get_prescriptions(data):
+    """Returns an id-keyed dict of all prescriptions in the (FHIR) medical data
+    * Medication = reference field to join medication resources
+        * .id = unique id in this data set
+        * .code.text = display name
+    * MedicationRequest = records a doctor's request for a medication
+        * .medicationReference
+            * .reference = "Medication/{id}" that this request is for
+            * .display = Medication's display name
+        * .requester.agent
+            * .reference = "Practioner/{id}" points to a Physician
+            * .display = Physician's display name
+    * MedicationDispense = records the dispensation of a medication
+        * .status = the status of the dispensation ("completed") 
+        * .medicationReference{.reference, .display}
+    * MedicationStatement = records the prescription itself
+        * .status
+        * .effectivePeriod{.start, .end}
+        * .taken
+        * .dosage[0].doseQuantity{.value, .unit}
+
+    Combine records that have the same name, when the date is the same as the previous one or null
+    """
+    prescriptions = {}
+    for entry in data['entry']:
+        resource = entry['resource']
+        if resource['resourceType'] in [
+                'MedicationRequest', 'MedicationStatement', 'MedicationDispense'
+        ]:
+            id = resource['medicationReference']['reference'].split('/')[-1]
+            prescriptions.setdefault(id, {'name': resource['medicationReference']['display']})
+
+            if resource['resourceType'] == "MedicationRequest":
+                prescriptions[id]['agent'] = resource.get('requester', {}).get('agent', {})
+                prescriptions[id]['request_status'] = resource['status']
+            elif resource['resourceType'] == "MedicationDispense":
+                prescriptions[id]['dispense_status'] = resource['status']
+            elif resource['resourceType'] == "MedicationStatement":
+                prescriptions[id]['effectivePeriod'] = {
+                    key: datetime.strptime(value, '%Y-%m-%dT%H:%M:%S%z')  # ISO-formatted
+                    for key, value in resource['effectivePeriod'].items()
+                }
+                prescriptions[id]['dosage'] = {
+                    k: v
+                    for k, v in resource['dosage'][0]['doseQuantity'].items()
+                    if k in ['value', 'unit']
+                }
+                prescriptions[id]['taken'] = resource['taken']
+                prescriptions[id]['statement_status'] = resource['status']
+    return prescriptions
 
 
 def get_member_data(requesting_user, member, resource_name, record_type):
