@@ -14,11 +14,12 @@ def create_or_update_org(backend, user, response, *args, **kwargs):
             id_token = response.get('id_token')
             parsed_id_token = JWT().unpack(id_token)
             payload = parsed_id_token.payload()
-
+            org_slugs = []
             if 'organization_agent' in payload:
                 for organization in payload['organization_agent']:
                     org, g_o_c = Organization.objects.get_or_create(
                         slug=organization['slug'])
+                    org_slugs.append(organization['slug'])
                     org.name = organization['name']
                     org.sub = organization['sub']
                     org.website = organization['website']
@@ -34,6 +35,12 @@ def create_or_update_org(backend, user, response, *args, **kwargs):
                     org.users.add(user)
                     org.save()
                     # print(org, "Saved!")
+        # remove an agent from organization if they have been removed.
+        all_orgs = Organization.objects.all()
+        for o in all_orgs:
+            if o.slug not in org_slugs:
+                org.users.remove(user)
+                org.save()
 
 
 def set_user_type(backend, user, response, *args, **kwargs):
