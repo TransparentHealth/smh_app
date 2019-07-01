@@ -39,8 +39,8 @@ def create_or_update_org(backend, user, response, *args, **kwargs):
         all_orgs = Organization.objects.all()
         for o in all_orgs:
             if o.slug not in org_slugs:
-                org.users.remove(user)
-                org.save()
+                o.users.remove(user)
+                o.save()
 
 
 def set_user_type(backend, user, response, *args, **kwargs):
