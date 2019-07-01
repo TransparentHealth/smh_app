@@ -34,17 +34,19 @@
   <div class="member-data col-md-6 pr-4 pl-4">
       <h2 class="mb-3 pb-3">Your Profile <a href="{% url 'member:member-update' pk=request.user.member.pk %}">Edit</a></h2>
       <div class="profile">
+         <a href="{% url 'member:member-update' pk=request.user.member.pk %}">
                           {% if request.user.userprofile.picture_url %}
                       <img src="{{ request.user.userprofile.picture_url }}" alt="Account menu icon", class="alert-item__image">
                     {% else %}
                       <img src="{% static '/images/icons/avatar_default.png' %}" alt="Account menu icon", class="alert-item__image">
                     {% endif %}
-
-
+        </a>
+      <a href="{% url 'member:member-update' pk=request.user.member.pk %}">
         <div class="profile-text">
           <div class="title">{{ request.user.first_name }} {{ request.user.last_name }}</div>
           <div class="age">{{ request.user.member }}</div>
         </div>
+        </a>
       </div>
 
       {% ifequal id_token_payload.ial "1" %}
@@ -60,13 +62,14 @@
       {% endifequal %}
 
       {% ifequal id_token_payload.ial "2" %}
-      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' pk=request.user.member.pk %}">View All Records</a></h2>
+      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' pk=request.user.member.pk %}">Identity Verified</a></h2>
+        <div class="text">
+      
       <!-- Add records to contect when complete -->
       <div class="no-data">
-        <img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image">
-        <div class="text">
-          <div class="title">Identity Verified</div>
-          <div class="age"><a href="{% url 'member:records' pk=request.user.member.pk %}">View your records</a></div>
+       
+          <a href="{% url 'member:records' pk=request.user.member.pk %}"><div class="title">View All Records</div></a>
+         
         </div>
       </div>
       {% endifequal %}
