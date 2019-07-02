@@ -42,7 +42,7 @@ def save_profile(backend, user, response, *args, **kwargs):
             if 'ial' in payload:
                 profile.identity_assurance_level = payload['ial']
 
-            if 'picture' in payload and '/None/' not in payload['picture']:
+            if 'picture' in payload:
                 profile.picture_url = payload['picture']
 
             profile.most_recent_id_token_payload = json.dumps(
