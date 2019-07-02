@@ -80,10 +80,11 @@
                     <dt>Member since:</dt>
                     <dd>{{ member.user.date_joined|date:"d/m/Y" }}</dd>
                                         <dt>Identification:</dt>
-                    <dd>Identity Assurance Level {{ id_token_payload.ial }}</dd>
-                    <dd>Authenticator Assurance Level {{ id_token_payload.aal }}</dd>
+                    <dd>Identity Assurance Level (IAL): {{ id_token_payload.ial }}</dd>
+                    <dd>Authenticator Assurance Level(AAL): {{ id_token_payload.aal }}</dd>
                     <dd>Issuer: {{ id_token_payload.iss }}</dd>
                     <dd>Audience: {{ id_token_payload.aud }}</dd>
+                    <dd>Picture: {{ id_token_payload.picture }}</dd>
 
                 </dl>
                 <div class="d-flex justify-content-end">
