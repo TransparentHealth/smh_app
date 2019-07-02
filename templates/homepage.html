@@ -4,18 +4,24 @@
 {% block content %}
 <header class="header header--anon text-center">
     <div class="container">
-        <a class="navbar-brand" href="/">
-            <img src="{% static '/images/logo.svg' %}" alt="Share My Health Home" />
-        </a>
-        <h1 class="header--anon__heading">Login</h1>
     </div>
 </header>
 
 <main>
 <div id="root">
     <div class="app auth--false">
-        <div class="home">
+        
+        
+        <div class="home header--anon text-center">
+         <div class="container">
+        <a class="navbar-brand" href="/">
+            <img src="{% static '/images/logo.svg' %}" alt="Share My Health Home" />
+        </a>
+        <h1 class="header--anon__heading"></h1>
+    </div>
+        
             <div class="container">
+                
                 <form class="form--login form--limit-width text-center pb-5"
                       method="GET"
                       action="{% url 'social:begin' SOCIAL_AUTH_NAME %}">
