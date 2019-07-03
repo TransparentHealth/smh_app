@@ -8,11 +8,11 @@
         <div class="recent-alerts col-md-12 pr-4 pl-4">
 
           <span></span>
-         
         </div>
 
         <div class="recent-alerts col-md-6 pr-4 pl-4">
             <h2 class="text-center mb-3">Notifications</h2>
+            <!--
             <div class="tile undefined">
                 <div class="alert-item">
                     <img src="/images/avatars/sloan.png" alt="" class="alert-item__image">
@@ -24,15 +24,13 @@
                     </div>
                 </div>
             </div>
-
+            -->
             <div class="text-center">
-                <button type="button" class="mt-4 btn btn-primary">View All Notifications</button>
+               <!-- <button type="button" class="mt-4 btn btn-primary">View All Notifications</button> -->
             </div>
         </div>
         
         
-        
-           
         
         <div class="recent-members col-md-6 pr-4 pl-4">
             <h2 class="text-center mb-3 pb-3">{{ organization }} Members</h2>
@@ -81,8 +79,6 @@
       
       <div class="recent-members col-md-6 pr-4 pl-4">
         <h2 class="text-center mb-3 pb-3">Recently Viewed Members</h2>
-        <p>You belong to no organization</p>
-        <a href="{% url 'org:organization-add' %}">Create new organization</a>
       </div>
     {% endif %}
 </div>
