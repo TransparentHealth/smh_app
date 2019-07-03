@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
-
+from ..member.utils import get_id_token_payload
 
 class UserProfile(models.Model):
     """Data for a user of the smh_app."""
@@ -27,6 +27,10 @@ class UserProfile(models.Model):
     @property
     def name(self):
         return ' '.join([self.user.first_name or '', self.user.last_name or '']).strip()
+    
+    @property
+    def id_token_payload(self):
+        return get_id_token_payload(self.user)
 
 
 @receiver(post_save, sender=User)
