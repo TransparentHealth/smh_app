@@ -60,11 +60,11 @@
                             </thead>
                             <tbody>
                                 {% for item in content_list %}
-                                        <tr>
-                                            {% for key, value in item.items %}
-                                                <td>{{ value }}</td>
-                                            {% endfor %}
-                                        </tr>
+                                <tr>
+                                    {% for key, value in item.items %}
+                                        <td>{% if value %}{{ value }}{% else %}—{% endif %}</td>
+                                    {% endfor %}
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
