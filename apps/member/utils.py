@@ -3,7 +3,6 @@ from importlib import import_module
 import json
 
 import requests
-from memoize import memoize
 from django.conf import settings
 from django.shortcuts import Http404
 from jwkest.jwt import JWT
@@ -95,7 +94,6 @@ def get_member_data(requesting_user, member, resource_name, record_type):
     return results
 
 
-@memoize(timeout=60)
 def fetch_member_data(member, provider):
     '''Fetch FHIR data from HIXNY data provider (sharemyhealth)'''
     url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything?refresh=true"
