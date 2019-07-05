@@ -272,7 +272,10 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         self.expected_response_success = self.get_member_health_data_condition()
 
     def test_context_data(self):
-        """GETting records view puts response of get_member_data() into the context."""
+        """
+        OUTDATED
+        GETting records view puts response of get_member_data() into the context.
+        """
         # Create a member
         member = UserFactory()
         # Give the self.user access to the member's access_token.

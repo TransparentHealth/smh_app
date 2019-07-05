@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles.templatetags.staticfiles import static
@@ -9,13 +10,17 @@ from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
-from jwkest.jwt import JWT
 from .constants import RECORDS
 from .models import Member
 from .utils import fetch_member_data, get_resource_data, get_prescriptions
 from apps.org.models import (
-    Organization, ResourceGrant, ResourceRequest, RESOURCE_CHOICES,
-    REQUEST_REQUESTED, REQUEST_APPROVED, REQUEST_DENIED,
+    Organization,
+    ResourceGrant,
+    ResourceRequest,
+    RESOURCE_CHOICES,
+    REQUEST_REQUESTED,
+    REQUEST_APPROVED,
+    REQUEST_DENIED,
 )
 from apps.users.models import UserProfile
 from apps.notifications.models import Notification
@@ -38,9 +43,8 @@ class SelfOrApprovedOrgMixin:
             # an Organization that has been granted access to the member's data,
             # then return a 404 response.
             get_object_or_404(
-                ResourceGrant.objects.filter(
-                    organization__users=self.request.user),
-                member_id=member.id
+                ResourceGrant.objects.filter(organization__users=self.request.user),
+                member_id=member.id,
             )
         return True
 
@@ -59,6 +63,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         # other options in this tab.
         conditions_data = get_resource_data(data, 'Condition')
         prescription_data = get_prescriptions(data)
+
         all_records = RECORDS
         summarized_records = []
         notes_headers = ['Agent Name', 'Organization', 'Date']
@@ -99,6 +104,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             if resource_name == 'list':
                 conditions_data = get_resource_data(data, 'Condition')
                 observation_data = get_resource_data(data, 'Observation')
+                encounter_data = get_resource_data(data, 'Encounter')
                 prescription_data = get_prescriptions(data)
                 all_records = RECORDS
                 for record in all_records:
@@ -116,56 +122,107 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                         record['count'] = len(prescription_data)
                         record['data'] = prescription_data
 
+                    if record['name'] == 'Procedures':
+                        record['count'] = len(encounter_data)
+                        record['data'] = encounter_data
+
                     context.setdefault('all_records', all_records)
 
             elif resource_name == 'diagnoses':
                 conditions_data = get_resource_data(data, 'Condition')
                 headers = ['Date', 'Code', 'Diagnosis', 'Provider']
-                all_diagnoses = []
+                diagnoses = []
                 for condition in conditions_data:
-                    diagnoses = {}
-                    diagnoses['Date'] = condition.get('assertedDate', '-')
-                    diagnoses['Code'] = condition['code'][
-                        'coding'][0].get('code', '-')
-                    diagnoses['Diagnosis'] = condition['code'][
-                        'coding'][0].get('display', '-')
-                    diagnoses['Provider'] = condition.get('provider', '-')
-                    all_diagnoses.append(diagnoses)
+                    diagnosis = dict(
+                        Date=(condition.get('assertedDate') and datetime.strptime(
+                            condition['assertedDate'], '%Y-%m-%dT%H:%M:%S%z') or '-'),
+                        Code=condition['code']['coding'][0].get('code', '-'),
+                        Diagnosis=condition['code']['coding'][0].get('display', '-'),
+                        Provider=condition.get('provider', '-'),
+                    )
+                    diagnoses.append(diagnosis)
+
+                # sort diagnoses in order of date descending
+                diagnoses.sort(
+                    key=lambda d: d['Date'] if d['Date'] != '-' else datetime(1, 1, 1),
+                    reverse=True)
 
                 context.setdefault('title', 'Diagnoses')
                 context.setdefault('headers', headers)
-                context.setdefault('content_list', all_diagnoses)
+                context.setdefault('content_list', diagnoses)
 
             elif resource_name == 'lab-results':
                 observation_data = get_resource_data(data, 'Observation')
                 headers = ['Date', 'Code', 'Lab Result', 'Value']
-                all_labs = []
+                lab_results = []
                 for observation in observation_data:
-                    lab = {}
-                    lab['Date'] = observation['effectivePeriod'].get(
-                        'start', '-').split('T')[0]
-                    lab['Code'] = observation['code'][
-                        'coding'][0].get('code', '-')
-                    lab['Display'] = observation['code'][
-                        'coding'][0].get('display', '-')
+                    lab = dict(
+                        Date=observation['effectivePeriod'].get('start') and datetime.strptime(
+                            observation['effectivePeriod']['start'], '%Y-%m-%dT%H:%M:%S%z') or '-',
+                        Code=observation['code']['coding'][0].get('code', '-'),
+                        Display=observation['code']['coding'][0].get('display', '-'),
+                    )
                     lab_value = observation.get('valueQuantity', None)
-                    lab['Value'] = str(list(lab_value.values())[
-                                       0]) + list(lab_value.values())[1] if lab_value else '-'
-                    all_labs.append(lab)
+                    lab['Value'] = (str(list(lab_value.values())[0]) + list(lab_value.values())[1]
+                                    if lab_value else '-')
+                    lab_results.append(lab)
+
+                # sort lab_results in order of date descending
+                lab_results.sort(
+                    key=lambda d: d['Date'] if d['Date'] != '-' else datetime(1, 1, 1),
+                    reverse=True)
 
                 context.setdefault('title', 'Lab Results')
                 context.setdefault('headers', headers)
-                context.setdefault('content_list', all_labs)
+                context.setdefault('content_list', lab_results)
+
+            elif resource_name == 'procedures':
+                encounter_data = get_resource_data(data, 'Encounter')
+                headers = ['Date', 'Type', 'Practitioner', 'Location']
+                procedures = []
+                for encounter in encounter_data:
+                    procedure = dict(
+                        Date=(encounter['period'].get('start') and datetime.strptime(
+                            encounter['period']['start'], '%Y-%m-%dT%H:%M:%S%z') or '-'),
+                        Type=encounter['type'][0]['text'],
+                        Practitioner=', '.join([
+                            participant['individual']['display']
+                            for participant in encounter.get('participant', [])
+                            if 'Practitioner' in participant['individual']['reference']
+                        ]),
+                        Location=encounter['location'][0]['location']['display'],
+                    )
+                    procedures.append(procedure)
+
+                # sort procedures in order of date descending
+                procedures.sort(
+                    key=lambda d: d['Date'] if d['Date'] != '-' else datetime(1, 1, 1),
+                    reverse=True)
+
+                context.setdefault('title', 'Procedures')
+                context.setdefault('headers', headers)
+                context.setdefault('content_list', procedures)
 
             elif resource_name == 'prescriptions':
                 prescription_data = get_prescriptions(data)
-                headers = ['Date', 'Record Name', 'Provider']
+                headers = ['Date', 'Name', 'Provider']
                 all_records = []
-                for id, prescription in prescription_data.items():
+
+                # sort prescriptions by start date descending
+                ids = [
+                    ip[0] for ip in sorted([(id, prescription)
+                                            for id, prescription in prescription_data.items()],
+                                           key=lambda ip: ip[1].get('effectivePeriod', {}).get(
+                                               'start', datetime(1, 1, 1)),
+                                           reverse=True)
+                ]
+
+                for id in ids:
+                    prescription = prescription_data[id]
                     record = {
-                        'Date': prescription.get('effectivePeriod', {}).get('start', '—'),
-                        'Record Name': prescription['name'],
-                        'Provider': prescription.get('agent', {}).get('display', '—'),
+                        'Date': prescription.get('effectivePeriod', {}).get('start', '-'),
+                        'Name': prescription['name'],
+                        'Provider': prescription.get('agent', {}).get('display', '-'),
                     }
                     all_records.append(record)
 
@@ -174,8 +231,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                 context.setdefault('content_list', all_records)
 
         else:
-            redirect_url = reverse('member:data-sources',
-                                   kwargs={'pk': context['member'].user.pk})
+            redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].user.pk})
             context.setdefault('redirect_url', redirect_url)
 
         return context
@@ -207,12 +263,9 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         providers = []
         for encounter in encounter_data:
             provider = {}
-            provider[
-                'doctor-name'] = encounter['participant'][0]['individual']['display']
-            provider['clinic'] = encounter[
-                'location'][0]['location']['display']
-            provider[
-                'date-last-seen'] = encounter['period']['start'].split('T')[0]
+            provider['doctor-name'] = encounter['participant'][0]['individual']['display']
+            provider['clinic'] = encounter['location'][0]['location']['display']
+            provider['date-last-seen'] = encounter['period']['start'].split('T')[0]
             providers.append(provider)
 
             # A way to get more provider info from provider_data
@@ -238,7 +291,7 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTest
         available_sources = [{
             'provider': 'sharemyhealth',
             'name': 'Hixny',
-            'image_url': static('images/icons/hixny.png')
+            'image_url': static('images/icons/hixny.png'),
         }]
         connected_source_providers = [
             source.provider for source in context['member'].user.social_auth.all()
@@ -259,14 +312,10 @@ class OrganizationsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         """Add organizations data into the context."""
         context = super().get_context_data(**kwargs)
         orgs = Organization.objects.all().order_by('name')
-        resources = ResourceRequest.objects.filter(
-            member=context['member'].user)
-        current = [r.organization for r in resources if r.status ==
-                   REQUEST_APPROVED]
-        requested = [
-            r.organization for r in resources if r.status == REQUEST_REQUESTED]
-        available = [
-            org for org in orgs if org not in current and org not in requested]
+        resources = ResourceRequest.objects.filter(member=context['member'].user)
+        current = [r.organization for r in resources if r.status == REQUEST_APPROVED]
+        requested = [r.organization for r in resources if r.status == REQUEST_REQUESTED]
+        available = [org for org in orgs if org not in current and org not in requested]
         context['organizations'] = {
             'current': current,
             'requested': requested,
@@ -277,8 +326,14 @@ class OrganizationsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
 class CreateMemberView(LoginRequiredMixin, CreateView):
     model = Member
-    fields = ['user', 'birth_date', 'phone_number', 'address',
-              'emergency_contact_name', 'emergency_contact_number']
+    fields = [
+        'user',
+        'birth_date',
+        'phone_number',
+        'address',
+        'emergency_contact_name',
+        'emergency_contact_number',
+    ]
     template_name = 'member.html'
 
     def get_success_url(self):
@@ -287,8 +342,7 @@ class CreateMemberView(LoginRequiredMixin, CreateView):
 
 class UpdateMemberView(LoginRequiredMixin, UpdateView):
     model = Member
-    fields = ['phone_number', 'address',
-              'emergency_contact_name', 'emergency_contact_number']
+    fields = ['phone_number', 'address', 'emergency_contact_name', 'emergency_contact_number']
     template_name = 'member.html'
 
     def get_success_url(self):
@@ -359,10 +413,7 @@ def approve_resource_request(request, pk):
     creating a ResourceGrant.
     """
     # Is the ResourceRequest for this member?
-    resource_request = get_object_or_404(
-        ResourceRequest.objects.filter(member=request.user),
-        pk=pk
-    )
+    resource_request = get_object_or_404(ResourceRequest.objects.filter(member=request.user), pk=pk)
     resource_request.status = REQUEST_APPROVED
     resource_request.save()
 
@@ -371,7 +422,7 @@ def approve_resource_request(request, pk):
         organization=resource_request.organization,
         member=resource_request.member,
         resource_class_path=resource_request.resource_class_path,
-        resource_request=resource_request
+        resource_request=resource_request,
     )
 
     if request.GET.get('next'):
@@ -391,10 +442,7 @@ def revoke_resource_request(request, pk):
     deleting the related ResourceGrant, if any.
     """
     # Is the ResourceRequest for this member?
-    resource_request = get_object_or_404(
-        ResourceRequest.objects.filter(member=request.user),
-        pk=pk
-    )
+    resource_request = get_object_or_404(ResourceRequest.objects.filter(member=request.user), pk=pk)
 
     # The ResourceRequest is for this member; set its status to REQUEST_DENIED.
     resource_request.status = REQUEST_DENIED
@@ -454,7 +502,8 @@ def resource_request_response(request):
                 member=resource_request.member,
                 organization=resource_request.organization,
                 resource_class_path=resource_request.resource_class_path,
-                resource_request=resource_request).delete()
+                resource_request=resource_request,
+            ).delete()
         elif resource_request.status == REQUEST_APPROVED:
             # make sure there is a ResourceGrant object associated with this
             # ResourceRequest
@@ -462,7 +511,8 @@ def resource_request_response(request):
                 member=resource_request.member,
                 organization=resource_request.organization,
                 resource_class_path=resource_request.resource_class_path,
-                resource_request=resource_request)
+                resource_request=resource_request,
+            )
     else:
         return HttpResponse(json.dumps(form.errors), status=422)
 
