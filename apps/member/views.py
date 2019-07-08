@@ -10,6 +10,7 @@ from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
+from memoize import delete_memoized
 from .constants import RECORDS
 from .models import Member
 from .utils import fetch_member_data, get_resource_data, get_prescriptions
@@ -85,6 +86,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             # TODO: include notes in the context data.
 
         else:
+            delete_memoized('fetch_member_data', context['member'], 'sharemyhealth')
             redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].pk})
             context.setdefault('redirect_url', redirect_url)
 
@@ -230,6 +232,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                 context.setdefault('content_list', all_records)
 
         else:
+            delete_memoized('fetch_member_data', context['member'], 'sharemyhealth')
             redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].user.pk})
             context.setdefault('redirect_url', redirect_url)
 
@@ -279,6 +282,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             context.setdefault('providers', providers)
 
         else:
+            delete_memoized('fetch_member_data', context['member'], 'sharemyhealth')
             redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].user.pk})
             context.setdefault('redirect_url', redirect_url)
 
