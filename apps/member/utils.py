@@ -98,8 +98,7 @@ def fetch_member_data(member, provider):
             r = requests.get(url, headers={'Authorization': 'Bearer %s' % access_token})
             if r.status_code == 200:
                 return r.json()
-    # fallback: empty member data
-    return {'entry': []}
+    # fallback: None
 
 
 def get_resource_data(data, resource_type):
