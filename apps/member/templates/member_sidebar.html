@@ -15,7 +15,7 @@
     <div class="member-sidebar__nav">
         <div class="member-sidebar__heading">
             <h1>{{ member.user.first_name }} {{ member.user.last_name }}</h1>
-            <p>Gender {{ member.parsed_id_token.gender }}  <span class="mr-2 ml-2">·</span> Age  {{ member.age }}</p>
+            <p>{{ member.parsed_id_token.gender|title  }}  <span class="mr-2 ml-2">·</span> Age  {{ member.age }}</p>
         </div>
         {% with request.resolver_match.url_name as url %}
             <div class="flex-column nav">
@@ -43,10 +43,10 @@
                             -->
                             {% if member.user.userprofile.user_type == "M" %}
                              {% if request.user.userprofile.user_type == "M" %}
-                            <a href="{% url 'member:organizations' member.id %}" data-rb-event-key="memberOrgs" class="nav-link  {% if url == 'organizations' %}active{% endif %}" role="button">Organizations</a>
+                            <a href="{% url 'member:organizations' member.id %}" data-rb-event-key="memberOrgs" class="nav-link  {% if url == 'organizations' %}active{% endif %}" role="button">Service Providers</a>
                              {% else %}
                              
-                             <a href="" data-rb-event-key="memberOrgs" class="nav-link  {% if url == 'organizations' %}active{% endif %}" role="button">Organizations</a>
+                             <a href="" data-rb-event-key="memberOrgs" class="nav-link  {% if url == 'organizations' %}active{% endif %}" role="button">Service Providers</a>
                              <ul class="list--formatted">
                             {% for o in member.organizations.all %}
                         
