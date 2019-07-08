@@ -25,7 +25,7 @@ from apps.org.models import (
 from apps.users.models import UserProfile
 from apps.notifications.models import Notification
 from .forms import ResourceRequestForm
-from .utils import get_id_token_payload
+from .utils import get_id_token_payload, parse_timestamp
 
 
 class SelfOrApprovedOrgMixin:
@@ -134,18 +134,16 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                 diagnoses = []
                 for condition in conditions_data:
                     diagnosis = dict(
-                        Date=(condition.get('assertedDate') and datetime.strptime(
-                            condition['assertedDate'], '%Y-%m-%dT%H:%M:%S%z') or '-'),
-                        Code=condition['code']['coding'][0].get('code', '-'),
-                        Diagnosis=condition['code']['coding'][0].get('display', '-'),
-                        Provider=condition.get('provider', '-'),
+                        Date=(condition.get('assertedDate')
+                              and parse_timestamp(condition['assertedDate']) or None),
+                        Code=condition['code']['coding'][0].get('code', None),
+                        Diagnosis=condition['code']['coding'][0].get('display', None),
+                        Provider=condition.get('provider', None),
                     )
                     diagnoses.append(diagnosis)
 
                 # sort diagnoses in order of date descending
-                diagnoses.sort(
-                    key=lambda d: d['Date'] if d['Date'] != '-' else datetime(1, 1, 1),
-                    reverse=True)
+                diagnoses.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
 
                 context.setdefault('title', 'Diagnoses')
                 context.setdefault('headers', headers)
@@ -157,20 +155,18 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                 lab_results = []
                 for observation in observation_data:
                     lab = dict(
-                        Date=observation['effectivePeriod'].get('start') and datetime.strptime(
-                            observation['effectivePeriod']['start'], '%Y-%m-%dT%H:%M:%S%z') or '-',
-                        Code=observation['code']['coding'][0].get('code', '-'),
-                        Display=observation['code']['coding'][0].get('display', '-'),
+                        Date=(observation.get('effectivePeriod', {}).get('start')
+                              and parse_timestamp(observation['effectivePeriod']['start']) or None),
+                        Code=observation['code']['coding'][0].get('code', None),
+                        Display=observation['code']['coding'][0].get('display', None),
                     )
                     lab_value = observation.get('valueQuantity', None)
                     lab['Value'] = (str(list(lab_value.values())[0]) + list(lab_value.values())[1]
-                                    if lab_value else '-')
+                                    if lab_value else None)
                     lab_results.append(lab)
 
                 # sort lab_results in order of date descending
-                lab_results.sort(
-                    key=lambda d: d['Date'] if d['Date'] != '-' else datetime(1, 1, 1),
-                    reverse=True)
+                lab_results.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
 
                 context.setdefault('title', 'Lab Results')
                 context.setdefault('headers', headers)
@@ -182,8 +178,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                 procedures = []
                 for encounter in encounter_data:
                     procedure = dict(
-                        Date=(encounter['period'].get('start') and datetime.strptime(
-                            encounter['period']['start'], '%Y-%m-%dT%H:%M:%S%z') or '-'),
+                        Date=(encounter.get('period', {}).get('start')
+                              and parse_timestamp(encounter['period']['start']) or None),
                         Type=encounter['type'][0]['text'],
                         Practitioner=', '.join([
                             participant['individual']['display']
@@ -195,9 +191,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                     procedures.append(procedure)
 
                 # sort procedures in order of date descending
-                procedures.sort(
-                    key=lambda d: d['Date'] if d['Date'] != '-' else datetime(1, 1, 1),
-                    reverse=True)
+                procedures.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
 
                 context.setdefault('title', 'Procedures')
                 context.setdefault('headers', headers)
@@ -210,19 +204,20 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
                 # sort prescriptions by start date descending
                 ids = [
-                    ip[0] for ip in sorted([(id, prescription)
-                                            for id, prescription in prescription_data.items()],
-                                           key=lambda ip: ip[1].get('effectivePeriod', {}).get(
-                                               'start', datetime(1, 1, 1)),
-                                           reverse=True)
+                    ip[0] for ip in sorted(
+                        [(id, prescription) for id, prescription in prescription_data.items()],
+                        key=lambda ip: ip[1].get('effectivePeriod', {}).get(
+                            'start', datetime(1, 1, 1)),
+                        reverse=True,
+                    )
                 ]
 
                 for id in ids:
                     prescription = prescription_data[id]
                     record = {
-                        'Date': prescription.get('effectivePeriod', {}).get('start', '-'),
+                        'Date': prescription.get('effectivePeriod', {}).get('start', None),
                         'Name': prescription['name'],
-                        'Provider': prescription.get('agent', {}).get('display', '-'),
+                        'Provider': prescription.get('agent', {}).get('display', None),
                     }
                     all_records.append(record)
 

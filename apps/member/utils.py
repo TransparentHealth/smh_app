@@ -1,10 +1,19 @@
 import hashlib
 import base64
 from datetime import datetime
+import dateparser
 
 import requests
 from django.conf import settings
 from jwkest.jwt import JWT
+
+
+def parse_timestamp(timestamp):
+    try:
+        dt = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S%z')
+    except ValueError:
+        dt = dateparser.parse(timestamp)
+    return dt
 
 
 def get_prescriptions(data):
@@ -65,7 +74,7 @@ def get_prescriptions(data):
                 prescriptions[id]['dispense_status'] = resource['status']
             elif resource['resourceType'] == "MedicationStatement":
                 prescriptions[id]['effectivePeriod'] = {
-                    key: datetime.strptime(value, '%Y-%m-%dT%H:%M:%S%z')  # ISO-formatted
+                    key: parse_timestamp(value)
                     for key, value in resource['effectivePeriod'].items()
                 }
                 prescriptions[id]['dosage'] = {
