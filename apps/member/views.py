@@ -10,6 +10,7 @@ from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
+from memoize import delete_memoized
 from .constants import RECORDS
 from .models import Member
 from .utils import fetch_member_data, get_resource_data, get_prescriptions
@@ -58,31 +59,36 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
+        if data is not None:
+            # put the current resources in the summary tab.  We will not show the
+            # other options in this tab.
+            conditions_data = get_resource_data(data, 'Condition')
+            prescription_data = get_prescriptions(data)
 
-        # put the current resources in the summary tab.  We will not show the
-        # other options in this tab.
-        conditions_data = get_resource_data(data, 'Condition')
-        prescription_data = get_prescriptions(data)
+            all_records = RECORDS
+            summarized_records = []
+            notes_headers = ['Agent Name', 'Organization', 'Date']
+            for record in all_records:
+                # adding data for each resourceType in response from endpoint
+                if record['name'] == 'Diagnoses':
+                    record['count'] = len(conditions_data)
+                    record['data'] = conditions_data
+                    summarized_records.append(record)
 
-        all_records = RECORDS
-        summarized_records = []
-        notes_headers = ['Agent Name', 'Organization', 'Date']
-        for record in all_records:
-            # adding data for each resourceType in response from endpoint
-            if record['name'] == 'Diagnoses':
-                record['count'] = len(conditions_data)
-                record['data'] = conditions_data
-                summarized_records.append(record)
+                if record['name'] == 'Prescriptions':
+                    record['count'] = len(prescription_data)
+                    record['data'] = prescription_data
+                    summarized_records.append(record)
 
-            if record['name'] == 'Prescriptions':
-                record['count'] = len(prescription_data)
-                record['data'] = prescription_data
-                summarized_records.append(record)
+                context.setdefault('summarized_records', summarized_records)
 
-            context.setdefault('summarized_records', summarized_records)
+            context.setdefault('notes_headers', notes_headers)
+            # TODO: include notes in the context data.
 
-        context.setdefault('notes_headers', notes_headers)
-        # TODO: include notes in the context data.
+        else:
+            delete_memoized('fetch_member_data', context['member'], 'sharemyhealth')
+            redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].pk})
+            context.setdefault('redirect_url', redirect_url)
 
         return context
 
@@ -226,6 +232,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                 context.setdefault('content_list', all_records)
 
         else:
+            delete_memoized('fetch_member_data', context['member'], 'sharemyhealth')
             redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].user.pk})
             context.setdefault('redirect_url', redirect_url)
 
@@ -245,34 +252,40 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         data = fetch_member_data(context['member'], 'sharemyhealth')
+        if data is not None:
+            # if in the future we need more info
+            # location_data = get_resource_data(data, 'Location')
+            # provider_data = get_resource_data(data, 'Practitioner')
 
-        # if in the future we need more info
-        # location_data = get_resource_data(data, 'Location')
-        # provider_data = get_resource_data(data, 'Practitioner')
+            # encounter resourceType seems to hold enough info to show provider
+            # name, location name and date of visit info
+            encounter_data = get_resource_data(data, 'Encounter')
+            providers_headers = ['Doctor Name', 'Clinic', 'Date Last Seen']
 
-        # encounter resourceType seems to hold enough info to show provider
-        # name, location name and date of visit info
-        encounter_data = get_resource_data(data, 'Encounter')
-        providers_headers = ['Doctor Name', 'Clinic', 'Date Last Seen']
+            providers = []
+            for encounter in encounter_data:
+                provider = {}
+                provider['doctor-name'] = encounter['participant'][0]['individual']['display']
+                provider['clinic'] = encounter['location'][0]['location']['display']
+                provider['date-last-seen'] = encounter['period']['start'].split('T')[0]
+                providers.append(provider)
 
-        providers = []
-        for encounter in encounter_data:
-            provider = {}
-            provider['doctor-name'] = encounter['participant'][0]['individual']['display']
-            provider['clinic'] = encounter['location'][0]['location']['display']
-            provider['date-last-seen'] = encounter['period']['start'].split('T')[0]
-            providers.append(provider)
+                # A way to get more provider info from provider_data
+                # provider_id = encounter['participant'][0]['individual']['reference'].split('/')[1]
+                # [provider for provider in provider_data if provider['id'] == provider_id][0]
 
-            # A way to get more provider info from provider_data
-            # provider_id = encounter['participant'][0]['individual']['reference'].split('/')[1]
-            # [provider for provider in provider_data if provider['id'] == provider_id][0]
+                # A way to get more location info from location_data
+                # location_id = encounter['location'][0]['location']['reference'].split('/')[1]
+                # [location for location in location_data if location['id'] == location_id][0]
 
-            # A way to get more location info from location_data
-            # location_id = encounter['location'][0]['location']['reference'].split('/')[1]
-            # [location for location in location_data if location['id'] == location_id][0]
+            context.setdefault('providers_headers', providers_headers)
+            context.setdefault('providers', providers)
 
-        context.setdefault('providers_headers', providers_headers)
-        context.setdefault('providers', providers)
+        else:
+            delete_memoized('fetch_member_data', context['member'], 'sharemyhealth')
+            redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].user.pk})
+            context.setdefault('redirect_url', redirect_url)
+
         return context
 
 
