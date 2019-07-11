@@ -17,6 +17,31 @@ def parse_timestamp(timestamp):
     return dt
 
 
+@memoize(timeout=300)
+def fetch_member_data(member, provider):
+    '''Fetch FHIR data from HIXNY data provider (sharemyhealth)
+    If data not available, returns None
+    '''
+    url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything"
+    sa = member.user.social_auth.filter(provider=provider).first()
+    if sa is not None:
+        access_token = sa.extra_data.get('access_token')
+        if access_token is not None:
+            r = requests.get(url, headers={'Authorization': 'Bearer %s' % access_token})
+            if r.status_code == 200:
+                return r.json()
+    # fallback: empty member data
+    return {'entry': []}
+
+
+def get_resource_data(data, resource_type):
+    return [
+        item['resource']
+        for item in data.get('entry', [])
+        if item['resource']['resourceType'] == resource_type
+    ]
+
+
 def get_prescriptions(data):
     """Returns an id-keyed dict of all prescriptions in the (FHIR) medical data
     * Medication = reference field to join medication resources
@@ -43,7 +68,7 @@ def get_prescriptions(data):
     prescriptions = {}
     prev_date = None
     prev_name = None
-    for entry in data['entry']:
+    for entry in data.get('entry', []):
         resource = entry['resource']
         if resource['resourceType'] in [
                 'MedicationRequest',
@@ -87,29 +112,6 @@ def get_prescriptions(data):
                 prescriptions[id]['statement_status'] = resource['status']
 
     return prescriptions
-
-
-@memoize(timeout=300)
-def fetch_member_data(member, provider):
-    '''Fetch FHIR data from HIXNY data provider (sharemyhealth)
-    If data not available, returns None
-    '''
-    url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything"
-    sa = member.user.social_auth.filter(provider=provider).first()
-    if sa is not None:
-        access_token = sa.extra_data.get('access_token')
-        if access_token is not None:
-            r = requests.get(url, headers={'Authorization': 'Bearer %s' % access_token})
-            if r.status_code == 200:
-                return r.json()
-
-
-def get_resource_data(data, resource_type):
-    return [
-        item['resource']
-        for item in data.get('entry', [])
-        if item['resource']['resourceType'] == resource_type
-    ]
 
 
 def get_id_token_payload(user):
