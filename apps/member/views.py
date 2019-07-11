@@ -59,36 +59,33 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
-        if data is not None:
-            # put the current resources in the summary tab.  We will not show the
-            # other options in this tab.
-            conditions_data = get_resource_data(data, 'Condition')
-            prescription_data = get_prescriptions(data)
+        if data is None or 'entry' not in data or not data['entry']:
+            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
-            all_records = RECORDS
-            summarized_records = []
-            notes_headers = ['Agent Name', 'Organization', 'Date']
-            for record in all_records:
-                # adding data for each resourceType in response from endpoint
-                if record['name'] == 'Diagnoses':
-                    record['count'] = len(conditions_data)
-                    record['data'] = conditions_data
-                    summarized_records.append(record)
+        # put the current resources in the summary tab.  We will not show the
+        # other options in this tab.
+        conditions_data = get_resource_data(data, 'Condition')
+        prescription_data = get_prescriptions(data)
 
-                if record['name'] == 'Prescriptions':
-                    record['count'] = len(prescription_data)
-                    record['data'] = prescription_data
-                    summarized_records.append(record)
+        all_records = RECORDS
+        summarized_records = []
+        notes_headers = ['Agent Name', 'Organization', 'Date']
+        for record in all_records:
+            # adding data for each resourceType in response from endpoint
+            if record['name'] == 'Diagnoses':
+                record['count'] = len(conditions_data)
+                record['data'] = conditions_data
+                summarized_records.append(record)
 
-                context.setdefault('summarized_records', summarized_records)
+            if record['name'] == 'Prescriptions':
+                record['count'] = len(prescription_data)
+                record['data'] = prescription_data
+                summarized_records.append(record)
 
-            context.setdefault('notes_headers', notes_headers)
-            # TODO: include notes in the context data.
+            context.setdefault('summarized_records', summarized_records)
 
-        else:
-            delete_memoized('fetch_member_data', context['member'], 'sharemyhealth')
-            redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].pk})
-            context.setdefault('redirect_url', redirect_url)
+        context.setdefault('notes_headers', notes_headers)
+        # TODO: include notes in the context data.
 
         return context
 
@@ -106,135 +103,132 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
-        if data is not None:
-            if resource_name == 'list':
-                conditions_data = get_resource_data(data, 'Condition')
-                observation_data = get_resource_data(data, 'Observation')
-                encounter_data = get_resource_data(data, 'Encounter')
-                prescription_data = get_prescriptions(data)
-                all_records = RECORDS
-                for record in all_records:
-                    # adding data for each resoureType in response from
-                    # endpoint
-                    if record['name'] == 'Diagnoses':
-                        record['count'] = len(conditions_data)
-                        record['data'] = conditions_data
+        if data is None or 'entry' not in data or not data['entry']:
+            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
-                    if record['name'] == 'Lab Results':
-                        record['count'] = len(observation_data)
-                        record['data'] = observation_data
+        if resource_name == 'list':
+            conditions_data = get_resource_data(data, 'Condition')
+            observation_data = get_resource_data(data, 'Observation')
+            encounter_data = get_resource_data(data, 'Encounter')
+            prescription_data = get_prescriptions(data)
+            all_records = RECORDS
+            for record in all_records:
+                # adding data for each resoureType in response from
+                # endpoint
+                if record['name'] == 'Diagnoses':
+                    record['count'] = len(conditions_data)
+                    record['data'] = conditions_data
 
-                    if record['name'] == 'Prescriptions':
-                        record['count'] = len(prescription_data)
-                        record['data'] = prescription_data
+                if record['name'] == 'Lab Results':
+                    record['count'] = len(observation_data)
+                    record['data'] = observation_data
 
-                    if record['name'] == 'Procedures':
-                        record['count'] = len(encounter_data)
-                        record['data'] = encounter_data
+                if record['name'] == 'Prescriptions':
+                    record['count'] = len(prescription_data)
+                    record['data'] = prescription_data
 
-                    context.setdefault('all_records', all_records)
+                if record['name'] == 'Procedures':
+                    record['count'] = len(encounter_data)
+                    record['data'] = encounter_data
 
-            elif resource_name == 'diagnoses':
-                conditions_data = get_resource_data(data, 'Condition')
-                headers = ['Date', 'Code', 'Diagnosis', 'Provider']
-                diagnoses = []
-                for condition in conditions_data:
-                    diagnosis = dict(
-                        Date=(condition.get('assertedDate')
-                              and parse_timestamp(condition['assertedDate']) or None),
-                        Code=condition['code']['coding'][0].get('code', None),
-                        Diagnosis=condition['code']['coding'][0].get('display', None),
-                        Provider=condition.get('provider', None),
-                    )
-                    diagnoses.append(diagnosis)
+                context.setdefault('all_records', all_records)
 
-                # sort diagnoses in order of date descending
-                diagnoses.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
+        elif resource_name == 'diagnoses':
+            conditions_data = get_resource_data(data, 'Condition')
+            headers = ['Date', 'Code', 'Diagnosis', 'Provider']
+            diagnoses = []
+            for condition in conditions_data:
+                diagnosis = dict(
+                    Date=(condition.get('assertedDate')
+                          and parse_timestamp(condition['assertedDate']) or None),
+                    Code=condition['code']['coding'][0].get('code', None),
+                    Diagnosis=condition['code']['coding'][0].get('display', None),
+                    Provider=condition.get('provider', None),
+                )
+                diagnoses.append(diagnosis)
 
-                context.setdefault('title', 'Diagnoses')
-                context.setdefault('headers', headers)
-                context.setdefault('content_list', diagnoses)
+            # sort diagnoses in order of date descending
+            diagnoses.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
 
-            elif resource_name == 'lab-results':
-                observation_data = get_resource_data(data, 'Observation')
-                headers = ['Date', 'Code', 'Lab Result', 'Value']
-                lab_results = []
-                for observation in observation_data:
-                    lab = dict(
-                        Date=(observation.get('effectivePeriod', {}).get('start')
-                              and parse_timestamp(observation['effectivePeriod']['start']) or None),
-                        Code=observation['code']['coding'][0].get('code', None),
-                        Display=observation['code']['coding'][0].get('display', None),
-                    )
-                    lab_value = observation.get('valueQuantity', None)
-                    lab['Value'] = (str(list(lab_value.values())[0]) + list(lab_value.values())[1]
-                                    if lab_value else None)
-                    lab_results.append(lab)
+            context.setdefault('title', 'Diagnoses')
+            context.setdefault('headers', headers)
+            context.setdefault('content_list', diagnoses)
 
-                # sort lab_results in order of date descending
-                lab_results.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
+        elif resource_name == 'lab-results':
+            observation_data = get_resource_data(data, 'Observation')
+            headers = ['Date', 'Code', 'Lab Result', 'Value']
+            lab_results = []
+            for observation in observation_data:
+                lab = dict(
+                    Date=(observation.get('effectivePeriod', {}).get('start')
+                          and parse_timestamp(observation['effectivePeriod']['start']) or None),
+                    Code=observation['code']['coding'][0].get('code', None),
+                    Display=observation['code']['coding'][0].get('display', None),
+                )
+                lab_value = observation.get('valueQuantity', None)
+                lab['Value'] = (str(list(lab_value.values())[0]) + list(lab_value.values())[1]
+                                if lab_value else None)
+                lab_results.append(lab)
 
-                context.setdefault('title', 'Lab Results')
-                context.setdefault('headers', headers)
-                context.setdefault('content_list', lab_results)
+            # sort lab_results in order of date descending
+            lab_results.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
 
-            elif resource_name == 'procedures':
-                encounter_data = get_resource_data(data, 'Encounter')
-                headers = ['Date', 'Type', 'Practitioner', 'Location']
-                procedures = []
-                for encounter in encounter_data:
-                    procedure = dict(
-                        Date=(encounter.get('period', {}).get('start')
-                              and parse_timestamp(encounter['period']['start']) or None),
-                        Type=encounter['type'][0]['text'],
-                        Practitioner=', '.join([
-                            participant['individual']['display']
-                            for participant in encounter.get('participant', [])
-                            if 'Practitioner' in participant['individual']['reference']
-                        ]),
-                        Location=encounter['location'][0]['location']['display'],
-                    )
-                    procedures.append(procedure)
+            context.setdefault('title', 'Lab Results')
+            context.setdefault('headers', headers)
+            context.setdefault('content_list', lab_results)
 
-                # sort procedures in order of date descending
-                procedures.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
+        elif resource_name == 'procedures':
+            encounter_data = get_resource_data(data, 'Encounter')
+            headers = ['Date', 'Type', 'Practitioner', 'Location']
+            procedures = []
+            for encounter in encounter_data:
+                procedure = dict(
+                    Date=(encounter.get('period', {}).get('start')
+                          and parse_timestamp(encounter['period']['start']) or None),
+                    Type=encounter['type'][0]['text'],
+                    Practitioner=', '.join([
+                        participant['individual']['display']
+                        for participant in encounter.get('participant', [])
+                        if 'Practitioner' in participant['individual']['reference']
+                    ]),
+                    Location=encounter['location'][0]['location']['display'],
+                )
+                procedures.append(procedure)
 
-                context.setdefault('title', 'Procedures')
-                context.setdefault('headers', headers)
-                context.setdefault('content_list', procedures)
+            # sort procedures in order of date descending
+            procedures.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
 
-            elif resource_name == 'prescriptions':
-                prescription_data = get_prescriptions(data)
-                headers = ['Date', 'Name', 'Provider']
-                all_records = []
+            context.setdefault('title', 'Procedures')
+            context.setdefault('headers', headers)
+            context.setdefault('content_list', procedures)
 
-                # sort prescriptions by start date descending
-                ids = [
-                    ip[0] for ip in sorted(
-                        [(id, prescription) for id, prescription in prescription_data.items()],
-                        key=lambda ip: ip[1].get('effectivePeriod', {}).get(
-                            'start', datetime(1, 1, 1)),
-                        reverse=True,
-                    )
-                ]
+        elif resource_name == 'prescriptions':
+            prescription_data = get_prescriptions(data)
+            headers = ['Date', 'Name', 'Provider']
+            all_records = []
 
-                for id in ids:
-                    prescription = prescription_data[id]
-                    record = {
-                        'Date': prescription.get('effectivePeriod', {}).get('start', None),
-                        'Name': prescription['name'],
-                        'Provider': prescription.get('agent', {}).get('display', None),
-                    }
-                    all_records.append(record)
+            # sort prescriptions by start date descending
+            ids = [
+                ip[0] for ip in sorted(
+                    [(id, prescription) for id, prescription in prescription_data.items()],
+                    key=lambda ip: ip[1].get('effectivePeriod', {}).get(
+                        'start', datetime(1, 1, 1)),
+                    reverse=True,
+                )
+            ]
 
-                context.setdefault('title', 'Prescriptions')
-                context.setdefault('headers', headers)
-                context.setdefault('content_list', all_records)
+            for id in ids:
+                prescription = prescription_data[id]
+                record = {
+                    'Date': prescription.get('effectivePeriod', {}).get('start', None),
+                    'Name': prescription['name'],
+                    'Provider': prescription.get('agent', {}).get('display', None),
+                }
+                all_records.append(record)
 
-        else:
-            delete_memoized('fetch_member_data', context['member'], 'sharemyhealth')
-            redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].user.pk})
-            context.setdefault('redirect_url', redirect_url)
+            context.setdefault('title', 'Prescriptions')
+            context.setdefault('headers', headers)
+            context.setdefault('content_list', all_records)
 
         return context
 
@@ -252,39 +246,36 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         data = fetch_member_data(context['member'], 'sharemyhealth')
-        if data is not None:
-            # if in the future we need more info
-            # location_data = get_resource_data(data, 'Location')
-            # provider_data = get_resource_data(data, 'Practitioner')
+        if data is None or 'entry' not in data or not data['entry']:
+            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
-            # encounter resourceType seems to hold enough info to show provider
-            # name, location name and date of visit info
-            encounter_data = get_resource_data(data, 'Encounter')
-            providers_headers = ['Doctor Name', 'Clinic', 'Date Last Seen']
+        # if in the future we need more info
+        # location_data = get_resource_data(data, 'Location')
+        # provider_data = get_resource_data(data, 'Practitioner')
 
-            providers = []
-            for encounter in encounter_data:
-                provider = {}
-                provider['doctor-name'] = encounter['participant'][0]['individual']['display']
-                provider['clinic'] = encounter['location'][0]['location']['display']
-                provider['date-last-seen'] = encounter['period']['start'].split('T')[0]
-                providers.append(provider)
+        # encounter resourceType seems to hold enough info to show provider
+        # name, location name and date of visit info
+        encounter_data = get_resource_data(data, 'Encounter')
+        providers_headers = ['Doctor Name', 'Clinic', 'Date Last Seen']
 
-                # A way to get more provider info from provider_data
-                # provider_id = encounter['participant'][0]['individual']['reference'].split('/')[1]
-                # [provider for provider in provider_data if provider['id'] == provider_id][0]
+        providers = []
+        for encounter in encounter_data:
+            provider = {}
+            provider['doctor-name'] = encounter['participant'][0]['individual']['display']
+            provider['clinic'] = encounter['location'][0]['location']['display']
+            provider['date-last-seen'] = encounter['period']['start'].split('T')[0]
+            providers.append(provider)
 
-                # A way to get more location info from location_data
-                # location_id = encounter['location'][0]['location']['reference'].split('/')[1]
-                # [location for location in location_data if location['id'] == location_id][0]
+            # A way to get more provider info from provider_data
+            # provider_id = encounter['participant'][0]['individual']['reference'].split('/')[1]
+            # [provider for provider in provider_data if provider['id'] == provider_id][0]
 
-            context.setdefault('providers_headers', providers_headers)
-            context.setdefault('providers', providers)
+            # A way to get more location info from location_data
+            # location_id = encounter['location'][0]['location']['reference'].split('/')[1]
+            # [location for location in location_data if location['id'] == location_id][0]
 
-        else:
-            delete_memoized('fetch_member_data', context['member'], 'sharemyhealth')
-            redirect_url = reverse('member:data-sources', kwargs={'pk': context['member'].user.pk})
-            context.setdefault('redirect_url', redirect_url)
+        context.setdefault('providers_headers', providers_headers)
+        context.setdefault('providers', providers)
 
         return context
 
