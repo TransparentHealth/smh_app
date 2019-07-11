@@ -59,7 +59,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
-        if data is None or not 'entry' in data or not data['entry']:
+        if data is None or 'entry' not in data or not data['entry']:
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
         # put the current resources in the summary tab.  We will not show the
@@ -103,7 +103,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
-        if data is None or not 'entry' in data or not data['entry']:
+        if data is None or 'entry' not in data or not data['entry']:
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
         if resource_name == 'list':
@@ -246,7 +246,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         data = fetch_member_data(context['member'], 'sharemyhealth')
-        if data is None or not 'entry' in data or not data['entry']:
+        if data is None or 'entry' not in data or not data['entry']:
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
         # if in the future we need more info
