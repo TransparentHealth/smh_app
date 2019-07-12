@@ -111,7 +111,7 @@ def get_prescriptions(data):
                         if k in ['value', 'unit']
                     }
                 else:
-                    prescription[id]['dosage'] = {}
+                    prescriptions[id]['dosage'] = {}
                 prescriptions[id]['taken'] = resource.get('taken', '')
 
     return prescriptions
