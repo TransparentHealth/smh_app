@@ -256,14 +256,16 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         # encounter resourceType seems to hold enough info to show provider
         # name, location name and date of visit info
         encounter_data = get_resource_data(data, 'Encounter')
-        providers_headers = ['Doctor Name', 'Clinic', 'Date Last Seen']
+        providers_headers = ['Doctor’s Name', 'Clinic', 'Date Last Seen']
 
         providers = []
         for encounter in encounter_data:
+            if 'participant' not in encounter:
+                continue
             provider = {}
             provider['doctor-name'] = encounter['participant'][0]['individual']['display']
             provider['clinic'] = encounter['location'][0]['location']['display']
-            provider['date-last-seen'] = encounter['period']['start'].split('T')[0]
+            provider['date-last-seen'] = parse_timestamp(encounter['period']['start'])
             providers.append(provider)
 
             # A way to get more provider info from provider_data
@@ -273,6 +275,8 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             # A way to get more location info from location_data
             # location_id = encounter['location'][0]['location']['reference'].split('/')[1]
             # [location for location in location_data if location['id'] == location_id][0]
+
+        providers.sort(key=lambda p: p['date-last-seen'], reverse=True)
 
         context.setdefault('providers_headers', providers_headers)
         context.setdefault('providers', providers)
