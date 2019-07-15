@@ -99,17 +99,20 @@ def get_prescriptions(data):
             elif resource['resourceType'] == "MedicationDispense":
                 prescriptions[id]['dispense_status'] = resource['status']
             elif resource['resourceType'] == "MedicationStatement":
+                prescriptions[id]['statement_status'] = resource['status']
                 prescriptions[id]['effectivePeriod'] = {
                     key: parse_timestamp(value)
-                    for key, value in resource['effectivePeriod'].items()
+                    for key, value in resource.get('effectivePeriod', {}).items()
                 }
-                prescriptions[id]['dosage'] = {
-                    k: v
-                    for k, v in resource['dosage'][0]['doseQuantity'].items()
-                    if k in ['value', 'unit']
-                }
-                prescriptions[id]['taken'] = resource['taken']
-                prescriptions[id]['statement_status'] = resource['status']
+                if 'dosage' in resource:
+                    prescriptions[id]['dosage'] = {
+                        k: v
+                        for k, v in resource['dosage'][0]['doseQuantity'].items()
+                        if k in ['value', 'unit']
+                    }
+                else:
+                    prescriptions[id]['dosage'] = {}
+                prescriptions[id]['taken'] = resource.get('taken', '')
 
     return prescriptions
 
