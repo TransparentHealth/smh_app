@@ -85,35 +85,28 @@
                     </div>
                 </div>
             </div>
-            <div id="profile-dropdown" class="account-menu dropdown nav-item">
-                <a aria-haspopup="true" aria-expanded="false" href="#" class="dropdown-toggle nav-link" role="button" data-toggle="dropdown">
-                    {% if request.user.userprofile.picture_url %}
-                      <img src="{{ request.user.userprofile.picture_url }}" >
-                    {% else %}
-                      <img src="{% static '/images/icons/avatar_default.png' %}" >
-                    {% endif %}
-                </a><div class="dropdown-menu" aria-labelledby="">
-                    <span class="navbar-text">
-                        <!-- use "org/dashboard" href if this is an org agent -->
-                         {% if request.user.userprofile.user_type == "O" %}
-                        <a href="/member/{{ request.user.id }}">Agent Profile</a>
-                         {% else %}
-                         <a href="/member">Dashboard</a>
-                         
-                         {% endif %}
-                    
-                    </span><div role="separator" class="dropdown-divider">
 
-                    </div>
-                    <span class="navbar-text"><a href="/user/settings">Settings</a>
-                    </span>
-                    <div role="separator" class="dropdown-divider"></div>
-                    <span class="navbar-text">
-                        <a href="/logout">Log Out</a>
-                    </span>
-                </div>
-               
+                    
+            <div id="profile" >
+            
+                <a class="account-menu nav-item" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle nav-link" role="button" href="/member/{{ request.user.id }}">
+                    {% if request.user.userprofile.picture_url %}
+                      <img class="account-menu nav-item"  src="{{ request.user.userprofile.picture_url }}" >
+                    {% else %}
+                      <img class="account-menu nav-item" src="{% static '/images/icons/avatar_default.png' %}" >
+                    {% endif %}
+        
+                </a>
+                
+                
             </div>
-        </div>
+                
+              
+                    
+                    
+                
+                 <div id="profile">
+                  <a href="/logout" class="account-menu nav-item" > <i class="fa fa-sign-out  fa-3x"></i></a>
+                   </div>
     </nav>
 </header>
