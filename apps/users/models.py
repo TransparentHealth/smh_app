@@ -47,7 +47,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 def create_user_profile_connect_to_hixny_notification(sender, instance, created, **kwargs):
     """Create Notifications related to the ResourceRequest, while deleting existing notifications"""
     Notification = import_module('apps.notifications.models').Notification
-    if instance.user_type == 'O':
+    if instance.user_type == 'O':   # Org agent
         # Delete any Hixny connection notifications for this UserProfile
         Notification.objects.filter(
             notify_id=instance.user.id, actor_id=instance.user.id,

@@ -207,6 +207,7 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
     'social_core.pipeline.debug.debug',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
+    'apps.member.pipeline.dismiss_connect_notification',
     'social_core.pipeline.debug.debug'
 )
 
