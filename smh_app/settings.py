@@ -207,6 +207,7 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
     'social_core.pipeline.debug.debug',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
+    'apps.member.pipeline.dismiss_connect_notification',
     'social_core.pipeline.debug.debug'
 )
 
@@ -286,7 +287,8 @@ POLICY_TITLE = env('DJANGO_POLICY_TITLE', 'Privacy Policy')
 TOS_URI = env('DJANGO_TOS_URI', 'https://abhealth.us')
 
 TOS_TITLE = env('DJANGO_TOS_TITLE', 'Terms of Service')
-TAG_LINE = env('DJANGO_TAG_LINE', 'Share your health data with applications, organizations, and people you trust.')
+TAG_LINE = env('DJANGO_TAG_LINE',
+               'Share your health data with applications, organizations, and people you trust.')
 
 EXPLAINATION_LINE = 'This service allows Medicare beneficiaries to connect their health data to applications of their choosing.'  # noqa
 EXPLAINATION_LINE = env('DJANGO_EXPLAINATION_LINE ', EXPLAINATION_LINE)
@@ -337,3 +339,6 @@ SETTINGS_EXPORT = [
 PHONENUMBER_DEFAULT_REGION = 'US'
 PHONENUMBER_DB_FORMAT = 'E164'
 PHONENUMBER_DEFAULT_FORMAT = 'NATIONAL'
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = int(env('SESSION_COOKIE_AGE', int(10 * 60)))

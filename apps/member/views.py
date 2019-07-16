@@ -302,7 +302,7 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTest
         data_sources = [{
             'connected': source['provider'] in connected_source_providers,
             **source
-        } for source in available_sources]
+        } for source in available_sources if source['provider']]
         context.setdefault('data_sources', data_sources)
         return context
 

@@ -18,7 +18,7 @@
                     <img src="/images/avatars/sloan.png" alt="" class="alert-item__image">
                     <div>
                         <div class="alert-item__text">
-                            <p><strong>Danielle Sloan</strong> accepted your request.</p>
+                            <p><strong>Danielle Sloan</strong> accepted your share request.</p>
                         </div>
                         <div class="alert-item__time">3 minutes ago</div>
                     </div>
@@ -38,8 +38,13 @@
                   {% for member in organization.members.all %}
                       <li class="user-link">
                           <a href="{% url 'member:member-update' pk=member.pk %}">
-                              <img src="{% static '/images/icons/avatar_default.png' %}" alt="{{member.user.first_name}} {{member.user.last_name}} " class="mr-3">
-                              {{ member }}
+
+                    <img class="mr-3"  src="{{ member.user.userprofile.picture_url }}" >
+
+        
+                            
+        
+                              {{ member.user.first_name }} {{ member.user.first_name }}
                           </a>
                       </li>
                   {% endfor %}
