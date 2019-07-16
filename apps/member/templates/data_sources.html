@@ -31,7 +31,7 @@
                 {% for data_source in data_sources %}
                     {% if not data_source.connected %}
                     <div class="tile-flex">
-                        <a href="{% url 'social:begin' 'sharemyhealth' %}?next={% firstof data_source.notification_url|urlencode request.path %}">
+                        <a href="{% url 'social:begin' 'sharemyhealth' %}?next={{ request.path }}">
                             <div class="tile tile-flex__item tile-flex__item--add">
                                 <img src="{% static '/images/icons/add.png' %}" alt="">
                                 <img src="{{ data_source.image_url }}" alt="data_source.name">
