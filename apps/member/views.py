@@ -291,7 +291,6 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTest
     def get_context_data(self, **kwargs):
         """Add current data sources and data into the context."""
         context = super().get_context_data(**kwargs)
-        user = context['member'].user
         available_sources = [{
             'provider': 'sharemyhealth',
             'name': 'Hixny',
