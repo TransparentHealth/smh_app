@@ -291,6 +291,7 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTest
     def get_context_data(self, **kwargs):
         """Add current data sources and data into the context."""
         context = super().get_context_data(**kwargs)
+        user = context['member'].user
         available_sources = [{
             'provider': 'sharemyhealth',
             'name': 'Hixny',
@@ -302,7 +303,16 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTest
         data_sources = [{
             'connected': source['provider'] in connected_source_providers,
             **source
-        } for source in available_sources]
+        } for source in available_sources if source['provider']]
+        for data_source in data_sources:
+            notification = Notification.objects.filter(
+                notify_id=user.id, 
+                actor_id=user.id, 
+                actions__contains=f'''"url": "{reverse('social:begin', args=[data_source['provider']])}"'''
+            ).first()
+            if notification:
+                notification_url = reverse('notifications:dismiss', args=[notification.id])
+                data_source['notification_url'] = f"{notification_url}?next={self.request.path}"
         context.setdefault('data_sources', data_sources)
         return context
 

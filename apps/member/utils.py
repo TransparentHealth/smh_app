@@ -55,7 +55,7 @@ def get_prescriptions(data):
             * .reference = "Practioner/{id}" points to a Physician
             * .display = Physician's display name
     * MedicationDispense = records the dispensation of a medication
-        * .status = the status of the dispensation ("completed") 
+        * .status = the status of the dispensation ("completed")
         * .medicationReference{.reference, .display}
     * MedicationStatement = records the prescription itself
         * .status
