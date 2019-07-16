@@ -44,7 +44,7 @@ def save_profile(backend, user, response, *args, **kwargs):
 
             if 'picture' in payload:
                 profile.picture_url = payload['picture']
-            else: 
+            else:
                 profile.picture_url = ''
 
             profile.most_recent_id_token_payload = json.dumps(
