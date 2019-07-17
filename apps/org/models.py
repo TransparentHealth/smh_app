@@ -211,8 +211,8 @@ def create_or_update_resource_request_notifications(sender, instance, created, *
     notification.created = instance.updated
     notification.save()
 
-    # if approved, notify the Org
     if instance.status == REQUEST_APPROVED:
+        # notify the Org
         Notification.objects.filter(
             notify_id=instance.organization.id, instance_id=instance.id).delete()
         notification = Notification.objects.create(
