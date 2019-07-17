@@ -207,8 +207,16 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
     'social_core.pipeline.debug.debug',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
-    'apps.member.pipeline.dismiss_connect_notification',
+    'apps.member.pipeline.connection_notifications',
     'social_core.pipeline.debug.debug'
+)
+
+SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = (
+    'social_core.pipeline.disconnect.allowed_to_disconnect',
+    'social_core.pipeline.disconnect.get_entries',
+    'social_core.pipeline.disconnect.revoke_tokens',
+    'social_core.pipeline.disconnect.disconnect',
+    'apps.member.pipeline.disconnection_notifications',
 )
 
 # Settings for our custom OAuth backends. Note: The name of the social auth
