@@ -372,7 +372,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             notify_id=self.request.user.id, dismissed=False).order_by('-created')[:4]
         organizations = [
             resource_grant.organization
-            for resource_grant in ResourceGrant.objects.filter(member=self.request.user)
+            for resource_grant in self.request.user.resourcegrant_set.all()
         ][:4]
         kwargs.setdefault('notifications', notifications)
         kwargs.setdefault('organizations', organizations)
