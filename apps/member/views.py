@@ -38,7 +38,7 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
          - the request.user is in an Organization that has been granted access
            to the member's data
         """
-        member = get_object_or_404(Member.objects.filter(pk=self.kwargs['pk']).first())
+        member = get_object_or_404(Member.objects.filter(pk=self.kwargs['pk']))
         if member.user != self.request.user:
             # The request.user is not the member. If the request.user is not in
             # an Organization that has been granted access to the member's data,
@@ -47,7 +47,7 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
                 ResourceGrant.objects.filter(
                     organization__users=self.request.user, 
                     member=member.user
-                ).first()
+                )
             )
         return True
 
