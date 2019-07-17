@@ -43,9 +43,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # All of the Organizations that the request.user is a part of -- i.e., is an agent in
         orgs_with_members = [
             {
-                'organization': org, 
+                'organization': org,
                 'members': [rg.member for rg in org.resourcegrant_set.all()]
-            } 
+            }
             for org in self.request.user.organization_set.all()
         ]
 

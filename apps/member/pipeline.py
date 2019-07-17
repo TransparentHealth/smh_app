@@ -7,10 +7,10 @@ def connection_notifications(backend, user, response, *args, **kwargs):
         print(type(backend), backend)
         # Dismiss the notification prompting the user to connect
         notifications = Notification.objects.filter(
-                notify_id=user.id,
-                actor_id=user.id,
-                actions__contains=f'''"url": "{reverse('social:begin', args=[backend.name])}"'''
-            )
+            notify_id=user.id,
+            actor_id=user.id,
+            actions__contains=f'''"url": "{reverse('social:begin', args=[backend.name])}"'''
+        )
         for notification in notifications:
             notification.dismissed = True
             notification.save()
@@ -18,7 +18,7 @@ def connection_notifications(backend, user, response, *args, **kwargs):
         # Dismiss any notifications related to this backend
         action_url = reverse('social:disconnect', args=[backend.name])
         notifications = Notification.objects.filter(
-            notify_id=user.id, 
+            notify_id=user.id,
             actor_id=user.id,
             actions__contains=f'''"url": "{action_url}"'''
         )
@@ -40,11 +40,10 @@ def disconnection_notifications(backend, user, *args, **kwargs):
         # Dismiss any notifications related to this backend
         action_url = reverse('social:disconnect', args=[backend.name])
         notifications = Notification.objects.filter(
-            notify_id=user.id, 
+            notify_id=user.id,
             actor_id=user.id,
             actions__contains=f'''"url": "{action_url}"'''
         )
         for notification in notifications:
             notification.dismissed = True
             notification.save()
-

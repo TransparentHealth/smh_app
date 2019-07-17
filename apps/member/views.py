@@ -29,7 +29,7 @@ from .forms import ResourceRequestForm
 from .utils import get_id_token_payload, parse_timestamp
 
 
-class SelfOrApprovedOrgMixin:
+class SelfOrApprovedOrgMixin(UserPassesTestMixin):
 
     def test_func(self):
         """
@@ -38,14 +38,16 @@ class SelfOrApprovedOrgMixin:
          - the request.user is in an Organization that has been granted access
            to the member's data
         """
-        member = get_object_or_404(Member.objects.all(), pk=self.kwargs['pk'])
+        member = get_object_or_404(Member.objects.filter(pk=self.kwargs['pk']).first())
         if member.user != self.request.user:
             # The request.user is not the member. If the request.user is not in
             # an Organization that has been granted access to the member's data,
             # then return a 404 response.
             get_object_or_404(
-                ResourceGrant.objects.filter(organization__users=self.request.user),
-                member_id=member.id,
+                ResourceGrant.objects.filter(
+                    organization__users=self.request.user, 
+                    member=member.user
+                ).first()
             )
         return True
 
@@ -56,7 +58,6 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
         if data is None or 'entry' not in data or not data['entry']:
@@ -284,7 +285,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         return context
 
 
-class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTestMixin, DetailView):
+class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     model = Member
     template_name = "data_sources.html"
 
@@ -343,7 +344,7 @@ class CreateMemberView(LoginRequiredMixin, CreateView):
         return reverse_lazy('member:member-create')
 
 
-class UpdateMemberView(LoginRequiredMixin, UpdateView):
+class UpdateMemberView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UpdateView):
     model = Member
     fields = ['phone_number', 'address', 'emergency_contact_name', 'emergency_contact_number']
     template_name = 'member.html'
