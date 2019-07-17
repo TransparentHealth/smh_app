@@ -39,7 +39,7 @@
         <form method="POST" action="{% url 'member:resource_request_response' %}?next={{request.path}}">
           {% csrf_token %}
           <input type="hidden" name="organization" value="{{organization.id}}"></input>
-          <input type="hidden" name="member" value="{{member.id}}"></input>
+          <input type="hidden" name="member" value="{{member.user.id}}"></input>
           {% ifequal status 'current' %}
           <input type="submit" name="revoke" class="btn btn-primary" value="Yes, Revoke"></input>
           {% endifequal %}
