@@ -6,38 +6,45 @@
     {% if organizations %}
       {% for organization in organizations %}
         <div class="recent-alerts col-md-12 pr-4 pl-4">
-          <span>{{ organization }}</span>
-          <a href="{% url 'org:organization-update' organization.pk %}">edit</a>
-          <a href="{% url 'org:organization-delete' organization.pk %}">delete</a>
-          <a href="{% url 'org:organization-join' organization.slug organization.invite_token %}">invite</a>
+
+          <span></span>
         </div>
 
         <div class="recent-alerts col-md-6 pr-4 pl-4">
             <h2 class="text-center mb-3">Notifications</h2>
+            
             <div class="tile undefined">
                 <div class="alert-item">
                     <img src="/images/avatars/sloan.png" alt="" class="alert-item__image">
                     <div>
                         <div class="alert-item__text">
-                            <p><strong>Danielle Sloan</strong> accepted your request.</p>
+                            <p><strong>Danielle Sloan</strong> accepted your share request.</p>
                         </div>
                         <div class="alert-item__time">3 minutes ago</div>
                     </div>
                 </div>
             </div>
-
+            
             <div class="text-center">
-                <button type="button" class="mt-4 btn btn-primary">View All Notifications</button>
+               <!-- <button type="button" class="mt-4 btn btn-primary">View All Notifications</button> -->
             </div>
         </div>
+        
+        
+        
         <div class="recent-members col-md-6 pr-4 pl-4">
-            <h2 class="text-center mb-3 pb-3">Recently Viewed Members</h2>
+            <h2 class="text-center mb-3 pb-3">{{ organization }} Members</h2>
               <ul class="list--formatted">
                   {% for member in organization.members.all %}
                       <li class="user-link">
                           <a href="{% url 'member:member-update' pk=member.pk %}">
-                              <img src="{% static '/images/icons/avatar_default.png' %}" alt="Abbey Lender" class="mr-3">
-                              {{ member }}
+
+                    <img class="mr-3"  src="{{ member.user.userprofile.picture_url }}" >
+
+        
+                            
+        
+                              {{ member.user.first_name }} {{ member.user.first_name }}
                           </a>
                       </li>
                   {% endfor %}
@@ -46,15 +53,22 @@
                 <a class="btn btn-primary mt-4" href="{% url 'org:search' %}">View All Members</a>
             </div>
         </div>
+        
+                <div class="recent-alerts col-md-6 pr-4 pl-4">
+    
+        </div>
+        
+        
+        
       {% endfor %}
     {% else %}
       <div class="recent-alerts col-md-6 pr-4 pl-4">
         <h2 class="text-center mb-3">Notifications</h2>
       </div>
+      
+      
       <div class="recent-members col-md-6 pr-4 pl-4">
         <h2 class="text-center mb-3 pb-3">Recently Viewed Members</h2>
-        <p>You belong to no organization</p>
-        <a href="{% url 'org:organization-add' %}">Create new organization</a>
       </div>
     {% endif %}
 </div>

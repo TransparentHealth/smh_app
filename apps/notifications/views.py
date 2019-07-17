@@ -9,7 +9,10 @@ from .forms import DismissNotificationForm
 
 
 class DismissNotificationView(LoginRequiredMixin, View):
-    http_method_names = ['post']
+    http_method_names = ['post', 'get']
+
+    def get(self, request, **kwargs):
+        return self.post(request, **kwargs)
 
     def post(self, request, **kwargs):
         form = DismissNotificationForm(kwargs)
