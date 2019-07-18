@@ -43,12 +43,12 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
             # The request.user is not the member. If the request.user is not in
             # an Organization that has been granted access to the member's data,
             # then return a 404 response.
-            get_object_or_404(
-                ResourceGrant.objects.filter(
+            resource_grant = ResourceGrant.objects.filter(
                     organization__users=self.request.user,
                     member=member.user
-                )
-            )
+                ).first()
+            if not resource_grant:
+                raise Http404()
         return True
 
 
