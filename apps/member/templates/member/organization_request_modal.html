@@ -34,6 +34,7 @@
           </div>
         </div>
         {% else %}
+          {% if request.user == member.user %}
         <h2>{% ifequal status 'requested' %}Approve{% else %}Grant{% endifequal %} Access</h2>
         <div class="container-fluid">
           <div class="row">
@@ -41,6 +42,25 @@
             <div class="col-9 col-sm-10"><p>Allow {{organization.name}} to access your medical files including mental health records?</p></div>
           </div>
         </div>
+          {% elif organization in request.user.organization_set.all %}
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-3 col-sm-2"><img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image"/></div>
+              <div class="col-9 col-sm-10">
+                {% if status == 'requested' %}
+                <p>Withdraw {{organization.name}}’s request to access 
+                  {{member.user.first_name}} {{member.user.last_name}}’s medical files 
+                  including mental health records?
+                </p>
+                {% else %}
+                <p>Request access for 
+                  to {{member.user.first_name}} {{member.user.last_name}}’s medical files 
+                  including mental health records?</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endif %}
         {% endifequal %}
       </div>
       <div class="modal-footer">
@@ -52,11 +72,19 @@
           <input type="submit" name="revoke" class="btn btn-primary" value="Yes, Revoke"></input>
           {% endifequal %}
           {% ifequal status 'requested' %}
+            {% if request.user == member.user %}
           <input type="submit" name="approve" class="btn btn-primary" value="Yes, Approve"></input>
           <input type="submit" name="deny" class="btn btn-secondary" value="No, Deny"></input>
+            {% elif organization in request.user.organization_set.all %}
+          <input type="submit" name="deny" class="btn btn-primary" value="Withdraw Request"></input>
+            {% endif %}
           {% endifequal %}
           {% ifequal status 'available' %}
+            {% if request.user == member.user %}
           <input type="submit" name="approve" class="btn btn-primary" value="Grant Access"></input>
+            {% elif organization in request.user.organization_set.all %}
+          <input type="submit" name="requested" class="btn btn-primary" value="Request Access"></input>
+            {% endif %}
           {% endifequal %}
           <button class="btn btn-secondary" data-dismiss="modal">Cancel</input>
         </form>

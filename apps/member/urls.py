@@ -6,6 +6,7 @@ from .views import (
     CreateMemberView, DeleteMemberView, UpdateMemberView,
     DashboardView, DataSourcesView, RecordsView, OrganizationsView,
     SummaryView, ProvidersView, NotificationsView,
+    RequestAccessView,
     redirect_subject_url_to_member,
 )
 
@@ -42,6 +43,9 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/organizations/$',
         OrganizationsView.as_view(),
         name='organizations'),
+    url(r'^(?P<pk>[0-9]+)/request-access/$', 
+        RequestAccessView.as_view(),
+        name='request-access'),
     url(r'^new/$',
         CreateMemberView.as_view(),
         name='member-create'),

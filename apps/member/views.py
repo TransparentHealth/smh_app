@@ -30,6 +30,18 @@ from .utils import get_id_token_payload, parse_timestamp
 
 
 class SelfOrApprovedOrgMixin(UserPassesTestMixin):
+    def get_login_url(self):
+        """Org agents can request access, others go home (login or member:dashboard)."""
+        if (
+            not self.request.user.is_anonymous 
+            and self.request.user.userprofile.user_type == 'O'
+        ):
+            return reverse('member:request-access', args=[self.kwargs['pk']])
+        else:
+            return reverse('login') + '?next=' + self.request.path
+
+    def handle_no_permission(self):
+        return redirect(self.get_login_url())
 
     def test_func(self):
         """
@@ -42,13 +54,13 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
         if member.user != self.request.user:
             # The request.user is not the member. If the request.user is not in
             # an Organization that has been granted access to the member's data,
-            # then return a 404 response.
+            # then return False.
             resource_grant = ResourceGrant.objects.filter(
                 organization__users=self.request.user,
                 member=member.user
             ).first()
             if not resource_grant:
-                raise Http404()
+                return False
         return True
 
 
@@ -328,6 +340,35 @@ class OrganizationsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         return context
 
 
+class RequestAccessView(LoginRequiredMixin, DetailView):
+    model = Member
+    template_name = 'member/request_access.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        member = context['member']
+        member_requests = ResourceRequest.objects.filter(member=member.user)
+        member_connected_orgs = [
+            rr.organization for rr in member_requests if rr.status == REQUEST_APPROVED
+        ]
+        member_requested_orgs = [
+            rr.organization for rr in member_requests if rr.status == REQUEST_REQUESTED
+        ]
+        orgs = self.request.user.organization_set.all()  # Orgs this user is agent for
+        current = [org for org in orgs if org in member_connected_orgs]
+        requested = [org for org in orgs if org in member_requested_orgs]
+        available = [
+            org for org in orgs if org 
+            not in member_connected_orgs + member_requested_orgs
+        ]
+        context['organizations'] = {
+            'current': current,
+            'requested': requested,
+            'available': available,
+        }
+        return context
+    
+
 class CreateMemberView(LoginRequiredMixin, CreateView):
     model = Member
     fields = [
@@ -474,6 +515,8 @@ def resource_request_response(request):
         status = REQUEST_APPROVED
     elif request.POST.get('deny') or request.POST.get('revoke'):
         status = REQUEST_DENIED
+    elif request.POST.get('requested'):
+        status = REQUEST_REQUESTED
     else:
         status = None
     form = ResourceRequestForm({
@@ -487,7 +530,7 @@ def resource_request_response(request):
         form.cleaned_data['member'] == request.user
         or (
             form.cleaned_data['organization'] in request.user.organization_set.all()
-            and form.cleaned_data['status'] == REQUEST_DENIED
+            and form.cleaned_data['status'] in [REQUEST_DENIED, REQUEST_REQUESTED]
         )
     ):
         resource_request = ResourceRequest.objects.filter(
@@ -526,13 +569,7 @@ def resource_request_response(request):
     else:
         return HttpResponse(json.dumps(form.errors), status=422)
 
-    if (
-        form.cleaned_data.get('member') != request.user
-        and request.user.userprofile.user_type == 'O'
-        and form.cleaned_data.get('status') == REQUEST_DENIED
-    ):
-        return redirect(reverse('org:dashboard'))
-    elif request.GET.get('next'):
+    if request.GET.get('next'):
         return redirect(request.GET['next'])
     else:
-        return redirect(reverse('member:dashboard'))
+        return redirect(reverse('home'))

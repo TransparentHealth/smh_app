@@ -398,7 +398,7 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
                 response = self.client.get(member_data_url)
 
             # The request.user does not have access to the member's data
-            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.status_code, 302)
 
         with self.subTest(
             "A member's data sources with an approved ResourceRequest, other Organization"
@@ -424,7 +424,7 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
                 response = self.client.get(member_data_url)
 
             # The request.user now has access to the member's data
-            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.status_code, 302)
 
         with self.subTest(
             "A member's data sources with approved ResourceRequest from request.user's Organization"
