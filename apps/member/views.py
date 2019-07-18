@@ -44,9 +44,9 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
             # an Organization that has been granted access to the member's data,
             # then return a 404 response.
             resource_grant = ResourceGrant.objects.filter(
-                    organization__users=self.request.user,
-                    member=member.user
-                ).first()
+                organization__users=self.request.user,
+                member=member.user
+            ).first()
             if not resource_grant:
                 raise Http404()
         return True
@@ -484,7 +484,7 @@ def resource_request_response(request):
         'organization': request.POST.get('organization'),
     })
     if form.is_valid() and (
-        form.cleaned_data['member'] == request.user 
+        form.cleaned_data['member'] == request.user
         or (
             form.cleaned_data['organization'] in request.user.organization_set.all()
             and form.cleaned_data['status'] == REQUEST_DENIED
@@ -523,11 +523,13 @@ def resource_request_response(request):
                 resource_class_path=resource_request.resource_class_path,
                 resource_request=resource_request,
             )
+    else:
+        return HttpResponse(json.dumps(form.errors), status=422)
 
     if (
-        form.cleaned_data['member'] != request.user 
+        form.cleaned_data.get('member') != request.user
         and request.user.userprofile.user_type == 'O'
-        and form.cleaned_data['status'] == REQUEST_DENIED
+        and form.cleaned_data.get('status') == REQUEST_DENIED
     ):
         return redirect(reverse('org:dashboard'))
     elif request.GET.get('next'):
