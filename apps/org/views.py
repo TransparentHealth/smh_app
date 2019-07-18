@@ -619,7 +619,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             provider=settings.SOCIAL_AUTH_NAME
         ).first()
         data = {'password': form.data['password1']}
-        url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST, request_user_social_auth.uid)
+        url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST,
+                                          request_user_social_auth.uid)
         headers = {'Authorization': "Bearer {}".format(org_user_social_auth.access_token)}
         response = requests.put(url=url, data=data, headers=headers)
 

@@ -45,7 +45,7 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
             # then return a 404 response.
             get_object_or_404(
                 ResourceGrant.objects.filter(
-                    organization__users=self.request.user, 
+                    organization__users=self.request.user,
                     member=member.user
                 )
             )
