@@ -12,7 +12,6 @@ from requests_oauthlib import OAuth2Session
 from social_django.models import UserSocialAuth
 from .forms import UserSettingsForm
 from .models import UserProfile
-from django.contrib import messages
 from django.contrib.auth import logout
 from django.utils.translation import ugettext_lazy as _
 
@@ -22,18 +21,19 @@ logger = logging.getLogger('smhapp_.%s' % __name__)
 
 def mylogout(request):
     if request.user.is_authenticated:
-        logger.info("$s logged out.", request.user)
         try:
+            # Attempt a remote logout.
             social = request.user.social_auth.get(provider='vmi')
             token = social.extra_data['access_token']
             oas = OAuth2Session(token=token)
             oas.access_token = token
-            remote_logout =settings.REMOTE_LOGOUT_ENDPOINT
-            response = oas.get(remote_logout )
-            logger.info("%s remote logout of %s" % (request.user, settings.REMOTE_LOGOUT_ENDPOINT))
+            remote_logout = settings.REMOTE_LOGOUT_ENDPOINT
+            oas.get(remote_logout)
+            logger.info(_("%s remote logout of %s") %
+                        (request.user, settings.REMOTE_LOGOUT_ENDPOINT))
         except UserSocialAuth.DoesNotExist:
             pass
-        logger.info("$s logged out.", request.user)
+        logger.info(_("$s logged out."), request.user)
         logout(request)
     # messages.success(request, _('You have been logged out.'))
     return HttpResponseRedirect(reverse('home'))
@@ -44,7 +44,6 @@ def authenticated_home(request):
     if request.user.is_authenticated:
         up, g_o_c = UserProfile.objects.get_or_create(user=request.user)
         if up.user_type == "O":
-
             return HttpResponseRedirect(reverse('org:dashboard'))
         return HttpResponseRedirect(reverse('member:dashboard'))
     return render(request, 'homepage.html', {'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME})
