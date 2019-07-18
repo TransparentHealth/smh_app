@@ -29,6 +29,9 @@ SECRET_KEY = '-bnmd8**&!68$lk(2@!_c^2=6m-v)$7no55+%@x8sjxp1e^s9!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+if DEBUG:
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
 ALLOWED_HOSTS = ['*', ]
 
 # Application definition
@@ -174,7 +177,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-# # When a user logs in, they are redirected to the appropriate page by the user_member_router
+# When a user logs in, they are redirected to the appropriate page by the user_member_router
 LOGIN_REDIRECT_URL = 'users:user_member_router'
 LOGIN_URL = '/social-auth/login/vmi'
 
@@ -224,12 +227,15 @@ SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = (
 # social-auth-app-django to recognize it. For example, for VMI, we define
 # settings that begin with 'SOCIAL_AUTH_VMI_'.
 SOCIAL_AUTH_NAME = env('VMI_OAUTH_NAME', 'vmi')
-SOCIAL_AUTH_VMI_HOST = env('VMI_OAUTH_HOST', 'http://verifymyidentity:8001')
+SOCIAL_AUTH_VMI_HOST = env('VMI_OAUTH_HOST', 'http://verifymyidentity:8000')
 SOCIAL_AUTH_VMI_KEY = env('VMI_OAUTH_KEY', '')
 SOCIAL_AUTH_VMI_SECRET = env('VMI_OAUTH_SECRET', '')
-SOCIAL_AUTH_SHAREMYHEALTH_HOST = env('SMH_OAUTH_HOST', 'http://localhost:8000')
+SOCIAL_AUTH_SHAREMYHEALTH_HOST = env('SMH_OAUTH_HOST', 'http://hixny:8001')
 SOCIAL_AUTH_SHAREMYHEALTH_KEY = env('SMH_OAUTH_KEY', '')
 SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SMH_OAUTH_SECRET', '')
+
+
+REMOTE_LOGOUT_ENDPOINT = "%s/api/v1/remote-logout" % (SOCIAL_AUTH_VMI_HOST)
 
 # A mapping of resource names to the path for their class
 RESOURCE_NAME_AND_CLASS_MAPPING = {
