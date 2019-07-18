@@ -29,15 +29,6 @@ from .forms import ResourceRequestForm
 from .utils import get_id_token_payload, parse_timestamp
 
 
-class SelfMixin(UserPassesTestMixin):
-    """Only the member's self can access a view with this mixin"""
-
-    def test_func(self):
-        member = get_object_or_404(Member.objects.filter(pk=self.kwargs['pk']))
-        if member.user.pk == self.request.user.pk:
-            return True
-
-
 class SelfOrApprovedOrgMixin(UserPassesTestMixin):
 
     def test_func(self):
@@ -294,7 +285,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         return context
 
 
-class DataSourcesView(LoginRequiredMixin, SelfMixin, DetailView):
+class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     model = Member
     template_name = "data_sources.html"
 
@@ -317,7 +308,7 @@ class DataSourcesView(LoginRequiredMixin, SelfMixin, DetailView):
         return context
 
 
-class OrganizationsView(LoginRequiredMixin, SelfMixin, DetailView):
+class OrganizationsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     model = Member
     template_name = "member/organizations.html"
 
@@ -492,7 +483,7 @@ def resource_request_response(request):
         'member': request.POST.get('member'),
         'organization': request.POST.get('organization'),
     })
-    if form.is_valid():
+    if form.is_valid() and form.cleaned_data['member'] == request.user:
         resource_request = ResourceRequest.objects.filter(
             member=form.cleaned_data['member'],
             organization=form.cleaned_data['organization'],
@@ -526,8 +517,6 @@ def resource_request_response(request):
                 resource_class_path=resource_request.resource_class_path,
                 resource_request=resource_request,
             )
-    else:
-        return HttpResponse(json.dumps(form.errors), status=422)
 
     if request.GET.get('next'):
         return redirect(request.GET['next'])
