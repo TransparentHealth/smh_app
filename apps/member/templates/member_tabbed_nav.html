@@ -20,8 +20,8 @@
             tabindex="-1"
             aria-selected="false"
             class="nav-item nav-link {% if url_name == 'providers' %}active{% endif %}">Providers</a>
-        <a
-            href="{% url 'member:data-sources' member.id %}"
+        <a  {% if request.user == member.user %}
+            href="{% url 'member:data-sources' member.id %}"{% endif %}
             role="tab"
             data-rb-event-key="sources"
             tabindex="-1"

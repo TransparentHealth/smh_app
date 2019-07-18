@@ -29,6 +29,15 @@ from .forms import ResourceRequestForm
 from .utils import get_id_token_payload, parse_timestamp
 
 
+class SelfMixin(UserPassesTestMixin):
+    """Only the member's self can access a view with this mixin"""
+
+    def test_func(self):
+        member = get_object_or_404(Member.objects.filter(pk=self.kwargs['pk']))
+        if member.user.pk == self.request.user.pk:
+            return True
+
+
 class SelfOrApprovedOrgMixin(UserPassesTestMixin):
 
     def test_func(self):
@@ -285,7 +294,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         return context
 
 
-class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
+class DataSourcesView(LoginRequiredMixin, SelfMixin, DetailView):
     model = Member
     template_name = "data_sources.html"
 
@@ -308,7 +317,7 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         return context
 
 
-class OrganizationsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
+class OrganizationsView(LoginRequiredMixin, SelfMixin, DetailView):
     model = Member
     template_name = "member/organizations.html"
 
