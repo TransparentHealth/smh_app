@@ -8,6 +8,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, reverse, render
 from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect
+from requests_oauthlib import OAuth2Session
+from social_django.models import UserSocialAuth
 from .forms import UserSettingsForm
 from .models import UserProfile
 from django.contrib import messages
@@ -20,10 +22,20 @@ logger = logging.getLogger('smhapp_.%s' % __name__)
 
 def mylogout(request):
     if request.user.is_authenticated:
-        logger.info("%s %s logged out.", request.user.first_name,
-                    request.user.last_name)
+        logger.info("$s logged out.", request.user)
+        try:
+            social = request.user.social_auth.get(provider='vmi')
+            token = social.extra_data['access_token']
+            oas = OAuth2Session(token=token)
+            oas.access_token = token
+            remote_logout =settings.REMOTE_LOGOUT_ENDPOINT
+            response = oas.get(remote_logout )
+            logger.info("%s remote logout of %s" % (request.user, settings.REMOTE_LOGOUT_ENDPOINT))
+        except UserSocialAuth.DoesNotExist:
+            pass
+        logger.info("$s logged out.", request.user)
         logout(request)
-        # messages.success(request, _('You have been logged out.'))
+    # messages.success(request, _('You have been logged out.'))
     return HttpResponseRedirect(reverse('home'))
 
 
