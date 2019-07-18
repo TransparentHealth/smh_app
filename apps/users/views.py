@@ -23,7 +23,7 @@ def mylogout(request):
         logger.info("%s %s logged out.", request.user.first_name,
                     request.user.last_name)
         logout(request)
-        messages.success(request, _('You have been logged out.'))
+        # messages.success(request, _('You have been logged out.'))
     return HttpResponseRedirect(reverse('home'))
 
 
