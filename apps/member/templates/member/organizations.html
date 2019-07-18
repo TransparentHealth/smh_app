@@ -19,14 +19,15 @@
                 <div class="row">
                     {% for organization in organizations.current %}
                     <div class="col-6 col-sm-4 col-md-3">
-                        {% if member.user == request.user %}
+                        <!-- The member, or an agent of this org, can disconnect the org. -->
+                        {% if member.user == request.user or organization in request.user.organization_set.all %}
                         <a class="current-organization" 
                             data-toggle="modal" 
                             data-target="#organization-current-{{organization.id}}" 
                             href="#">
                         {% endif %}
                             <div class="organization__tile">
-                                {% if member.user == request.user %}
+                                {% if member.user == request.user or organization in request.user.organization_set.all %}
                                 <div class="tile__action">&#x2715;</div>
                                 {% endif %}
                                 {% if organization.picture_url %}
@@ -36,7 +37,7 @@
                                 {% endif %}
                                 <p class="tile__label">{{ organization.name }}</p>
                             </div>
-                        {% if member.user == request.user %}
+                        {% if member.user == request.user or organization in request.user.organization_set.all %}
                         </a>
                         {% endif %}
                     </div>

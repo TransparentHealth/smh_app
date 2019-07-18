@@ -16,9 +16,13 @@
         {% with request.resolver_match.url_name as url_name %}
         <div class="flex-column nav">
             {% if not member.id %}
-            <a href="{% url 'member:member-create' %}" class="nav-link {% if url_name == 'member-create' %}active{% endif %}" role="button">Basic Information</a>
+            <a href="{% url 'member:member-create' %}" 
+                class="nav-link {% if url_name == 'member-create' %}active{% endif %}" 
+                role="button">Basic Information</a>
             {% else %}
-            <a href="{% url 'member:member-update' member.id %}" class="nav-link {% if url_name == 'member-update' %}active{% endif %}" role="button">Basic Information</a>
+            <a href="{% url 'member:member-update' member.id %}" 
+                class="nav-link {% if url_name == 'member-update' %}active{% endif %}" 
+                role="button">Basic Information</a>
             <!--
             <a href="#" data-rb-event-key="memberId" class="nav-link" role="button">Identification</a>
             -->
@@ -26,39 +30,27 @@
                 {# TODO: Change this link to 'member:summary' after url/view is created #}
                 
                 {% if request.user.userprofile.user_type == "M" or request.user != member.user %}
-                <a href="{% url 'member:records' member.id 'list' %}" class="nav-link {% if url_name == 'data-sources' %}active{% endif %}" role="button">Medical Data</a>
+                <a href="{% url 'member:records' member.id 'list' %}" 
+                    class="nav-link {% if url_name == 'data-sources' %}active{% endif %}" 
+                    role="button">Medical Data</a>
                 {% endif %}    
                 <!--
                 <a href="#" data-rb-event-key="memberNotes" class="nav-link" role="button">Notes</a>
                 <a href="#" data-rb-event-key="memberLockbox" class="nav-link" role="button">Lockbox</a>
                 -->
                 {% if member.user.userprofile.user_type == "M" %}
-                    {% if request.user.userprofile.user_type == "M" %}
                     <a 
                         href="{% url 'member:organizations' member.id %}" 
                         data-rb-event-key="memberOrgs" 
                         class="nav-link  {% if url_name == 'organizations' %}active{% endif %}" 
                         role="button">Service Providers</a>
-                    {% else %}
-                    <a
-                        data-rb-event-key="memberOrgs" 
-                        class="nav-link  {% if url_name == 'organizations' %}active{% endif %}" 
-                        role="button">Service Providers</a>
-                    <ul class="list--formatted">
-                        {% for o in member.organizations.all %}
-                        <li class="user-link">
-                            {{o.name}}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% endif %} 
                 {% else %}
                     <a 
                         data-rb-event-key="memberOrgs" 
                         class="nav-link  {% if url_name == 'organizations' %}active{% endif %}" 
                         role="button">Organizations</a>
                     <ul class="list--formatted">
-                        {% for o in request.user.userprofile.id_token_payload.organization_agent %}
+                        {% for o in request.user.organization_set.all %}
                         <li class="user-link">
                             {{o.name}}
                         </li>

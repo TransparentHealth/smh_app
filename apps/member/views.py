@@ -483,7 +483,13 @@ def resource_request_response(request):
         'member': request.POST.get('member'),
         'organization': request.POST.get('organization'),
     })
-    if form.is_valid() and form.cleaned_data['member'] == request.user:
+    if form.is_valid() and (
+        form.cleaned_data['member'] == request.user 
+        or (
+            form.cleaned_data['organization'] in request.user.organization_set.all()
+            and form.cleaned_data['status'] == REQUEST_DENIED
+        )
+    ):
         resource_request = ResourceRequest.objects.filter(
             member=form.cleaned_data['member'],
             organization=form.cleaned_data['organization'],
@@ -518,7 +524,13 @@ def resource_request_response(request):
                 resource_request=resource_request,
             )
 
-    if request.GET.get('next'):
+    if (
+        form.cleaned_data['member'] != request.user 
+        and request.user.userprofile.user_type == 'O'
+        and form.cleaned_data['status'] == REQUEST_DENIED
+    ):
+        return redirect(reverse('org:dashboard'))
+    elif request.GET.get('next'):
         return redirect(request.GET['next'])
     else:
         return redirect(reverse('member:dashboard'))

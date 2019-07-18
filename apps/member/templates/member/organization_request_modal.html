@@ -22,7 +22,15 @@
         <div class="container-fluid">
           <div class="row">
             <div class="col-3 col-sm-2"><img src="{% static '/images/icons/alert.svg' %}" alt="" class="alert-item__image"/></div>
-            <div class="col-9 col-sm-10"><p>Revoke from {{organization.name}} access to your medical files including mental health records?</p></div>
+            <div class="col-9 col-sm-10">
+              <p>Revoke from {{organization.name}} access to 
+                {% if request.user == member.user %}
+                your
+                {% else %}
+                {{ member.user.first_name }} {{ member.user.last_name }}’s
+                {% endif %}
+                medical files including mental health records?</p>
+            </div>
           </div>
         </div>
         {% else %}
