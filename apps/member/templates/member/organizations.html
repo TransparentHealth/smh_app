@@ -11,27 +11,17 @@
 <div class="row mr-0 ml-0">
     {% include "member_sidebar.html" with member=member %}
     <div class="member-tabs col-lg-9 p-5">
+        {% block organizations_page_title %}
         <h2 class="page-title">Organizations</h2>
         <hr/>
+        {% endblock %}
+        {% block organizations_detail %}
         <div class="member-orgs">
             <div class="mt-5">
                 <h2>Current Organizations</h2>
                 <div class="row">
                     {% for organization in organizations.current %}
-                    <div class="col-6 col-sm-4 col-md-3">
-                        <a class="current-organization" data-toggle="modal" data-target="#organization-current-{{organization.id}}" href="#">
-                            <div class="organization__tile">
-                                <div class="tile__action">&#x2715;</div>
-                                {% if organization.picture_url %}
-                                <img class="tile__logo" src="{{ organization.picture_url }}"/>
-                                {% else %}
-                                <img class="tile__logo" src="{% static '/images/icons/organization_default.png' %}"/>
-                                {% endif %}
-                                <p class="tile__label">{{ organization.name }}</p>
-                            </div>
-                        </a>
-                    </div>
-                    {% include "member/organization_request_modal.html" with member=member organization=organization status="current" %}
+                        {% include "member/organization_tile.html" with member=member organization=organization status="current" %}
                     {% endfor %}
                 </div>
             </div>
@@ -39,20 +29,7 @@
                 <h2>Requests Waiting</h2>
                 <div class="row">
                     {% for organization in organizations.requested %}
-                    <div class="col-6 col-sm-4 col-md-3">
-                        <a class="requested-organization" data-toggle="modal" data-target="#organization-requested-{{organization.id}}" href="#">
-                            <div class="organization__tile">
-                                <div class="tile__action"><img src="{% static '/images/icons/add.png' %}" alt=""></div>
-                                {% if organization.picture_url %}
-                                <img class="tile__logo" src="{{ organization.picture_url }}"/>
-                                {% else %}
-                                <img class="tile__logo" src="{% static '/images/icons/organization_default.png' %}"/>
-                                {% endif %}
-                                <p class="tile__label">{{ organization.name }}</p>
-                            </div>
-                        </a>
-                    </div>
-                    {% include "member/organization_request_modal.html" with member=member organization=organization  status="requested" %}
+                        {% include "member/organization_tile.html" with member=member organization=organization status="requested" %}
                     {% endfor %}
                 </div>
             </div>
@@ -60,24 +37,12 @@
                 <h2>Other Organizations</h2>
                 <div class="row">
                     {% for organization in organizations.available %}
-                    <div class="col-6 col-sm-4 col-md-3">
-                        <a class="available-organization" data-toggle="modal" data-target="#organization-available-{{organization.id}}" href="#">
-                            <div class="organization__tile">
-                                <div class="tile__action"><img src="{% static '/images/icons/add.png' %}" alt=""></div>
-                                {% if organization.picture_url %}
-                                <img class="tile__logo" src="{{ organization.picture_url }}"/>
-                                {% else %}
-                                <img class="tile__logo" src="{% static '/images/icons/organization_default.png' %}"/>
-                                {% endif %}
-                                <p class="tile__label">{{ organization.name }}</p>
-                            </div>
-                        </a>
-                    </div>
-                    {% include "member/organization_request_modal.html" with member=member organization=organization status="available" %}
+                        {% include "member/organization_tile.html" with member=member organization=organization status="available" %}
                     {% endfor %}
                 </div>
             </div>
         </div>
+        {% endblock organizations_detail %}
     </div>
 </div>
 {% endblock content %}

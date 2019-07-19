@@ -36,7 +36,7 @@ class OrganizationDashboardTestCase(SMHAppTestMixin, TestCase):
         response = self.client.get(reverse(self.url_name))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            set(response.context_data['organizations'].values_list('id', flat=True)),
+            set([obj['organization'].id for obj in response.context_data['orgs_with_members']]),
             set([organization.id])
         )
 

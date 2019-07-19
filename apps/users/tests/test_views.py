@@ -20,7 +20,8 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         self.url = reverse(self.url_name)
 
-    vmi_picture_url = '{}/media/profile-picture/None/no-img.jpg'.format(settings.SOCIAL_AUTH_VMI_HOST)
+    vmi_picture_url = '{}/media/profile-picture/None/no-img.jpg'.format(
+        settings.SOCIAL_AUTH_VMI_HOST)
 
     @urlmatch(path=r'^/api/v1/user/([0-9]+)?/$')
     @remember_called
