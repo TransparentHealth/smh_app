@@ -1,0 +1,1 @@
+from .allergy import AllergyIntolerance

@@ -14,6 +14,7 @@ from memoize import delete_memoized
 from .constants import RECORDS
 from .models import Member
 from .utils import fetch_member_data, get_resource_data, get_prescriptions
+from apps.data.util import parse_timestamp
 from apps.org.models import (
     Organization,
     ResourceGrant,
@@ -33,7 +34,7 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
     def get_login_url(self):
         """Org agents can request access, others go home (login or member:dashboard)."""
         if (
-            not self.request.user.is_anonymous 
+            not self.request.user.is_anonymous
             and self.request.user.userprofile.user_type == 'O'
         ):
             return reverse('member:request-access', args=[self.kwargs['pk']])
@@ -358,7 +359,7 @@ class RequestAccessView(LoginRequiredMixin, DetailView):
         current = [org for org in orgs if org in member_connected_orgs]
         requested = [org for org in orgs if org in member_requested_orgs]
         available = [
-            org for org in orgs if org 
+            org for org in orgs if org
             not in member_connected_orgs + member_requested_orgs
         ]
         context['organizations'] = {
@@ -367,7 +368,7 @@ class RequestAccessView(LoginRequiredMixin, DetailView):
             'available': available,
         }
         return context
-    
+
 
 class CreateMemberView(LoginRequiredMixin, CreateView):
     model = Member

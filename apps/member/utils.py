@@ -8,13 +8,7 @@ import requests
 from django.conf import settings
 from jwkest.jwt import JWT
 
-
-def parse_timestamp(timestamp):
-    try:
-        dt = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S%z')
-    except ValueError:
-        dt = dateparser.parse(timestamp)
-    return dt
+from apps.data.util import parse_timestamp
 
 
 @memoize(timeout=300)
