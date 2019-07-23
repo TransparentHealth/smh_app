@@ -12,11 +12,11 @@ class AllergyReaction(DataModel):
     manifestation: List[CodeableConcept] = field()
 
     # not required
-    substance: CodeableConcept = field(default=None)
+    substance: CodeableConcept = field(default_factory=CodeableConcept)
     description: str = field(default=None)
     onset: datetime = field(default=None)
     severity: str = field(default=None)
-    exposureRoute: CodeableConcept = field(default=None)
+    exposureRoute: CodeableConcept = field(default_factory=CodeableConcept)
     note: str = field(default=None)
 
     CONVERTERS = dict(
@@ -43,18 +43,18 @@ class AllergyIntolerance(DataModel):
     id: int = field()
 
     # not required
-    patient: Reference = field(default=None)
-    clinicalStatus: CodeableConcept = field(default=None)
-    verificationStatus: CodeableConcept = field(default=None)
+    patient: Reference = field(default_factory=Reference)
+    clinicalStatus: CodeableConcept = field(default_factory=CodeableConcept)
+    verificationStatus: CodeableConcept = field(default_factory=CodeableConcept)
     type: str = field(default=None)
     category: List[str] = field(default_factory=list)
     criticality: str = field(default=None)
-    code: CodeableConcept = field(default=None)
+    code: CodeableConcept = field(default_factory=CodeableConcept)
     encounter: int = field(default=None)
     onsetDateTime: datetime = field(default=None)
-    recorder: Reference = field(default=None)
+    recorder: Reference = field(default_factory=Reference)
     recordedDate: datetime = field(default=None)  # per FHIR spec
-    asserter: Reference = field(default=None)
+    asserter: Reference = field(default_factory=Reference)
     assertedDate: datetime = field(default=None)  # as in our data
     lastOccurrence: datetime = field(default=None)
     note: List[Annotation] = field(default_factory=list)
