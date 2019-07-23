@@ -40,10 +40,16 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         """Add the user's Organizations, to the context."""
-        # All of the Organizations that the request.user is a part of
-        organizations = self.request.user.organization_set.all()
+        # All of the Organizations that the request.user is a part of -- i.e., is an agent in
+        orgs_with_members = [
+            {
+                'organization': org,
+                'members': [rg.member for rg in org.resourcegrant_set.all()]
+            }
+            for org in self.request.user.organization_set.all()
+        ]
 
-        kwargs.setdefault('organizations', organizations)
+        kwargs.setdefault('orgs_with_members', orgs_with_members)
 
         return super().get_context_data(**kwargs)
 
@@ -613,7 +619,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             provider=settings.SOCIAL_AUTH_NAME
         ).first()
         data = {'password': form.data['password1']}
-        url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST, request_user_social_auth.uid)
+        url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST,
+                                          request_user_social_auth.uid)
         headers = {'Authorization': "Bearer {}".format(org_user_social_auth.access_token)}
         response = requests.put(url=url, data=data, headers=headers)
 

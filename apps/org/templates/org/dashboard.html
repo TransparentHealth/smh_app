@@ -3,8 +3,8 @@
 
 {% block content %}
 <div class="container mt-5 mb-5"><div class="row">
-    {% if organizations %}
-      {% for organization in organizations %}
+    {% if orgs_with_members %}
+      {% for org_with_mems in orgs_with_members %}
         <div class="recent-alerts col-md-12 pr-4 pl-4">
 
           <span></span>
@@ -12,7 +12,7 @@
 
         <div class="recent-alerts col-md-6 pr-4 pl-4">
             <h2 class="text-center mb-3">Notifications</h2>
-            
+
             <div class="tile undefined">
                 <div class="alert-item">
                     <img src="/images/avatars/sloan.png" alt="" class="alert-item__image">
@@ -24,27 +24,22 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="text-center">
                <!-- <button type="button" class="mt-4 btn btn-primary">View All Notifications</button> -->
             </div>
         </div>
-        
-        
-        
+
+
+
         <div class="recent-members col-md-6 pr-4 pl-4">
-            <h2 class="text-center mb-3 pb-3">{{ organization }} Members</h2>
+            <h2 class="text-center mb-3 pb-3">{{ org_with_mems.organization }} Members</h2>
               <ul class="list--formatted">
-                  {% for member in organization.members.all %}
+                  {% for user in org_with_mems.members %}
                       <li class="user-link">
-                          <a href="{% url 'member:member-update' pk=member.pk %}">
-
-                    <img class="mr-3"  src="{{ member.user.userprofile.picture_url }}" >
-
-        
-                            
-        
-                              {{ member.user.first_name }} {{ member.user.first_name }}
+                          <a href="{% url 'member:member-update' pk=user.member.pk %}">
+                              <img class="mr-3"  src="{{ user.userprofile.picture_url }}" >
+                              {{ user.first_name }} {{ user.last_name }}
                           </a>
                       </li>
                   {% endfor %}
@@ -53,20 +48,20 @@
                 <a class="btn btn-primary mt-4" href="{% url 'org:search' %}">View All Members</a>
             </div>
         </div>
-        
+
                 <div class="recent-alerts col-md-6 pr-4 pl-4">
-    
+
         </div>
-        
-        
-        
+
+
+
       {% endfor %}
     {% else %}
       <div class="recent-alerts col-md-6 pr-4 pl-4">
         <h2 class="text-center mb-3">Notifications</h2>
       </div>
-      
-      
+
+
       <div class="recent-members col-md-6 pr-4 pl-4">
         <h2 class="text-center mb-3 pb-3">Recently Viewed Members</h2>
       </div>

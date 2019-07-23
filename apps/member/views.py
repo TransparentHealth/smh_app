@@ -29,7 +29,19 @@ from .forms import ResourceRequestForm
 from .utils import get_id_token_payload, parse_timestamp
 
 
-class SelfOrApprovedOrgMixin:
+class SelfOrApprovedOrgMixin(UserPassesTestMixin):
+    def get_login_url(self):
+        """Org agents can request access, others go home (login or member:dashboard)."""
+        if (
+            not self.request.user.is_anonymous 
+            and self.request.user.userprofile.user_type == 'O'
+        ):
+            return reverse('member:request-access', args=[self.kwargs['pk']])
+        else:
+            return reverse('login') + '?next=' + self.request.path
+
+    def handle_no_permission(self):
+        return redirect(self.get_login_url())
 
     def test_func(self):
         """
@@ -38,15 +50,17 @@ class SelfOrApprovedOrgMixin:
          - the request.user is in an Organization that has been granted access
            to the member's data
         """
-        member = get_object_or_404(Member.objects.all(), pk=self.kwargs['pk'])
+        member = get_object_or_404(Member.objects.filter(pk=self.kwargs['pk']))
         if member.user != self.request.user:
             # The request.user is not the member. If the request.user is not in
             # an Organization that has been granted access to the member's data,
-            # then return a 404 response.
-            get_object_or_404(
-                ResourceGrant.objects.filter(organization__users=self.request.user),
-                member_id=member.id,
-            )
+            # then return False.
+            resource_grant = ResourceGrant.objects.filter(
+                organization__users=self.request.user,
+                member=member.user
+            ).first()
+            if not resource_grant:
+                return False
         return True
 
 
@@ -56,7 +70,6 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
         if data is None or 'entry' not in data or not data['entry']:
@@ -284,7 +297,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         return context
 
 
-class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UserPassesTestMixin, DetailView):
+class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     model = Member
     template_name = "data_sources.html"
 
@@ -327,6 +340,35 @@ class OrganizationsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         return context
 
 
+class RequestAccessView(LoginRequiredMixin, DetailView):
+    model = Member
+    template_name = 'member/request_access.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        member = context['member']
+        member_requests = ResourceRequest.objects.filter(member=member.user)
+        member_connected_orgs = [
+            rr.organization for rr in member_requests if rr.status == REQUEST_APPROVED
+        ]
+        member_requested_orgs = [
+            rr.organization for rr in member_requests if rr.status == REQUEST_REQUESTED
+        ]
+        orgs = self.request.user.organization_set.all()  # Orgs this user is agent for
+        current = [org for org in orgs if org in member_connected_orgs]
+        requested = [org for org in orgs if org in member_requested_orgs]
+        available = [
+            org for org in orgs if org 
+            not in member_connected_orgs + member_requested_orgs
+        ]
+        context['organizations'] = {
+            'current': current,
+            'requested': requested,
+            'available': available,
+        }
+        return context
+    
+
 class CreateMemberView(LoginRequiredMixin, CreateView):
     model = Member
     fields = [
@@ -343,7 +385,7 @@ class CreateMemberView(LoginRequiredMixin, CreateView):
         return reverse_lazy('member:member-create')
 
 
-class UpdateMemberView(LoginRequiredMixin, UpdateView):
+class UpdateMemberView(LoginRequiredMixin, SelfOrApprovedOrgMixin, UpdateView):
     model = Member
     fields = ['phone_number', 'address', 'emergency_contact_name', 'emergency_contact_number']
     template_name = 'member.html'
@@ -372,7 +414,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             notify_id=self.request.user.id, dismissed=False).order_by('-created')[:4]
         organizations = [
             resource_grant.organization
-            for resource_grant in ResourceGrant.objects.filter(member=self.request.user)
+            for resource_grant in self.request.user.resourcegrant_set.all()
         ][:4]
         kwargs.setdefault('notifications', notifications)
         kwargs.setdefault('organizations', organizations)
@@ -473,6 +515,8 @@ def resource_request_response(request):
         status = REQUEST_APPROVED
     elif request.POST.get('deny') or request.POST.get('revoke'):
         status = REQUEST_DENIED
+    elif request.POST.get('requested'):
+        status = REQUEST_REQUESTED
     else:
         status = None
     form = ResourceRequestForm({
@@ -482,7 +526,13 @@ def resource_request_response(request):
         'member': request.POST.get('member'),
         'organization': request.POST.get('organization'),
     })
-    if form.is_valid():
+    if form.is_valid() and (
+        form.cleaned_data['member'] == request.user
+        or (
+            form.cleaned_data['organization'] in request.user.organization_set.all()
+            and form.cleaned_data['status'] in [REQUEST_DENIED, REQUEST_REQUESTED]
+        )
+    ):
         resource_request = ResourceRequest.objects.filter(
             member=form.cleaned_data['member'],
             organization=form.cleaned_data['organization'],
@@ -522,4 +572,4 @@ def resource_request_response(request):
     if request.GET.get('next'):
         return redirect(request.GET['next'])
     else:
-        return redirect(reverse('member:dashboard'))
+        return redirect(reverse('home'))
