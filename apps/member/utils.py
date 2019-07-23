@@ -8,6 +8,7 @@ import requests
 from django.conf import settings
 from jwkest.jwt import JWT
 
+from apps.data.models import AllergyIntolerance
 from apps.data.util import parse_timestamp
 
 
@@ -109,6 +110,14 @@ def get_prescriptions(data):
                 prescriptions[id]['taken'] = resource.get('taken', '')
 
     return prescriptions
+
+
+def get_allergies(data):
+    return [
+        AllergyIntolerance.from_data(entry['resource'])
+        for entry in data['entry']
+        if entry['resource']['resourceType'] == 'AllergyIntolerance'
+    ]
 
 
 def get_id_token_payload(user):
