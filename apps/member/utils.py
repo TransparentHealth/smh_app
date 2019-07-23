@@ -112,9 +112,9 @@ def get_prescriptions(data):
     return prescriptions
 
 
-def get_allergies(data):
+def get_allergies(data, keys=None):
     return [
-        AllergyIntolerance.from_data(entry['resource'])
+        AllergyIntolerance.from_data(entry['resource'], keys=keys)
         for entry in data['entry']
         if entry['resource']['resourceType'] == 'AllergyIntolerance'
     ]

@@ -121,7 +121,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             observation_data = get_resource_data(data, 'Observation')
             encounter_data = get_resource_data(data, 'Encounter')
             prescription_data = get_prescriptions(data)
-            allergies = get_allergies(data)
+            allergies = get_allergies(data, keys=['id'])
             all_records = RECORDS
             for record in all_records:
                 # adding data for each resoureType in response from
@@ -260,7 +260,11 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             context.setdefault('content_list', all_records)
 
         elif resource_name == 'allergies':
-            allergies = get_allergies(data)
+            allergies = get_allergies(
+                data,
+                keys=['id', 'assertedDate', 'code']
+                + ['clinicalStatus', 'verificationStatus', 'reaction'],
+            )
             headers = ['Asserted', 'Code', 'Status', 'Verification', 'Reaction']
             default_timestamp = datetime(1, 1, 1, tzinfo=timezone(timedelta(0)))
             all_records = sorted(

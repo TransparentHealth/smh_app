@@ -41,9 +41,9 @@ class AllergyIntolerance(DataModel):
 
     # required
     id: int = field()
-    patient: Reference = field(default=None)
 
     # not required
+    patient: Reference = field(default=None)
     clinicalStatus: CodeableConcept = field(default=None)
     verificationStatus: CodeableConcept = field(default=None)
     type: str = field(default=None)
