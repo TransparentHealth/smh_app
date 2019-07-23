@@ -1,1 +1,1 @@
-from .allergy import AllergyIntolerance
+from .allergy import AllergyIntolerance  # noqa

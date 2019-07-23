@@ -1,7 +1,5 @@
 import hashlib
 import base64
-from datetime import datetime
-import dateparser
 
 from memoize import memoize
 import requests

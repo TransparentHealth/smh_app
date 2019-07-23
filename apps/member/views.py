@@ -27,7 +27,7 @@ from apps.org.models import (
 from apps.users.models import UserProfile
 from apps.notifications.models import Notification
 from .forms import ResourceRequestForm
-from .utils import get_id_token_payload, parse_timestamp
+from .utils import get_id_token_payload
 
 
 class SelfOrApprovedOrgMixin(UserPassesTestMixin):
