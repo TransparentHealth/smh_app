@@ -43,7 +43,7 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/organizations/$',
         OrganizationsView.as_view(),
         name='organizations'),
-    url(r'^(?P<pk>[0-9]+)/request-access/$', 
+    url(r'^(?P<pk>[0-9]+)/request-access/$',
         RequestAccessView.as_view(),
         name='request-access'),
     url(r'^new/$',

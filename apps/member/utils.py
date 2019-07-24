@@ -1,20 +1,13 @@
 import hashlib
 import base64
-from datetime import datetime
-import dateparser
 
 from memoize import memoize
 import requests
 from django.conf import settings
 from jwkest.jwt import JWT
 
-
-def parse_timestamp(timestamp):
-    try:
-        dt = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S%z')
-    except ValueError:
-        dt = dateparser.parse(timestamp)
-    return dt
+from apps.data.models import AllergyIntolerance
+from apps.data.util import parse_timestamp
 
 
 @memoize(timeout=300)
@@ -115,6 +108,14 @@ def get_prescriptions(data):
                 prescriptions[id]['taken'] = resource.get('taken', '')
 
     return prescriptions
+
+
+def get_allergies(data, keys=None):
+    return [
+        AllergyIntolerance.from_data(entry['resource'], keys=keys)
+        for entry in data.get('entry', [])
+        if entry['resource']['resourceType'] == 'AllergyIntolerance'
+    ]
 
 
 def get_id_token_payload(user):
