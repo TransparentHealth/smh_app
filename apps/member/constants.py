@@ -15,36 +15,36 @@ RECORDS = [
     'name': 'Procedures',
     'slug': 'procedures',
   },
-  {
-    'name': 'ED Reports',
-    'slug': 'ed-reports',
-  },
-  {
-    'name': 'Family History',
-    'slug': 'family-history',
-  },
-  {
-    'name': 'Demographics',
-    'slug': 'demographics',
-  },
-  {
-    'name': 'Discharge Summaries',
-    'slug': 'discharge-summaries',
-  },
-  {
-    'name': 'Immunizations',
-    'slug': 'immunizations',
-  },
+  # {
+  #   'name': 'ED Reports',
+  #   'slug': 'ed-reports',
+  # },
+  # {
+  #   'name': 'Family History',
+  #   'slug': 'family-history',
+  # },
+  # {
+  #   'name': 'Demographics',
+  #   'slug': 'demographics',
+  # },
+  # {
+  #   'name': 'Discharge Summaries',
+  #   'slug': 'discharge-summaries',
+  # },
+  # {
+  #   'name': 'Immunizations',
+  #   'slug': 'immunizations',
+  # },
   {
     'name': 'Lab Results',
     'slug': 'lab-results',
   },
-  {
-    'name': 'Progress Notes',
-    'slug': 'progress-notes',
-  },
-  {
-    'name': 'Vital Signs',
-    'slug': 'vital-signs',
-  },
+  # {
+  #   'name': 'Progress Notes',
+  #   'slug': 'progress-notes',
+  # },
+  # {
+  #   'name': 'Vital Signs',
+  #   'slug': 'vital-signs',
+  # },
 ]
