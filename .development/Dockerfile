@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.7
 ENV PYTHONUNBUFFERED 1
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install -y nodejs
