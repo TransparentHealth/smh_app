@@ -1,0 +1,23 @@
+{% load static %}
+<div class="row container-fluid text-center">
+ 
+        <div class="container-fluid row-container-fluid text-center" >
+            <a href="https://github.com/transparenthealth/smh_app/issues">Report Bugs  </a>  |
+            <a href="{{settings.TOS_URI}}">Terms of Service </a>  |
+            <a href="{{settings.TOS_URI}}">Contact US By Email </a>  | 
+            <a href="https://github.com/transparenthealth/smh_app"> Open Source</a>
+        
+        </div>
+
+
+         <div class="row-container-fluid" >
+            <p class="row-container-fluid footer-small well">
+            {{ settings.APPLICATION_TITLE }} is operated by {{settings.ORGANIZATION_TITLE }}. {{settings.DISCLOSURE_TEXT}}
+            </p>
+         </div>
+         <div class="container-fluid row-container-fluid text-center" >
+              {% if settings.DEBUG %}
+                       User Type = {{ request.user.userprofile.get_user_type_display|default:"Anonymous" }}
+               {% endif %}
+        </div>
+ </div>
