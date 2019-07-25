@@ -3,11 +3,12 @@ from datetime import datetime, timezone, timedelta
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles.templatetags.staticfiles import static
-from django.http.response import HttpResponse, Http404
+from django.http.response import HttpResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
+from django.views.generic.base import View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
 from memoize import delete_memoized
@@ -109,12 +110,13 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     def get_context_data(self, **kwargs):
         """Add records data into the context."""
         context = super().get_context_data(**kwargs)
+        member = context['member']
         resource_name = self.kwargs.get('resource_name') or 'list'
 
         # Get the data for the member, and set it in the context
-        data = fetch_member_data(context['member'], 'sharemyhealth')
+        data = fetch_member_data(member, 'sharemyhealth')
         if data is None or 'entry' not in data or not data['entry']:
-            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+            delete_memoized(fetch_member_data, member, 'sharemyhealth')
 
         if resource_name == 'list':
             conditions_data = get_resource_data(data, 'Condition')
@@ -241,7 +243,9 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                 np[0]
                 for np in sorted(
                     [(name, prescription) for name, prescription in prescription_data.items()],
-                    key=lambda np: np[1]['statements'] and np[1]['statements'][0].effectivePeriod.start or datetime(1, 1, 1),
+                    key=lambda np: np[1]['statements']
+                    and np[1]['statements'][0].effectivePeriod.start
+                    or datetime(1, 1, 1),
                     reverse=True,
                 )
             ]
@@ -249,9 +253,16 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             for med_name in med_names:
                 prescription = prescription_data[med_name]
                 record = {
-                    'Date': prescription['statements'] and prescription['statements'][0].effectivePeriod.start or None,
+                    'Date': prescription['statements']
+                    and prescription['statements'][0].effectivePeriod.start
+                    or None,
                     'Medication': med_name,
-                    'Provider(s)': ', '.join([request.requester.agent.display for request in prescription['requests']]),
+                    'Provider(s)': ', '.join(
+                        [request.requester.agent.display for request in prescription['requests']]
+                    ),
+                }
+                record['links'] = {
+                    'Medication': f'/member/{member.id}/modal/prescription/{prescription["medication"].id}'
                 }
                 all_records.append(record)
 
@@ -299,6 +310,48 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             return redirect(context.get('redirect_url'))
         else:
             return super().render_to_response(context, **kwargs)
+
+
+class PrescriptionDetailModalView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
+    """modal (bare) HTML for a single prescription"""
+
+    template_name = "member/prescription_modal_content.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['member'] = get_object_or_404(Member.objects.filter(pk=kwargs['pk']))
+        member_data = fetch_member_data(context['member'], 'sharemyhealth')
+        prescriptions = get_prescriptions(
+            member_data, id=context['resource_id'], incl_practitioners=True, json=True
+        )
+        if not prescriptions:
+            return Http404()
+        else:
+            context['prescription'] = next(iter(prescriptions.values()))
+            return context
+
+
+class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
+    """Return JSON containing the requested member data."""
+
+    def get(self, request, *args, **kwargs):
+        member = get_object_or_404(Member.objects.filter(pk=kwargs['pk']))
+        resource_type = kwargs['resource_type']
+        resource_id = kwargs['resource_id']
+        member_data = fetch_member_data(member, 'sharemyhealth')
+        if resource_type == 'prescriptions':
+            data = get_prescriptions(
+                member_data, id=resource_id, incl_practitioners=True, json=True
+            )
+        else:
+            # fallback
+            data = {
+                resource['id']: resource
+                for resource in get_resource_data(
+                    member_data, kwargs['resource_type'], id=resource_id
+                )
+            }
+        return JsonResponse(data)
 
 
 class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
