@@ -13,15 +13,15 @@ class Medication(DataModel):
     resourceType = "Medication"
 
     id: str = field()  # required
-    code: CodeableConcept = field(default=None)
+    code: CodeableConcept = None
 
     CONVERTERS = dict(code=[CodeableConcept.from_data])
 
 
 @dataclass
 class MedicationRequester(DataModel):
-    agent: Reference = field(default=None)
-    onBehalfOf: Reference = field(default=None)
+    agent: Reference = None
+    onBehalfOf: Reference = None
 
     CONVERTERS = dict(agent=[Reference.from_data], onBehalfOf=[Reference.from_data])
 
@@ -50,10 +50,10 @@ class MedicationRequest(DataModel):
     id: str = field()
     subject: Reference = field()
 
-    identifier: Identifier = field(default=None)
-    medicationReference: Reference = field(default=None)
-    requester: MedicationRequester = field(default=None)
-    subject: Reference = field(default=None)
+    identifier: Identifier = None
+    medicationReference: Reference = None
+    requester: MedicationRequester = None
+    subject: Reference = None
 
     CONVERTERS = dict(
         identifier=[Identifier.from_data],
@@ -67,7 +67,7 @@ class MedicationRequest(DataModel):
 class Dosage(DataModel):
     """http://hl7.org/fhir/STU3/dosage.html#Dosage"""
 
-    doseQuantity: Quantity = field(default=None)
+    doseQuantity: Quantity = None
 
     CONVERTERS = dict(doseQuantity=[Quantity.from_data])
 
@@ -84,9 +84,9 @@ class MedicationStatement(DataModel):
     taken: str = field()
 
     identifier: List[Identifier] = field(default_factory=list)
-    subject: Reference = field(default=None)
-    medicationReference: Reference = field(default=None)
-    effectivePeriod: Period = field(default=None)
+    subject: Reference = None
+    medicationReference: Reference = None
+    effectivePeriod: Period = None
     dosage: List[Dosage] = field(default_factory=list)
 
     def __str__(self):

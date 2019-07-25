@@ -9,11 +9,11 @@ from ..util import parse_timestamp
 class Coding(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#Coding"""
 
-    system: str = field(default=None)
-    version: str = field(default=None)
-    code: str = field(default=None)
-    display: str = field(default=None)
-    userSelected: bool = field(default=None)
+    system: str = None
+    version: str = None
+    code: str = None
+    display: str = None
+    userSelected: bool = None
 
 
 @dataclass
@@ -21,7 +21,7 @@ class CodeableConcept(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#CodeableConcept"""
 
     coding: List[Coding] = field(default_factory=list)
-    text: str = field(default=None)
+    text: str = None
 
     CONVERTERS = dict(coding=[lambda value: [Coding.from_data(val) for val in value]])
 
@@ -38,8 +38,8 @@ class CodeableConcept(DataModel):
 class Period(DataModel):
     """http://www.hl7.org/fhir/STU3/datatypes.html#Period"""
 
-    start: datetime = field(default=None)
-    end: datetime = field(default=None)
+    start: datetime = None
+    end: datetime = None
 
     CONVERTERS = dict(start=[parse_timestamp], end=[parse_timestamp])
 
@@ -48,9 +48,9 @@ class Period(DataModel):
 class Reference(DataModel):
     """http://hl7.org/fhir/STU3/references.html#Reference"""
 
-    reference: str = field(default=None)
-    identifier: dict = field(default=None)
-    display: str = field(default=None)
+    reference: str = None
+    identifier: dict = None
+    display: str = None
 
     # The following is necessary because Identifier is defined below and depends on Reference
     def __post_init__(self):
@@ -73,17 +73,15 @@ class Reference(DataModel):
 class Identifier(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#Identifier"""
 
-    use: str = field(default=None)
+    use: str = None
     type: CodeableConcept = field(default_factory=CodeableConcept)
-    system: str = field(default=None)
-    value: str = field(default=None)
+    system: str = None
+    value: str = None
     period: Period = field(default_factory=Period)
     assigner: Reference = field(default_factory=Reference)
 
     CONVERTERS = dict(
-        type=[CodeableConcept.from_data],
-        period=[Period.from_data],
-        assigner=[Reference.from_data],
+        type=[CodeableConcept.from_data], period=[Period.from_data], assigner=[Reference.from_data]
     )
 
 
@@ -91,19 +89,19 @@ class Identifier(DataModel):
 class Annotation(DataModel):
     text: str = field()
     authorReference: Reference = field(default_factory=Reference)
-    authorString: str = field(default=None)
-    time: datetime = field(default=None)
+    authorString: str = None
+    time: datetime = None
 
     CONVERTERS = dict(time=[parse_timestamp])
 
 
-@dataclass 
+@dataclass
 class Quantity(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#Quantity"""
-    value: float = field(default=None)
-    comparator: str = field(default=None)
-    unit: str = field(default=None)
-    system: str = field(default=None)
-    code: str = field(default=None)
 
+    value: float = None
+    comparator: str = None
+    unit: str = None
+    system: str = None
+    code: str = None
 
