@@ -6,7 +6,8 @@ import requests
 from django.conf import settings
 from jwkest.jwt import JWT
 
-from apps.data.models import AllergyIntolerance
+from apps.data.models.allergy import AllergyIntolerance
+from apps.data.models.medication import Medication, MedicationRequest, MedicationStatement
 from apps.data.util import parse_timestamp
 
 
@@ -27,86 +28,47 @@ def fetch_member_data(member, provider):
     return {'entry': []}
 
 
-def get_resource_data(data, resource_type):
+def get_resource_data(data, resource_type, constructor=dict):
     return [
-        item['resource']
+        constructor(item['resource'])
         for item in data.get('entry', [])
         if item['resource']['resourceType'] == resource_type
     ]
 
 
 def get_prescriptions(data):
-    """Returns an id-keyed dict of all prescriptions in the (FHIR) medical data
-    * Medication = reference field to join medication resources
-        * .id = unique id in this data set
-        * .code.text = display name
-    * MedicationRequest = records a doctor's request for a medication
-        * .medicationReference
-            * .reference = "Medication/{id}" that this request is for
-            * .display = Medication's display name
-        * .requester.agent
-            * .reference = "Practioner/{id}" points to a Physician
-            * .display = Physician's display name
-    * MedicationDispense = records the dispensation of a medication
-        * .status = the status of the dispensation ("completed")
-        * .medicationReference{.reference, .display}
-    * MedicationStatement = records the prescription itself
-        * .status
-        * .effectivePeriod{.start, .end}
-        * .taken
-        * .dosage[0].doseQuantity{.value, .unit}
-
-    Combine records that have the same name, when the date is the same as the previous one or null
+    """Returns an medication-name-keyed dict of all prescriptions in the (FHIR) medical data.
+    A Prescription consists of a MedicationRequest, along with a corresponding MedicationStatement,
+    which are tied to a particular Medication.code.text (its name)
     """
-    prescriptions = {}
-    prev_date = None
-    prev_name = None
-    for entry in data.get('entry', []):
-        resource = entry['resource']
-        if resource['resourceType'] in [
-                'MedicationRequest',
-                'MedicationStatement',
-                'MedicationDispense',
+    prescriptions = {
+        # medication.code.text = the name of the medication
+        medication.code.text: {'medication': medication, 'requests': [], 'statements': []}
+        for medication in get_resource_data(data, 'Medication', Medication.from_data)
+    }
+    # organize all MedicationRequests & MedicationStatements by Medication.code.text (its name)
+    for med_req in get_resource_data(data, 'MedicationRequest', MedicationRequest.from_data):
+        name = med_req.medicationReference.display
+        if med_req.requester and med_req.requester.agent.display not in [
+            mr.requester.agent.display for mr in prescriptions[name]['requests'] if mr.requester
         ]:
-            name = resource['medicationReference']['display']
-            date = resource.get('effectivePeriod', {}).get('start', None)
-
-            # Combine records that have the same name, when the date is the same or null
-            if (name and name == prev_name
-                    and ((date and (date == prev_date)) or (not date and prev_date))):
-                date = prev_date
-
-            prev_date = date
-            prev_name = name
-
-            # build the id from the date and name
-            id_hash = hashlib.new('sha256')
-            id_hash.update((name + date).encode('utf-8'))
-            id = base64.urlsafe_b64encode(id_hash.digest())
-
-            prescriptions.setdefault(id, {'name': resource['medicationReference']['display']})
-
-            if resource['resourceType'] == "MedicationRequest":
-                prescriptions[id]['agent'] = resource.get('requester', {}).get('agent', {})
-                prescriptions[id]['request_status'] = resource['status']
-            elif resource['resourceType'] == "MedicationDispense":
-                prescriptions[id]['dispense_status'] = resource['status']
-            elif resource['resourceType'] == "MedicationStatement":
-                prescriptions[id]['statement_status'] = resource['status']
-                prescriptions[id]['effectivePeriod'] = {
-                    key: parse_timestamp(value)
-                    for key, value in resource.get('effectivePeriod', {}).items()
-                }
-                if 'dosage' in resource:
-                    prescriptions[id]['dosage'] = {
-                        k: v
-                        for k, v in resource['dosage'][0]['doseQuantity'].items()
-                        if k in ['value', 'unit']
-                    }
-                else:
-                    prescriptions[id]['dosage'] = {}
-                prescriptions[id]['taken'] = resource.get('taken', '')
-
+            prescriptions[name]['requests'].append(med_req)
+    for med_stmt in get_resource_data(data, 'MedicationStatement', MedicationStatement.from_data):
+        name = med_stmt.medicationReference.display
+        # filter out duplicate MedicationStatements (based on its __str__ representation)
+        if str(med_stmt) not in (str(ms) for ms in prescriptions[name]['statements']):
+            prescriptions[name]['statements'].append(med_stmt)
+    for name in list(prescriptions.keys()):
+        # filter out prescriptions with no MedicationRequests
+        if not prescriptions[name]['requests']:
+            del prescriptions[name]
+        if name in prescriptions:
+            # sort MedicationStatements in effectiveDate.start descending order
+            prescriptions[name]['statements'] = sorted(
+                prescriptions[name]['statements'],
+                key=lambda statement: statement.effectivePeriod.start,
+                reverse=True,
+            )
     return prescriptions
 
 

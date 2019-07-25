@@ -146,7 +146,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                     record['count'] = len(allergies)
                     record['data'] = allergies
 
-                context.setdefault('all_records', all_records)
+            context.setdefault('all_records', all_records)
 
         elif resource_name == 'diagnoses':
             conditions_data = get_resource_data(data, 'Condition')
@@ -233,25 +233,25 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
         elif resource_name == 'prescriptions':
             prescription_data = get_prescriptions(data)
-            headers = ['Date', 'Name', 'Provider']
+            headers = ['Date', 'Medication', 'Provider(s)']
             all_records = []
 
             # sort prescriptions by start date descending
-            ids = [
-                ip[0]
-                for ip in sorted(
-                    [(id, prescription) for id, prescription in prescription_data.items()],
-                    key=lambda ip: ip[1].get('effectivePeriod', {}).get('start', datetime(1, 1, 1)),
+            med_names = [
+                np[0]
+                for np in sorted(
+                    [(name, prescription) for name, prescription in prescription_data.items()],
+                    key=lambda np: np[1]['statements'] and np[1]['statements'][0].effectivePeriod.start or datetime(1, 1, 1),
                     reverse=True,
                 )
             ]
-
-            for id in ids:
-                prescription = prescription_data[id]
+            # set up the display data
+            for med_name in med_names:
+                prescription = prescription_data[med_name]
                 record = {
-                    'Date': prescription.get('effectivePeriod', {}).get('start', None),
-                    'Name': prescription['name'],
-                    'Provider': prescription.get('agent', {}).get('display', None),
+                    'Date': prescription['statements'] and prescription['statements'][0].effectivePeriod.start or None,
+                    'Medication': med_name,
+                    'Provider(s)': ', '.join([request.requester.agent.display for request in prescription['requests']]),
                 }
                 all_records.append(record)
 
