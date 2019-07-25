@@ -105,3 +105,69 @@ class Quantity(DataModel):
     system: str = None
     code: str = None
 
+
+@dataclass
+class HumanName(DataModel):
+    """http://hl7.org/fhir/STU3/datatypes.html#HumanName"""
+
+    use: str = None  # usual | official | temp | nickname | anonymous | old | maiden
+    text: str = None
+    family: str = None
+    given: List[str] = field(default_factory=list)
+    prefix: list = field(default_factory=list)
+    suffix: list = field(default_factory=list)
+    period: Period = None
+
+    CONVERTERS = dict(period=[Period.from_data], given=[list])
+
+    def __post_init__(self):
+        if not self.text:
+            tokens = self.prefix + self.given + [self.family or ''] + self.suffix
+            self.text = ' '.join([token for token in tokens if token])
+
+
+@dataclass
+class ContactPoint(DataModel):
+    """http://hl7.org/fhir/STU3/datatypes.html#ContactPoint"""
+
+    system: str = None  # phone | fax | email | pager | url | sms | other
+    value: str = None
+    use: str = None  # home | work | temp | old | mobile
+    rank: int = None
+    period: Period = None
+
+    CONVERTERS = dict(period=[Period.from_data])
+
+
+@dataclass
+class Address(DataModel):
+    """http://hl7.org/fhir/STU3/datatypes.html#Address"""
+
+    use: str = None  # home | work | temp | old
+    type: str = None  # postal | physical | both
+    text: str = None
+    line: List[str] = field(default_factory=list)
+    city: str = None
+    district: str = None
+    state: str = None
+    postalCode: str = None
+    country: str = None
+    period: Period = None
+
+    CONVERTERS = dict(period=[Period.from_data], line=[list])
+
+
+@dataclass
+class Attachment(DataModel):
+    """http://hl7.org/fhir/STU3/datatypes.html#Attachment"""
+
+    contentType: str = None
+    language: str = None
+    data: str = None
+    url: str = None
+    size: int = None
+    hash: str = None
+    title: str = None
+    creation: datetime = None
+
+    CONVERTERS = dict(creation=[parse_timestamp])
