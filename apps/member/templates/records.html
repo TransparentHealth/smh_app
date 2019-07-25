@@ -104,7 +104,8 @@
           var button = $(event.relatedTarget); // Button that triggered the modal
           var modal = $(this);
           var url = button.data('url');
-          modal.find('.modal-body').html('<img src="{% static '/images/loading.gif' %}"/>');
+          modal.find('.modal-body').html(
+            '<div class="modal-image--block"><img src="{% static '/images/loading.gif' %}"/></div>');
           $.get(url, function(data) {
             if(data.includes('<html')) {
                 window.location = "{% url 'login' %}";

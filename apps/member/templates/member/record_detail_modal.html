@@ -1,6 +1,6 @@
 {% load static %}
 <div class="modal" id="record-detail--modal" tabindex="-1" role="dialog" aria-labelledby="record-detail--title" aria-hidden="true">
-  <div id="record-detail--modal" class="record-detail__modal" role="document">
+  <div class="record-detail__modal" role="document">
     <div id="record-detail--content" class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title" id="record-detail--title">View Record Detail</h1>
@@ -9,13 +9,7 @@
         </button>
       </div>
       <div id="record-detail--body" class="modal-body">
-        <div class="container">
-          <div class="row">
-            <div class="col">
-              <img src="{% static '/images/loading.gif' %}"/>
-            </div>
-          </div>
-        </div>
+          <div class="modal-image--block"><img src="{% static '/images/loading.gif' %}"/></div>
       </div>
     </div>
   </div>
