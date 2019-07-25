@@ -52,6 +52,7 @@ class Reference(DataModel):
     identifier: dict = field(default=None)
     display: str = field(default=None)
 
+    # The following is necessary because Identifier is defined below and depends on Reference
     def __post_init__(self):
         super().__post_init__()
         if self.identifier:
@@ -79,6 +80,12 @@ class Identifier(DataModel):
     period: Period = field(default_factory=Period)
     assigner: Reference = field(default_factory=Reference)
 
+    CONVERTERS = dict(
+        type=[CodeableConcept.from_data],
+        period=[Period.from_data],
+        assigner=[Reference.from_data],
+    )
+
 
 @dataclass
 class Annotation(DataModel):
@@ -88,3 +95,15 @@ class Annotation(DataModel):
     time: datetime = field(default=None)
 
     CONVERTERS = dict(time=[parse_timestamp])
+
+
+@dataclass 
+class Quantity(DataModel):
+    """http://hl7.org/fhir/STU3/datatypes.html#Quantity"""
+    value: float = field(default=None)
+    comparator: str = field(default=None)
+    unit: str = field(default=None)
+    system: str = field(default=None)
+    code: str = field(default=None)
+
+
