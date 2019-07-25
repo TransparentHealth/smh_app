@@ -1,6 +1,3 @@
-import hashlib
-import base64
-
 from memoize import memoize
 import requests
 from django.conf import settings
@@ -9,7 +6,6 @@ from jwkest.jwt import JWT
 from apps.data.models.allergy import AllergyIntolerance
 from apps.data.models.medication import Medication, MedicationRequest, MedicationStatement
 from apps.data.models.practitioner import Practitioner
-from apps.data.util import parse_timestamp
 
 
 @memoize(timeout=300)

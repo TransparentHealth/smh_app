@@ -1,9 +1,7 @@
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import List
 from .model import DataModel
-from .types import Reference, CodeableConcept, Annotation, Identifier, Period, Quantity
-from ..util import parse_timestamp
+from .types import Reference, CodeableConcept, Identifier, Period, Quantity
 
 
 @dataclass
