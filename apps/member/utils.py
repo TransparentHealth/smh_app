@@ -14,13 +14,15 @@ def fetch_member_data(member, provider):
     If data not available, returns None
     '''
     url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything"
-    sa = member.user.social_auth.filter(provider=provider).first()
-    if sa is not None:
-        access_token = sa.extra_data.get('access_token')
+    social_auth = member.user.social_auth.filter(provider=provider).first()
+    if social_auth is not None:
+        access_token = social_auth.extra_data.get('access_token')
         if access_token is not None:
             r = requests.get(url, headers={'Authorization': 'Bearer %s' % access_token})
             if r.status_code == 200:
                 return r.json()
+            else:
+                return {'error': r.content.decode('utf-8'), 'status_code': r.status_code}
     # fallback: empty member data
     return {'entry': []}
 
