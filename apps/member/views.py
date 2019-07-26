@@ -72,6 +72,11 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         data = fetch_member_data(context['member'], 'sharemyhealth')
         if data is None or 'entry' not in data or not data['entry']:
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+        if data.get('status_code') == 403:
+            # this means that we have a social auth to sharemyhealth, but token expired
+            auth_url = reverse('social:begin', args=['sharemyhealth'])
+            context['redirect_url'] = auth_url + '?next=' + self.request.path
+            return context
 
         # put the current resources in the summary tab.  We will not show the
         # other options in this tab.
@@ -100,6 +105,12 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
         return context
 
+    def render_to_response(self, context, **kwargs):
+        if context.get('redirect_url'):
+            return redirect(context.get('redirect_url'))
+        else:
+            return super().render_to_response(context, **kwargs)
+
 
 class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     model = Member
@@ -117,6 +128,11 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         data = fetch_member_data(member, 'sharemyhealth')
         if data is None or 'entry' not in data or not data['entry']:
             delete_memoized(fetch_member_data, member, 'sharemyhealth')
+        if data.get('status_code') == 403:
+            # this means that we have a social auth to sharemyhealth, but token expired
+            auth_url = reverse('social:begin', args=['sharemyhealth'])
+            context['redirect_url'] = auth_url + '?next=' + self.request.path
+            return context
 
         if resource_name == 'list':
             conditions_data = get_resource_data(data, 'Condition')
@@ -339,7 +355,9 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
         resource_type = kwargs['resource_type']
         resource_id = kwargs['resource_id']
         member_data = fetch_member_data(member, 'sharemyhealth')
-        if resource_type == 'prescriptions':
+        if 'error' in member_data:
+            data = member_data
+        elif resource_type == 'prescriptions':
             data = get_prescriptions(
                 member_data, id=resource_id, incl_practitioners=True, json=True
             )
@@ -363,6 +381,11 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         data = fetch_member_data(context['member'], 'sharemyhealth')
         if data is None or 'entry' not in data or not data['entry']:
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+        if data.get('status_code') == 403:
+            # this means that we have a social auth to sharemyhealth, but token expired
+            auth_url = reverse('social:begin', args=['sharemyhealth'])
+            context['redirect_url'] = auth_url + '?next=' + self.request.path
+            return context
 
         # if in the future we need more info
         # location_data = get_resource_data(data, 'Location')
@@ -397,6 +420,12 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
         context.setdefault('providers', providers)
 
         return context
+
+    def render_to_response(self, context, **kwargs):
+        if context.get('redirect_url'):
+            return redirect(context.get('redirect_url'))
+        else:
+            return super().render_to_response(context, **kwargs)
 
 
 class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
