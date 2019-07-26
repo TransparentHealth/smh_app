@@ -1,5 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load smhtags %}
+
+{% block extra_head %}
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+{% endblock %}
 
 {% block content %}
 <div class="row mr-0 ml-0">
@@ -62,7 +69,20 @@
                                 {% for item in content_list %}
                                 <tr>
                                     {% for key, value in item.items %}
-                                        <td>{% if value %}{{ value }}{% else %}—{% endif %}</td>
+                                        {% if key in headers %}
+                                        <td>{% if key in item.links %}
+                                            <a href="" class="modal-link" data-toggle="modal"
+                                                data-target="#record-detail--modal"
+                                                data-url="{{ item.links|get:key }}">
+                                                {{ value }}
+                                            </a>
+                                            {% elif value %}
+                                            {{ value }}
+                                            {% else %}
+                                            —
+                                            {% endif %}
+                                        </td>
+                                        {% endif %}
                                     {% endfor %}
                                 </tr>
                                 {% endfor %}
@@ -74,4 +94,28 @@
         </div>
     </div>
 </div>
+{% include 'member/record_detail_modal.html' %}
 {% endblock content %}
+
+{% block ExtraJSFoot %}
+<script>
+    $(document).ready(function() {
+        $('#record-detail--modal').on('show.bs.modal', function (event) {
+          var button = $(event.relatedTarget); // Button that triggered the modal
+          var modal = $(this);
+          var url = button.data('url');
+          modal.find('.modal-body').html(
+            '<div class="modal-image--block"><img src="{% static '/images/loading.gif' %}"/></div>');
+          $.get(url, function(data) {
+            if(data.includes('<html')) {
+                window.location = "{% url 'login' %}";
+                return;
+            }
+            modal.find('#record-detail--content').html(data);
+          }).fail(function() {
+            modal.find('#record-detail--body').html("<p><em>Data could not be loaded.</em></p>");
+          });
+        });
+    });
+</script>
+{% endblock %}

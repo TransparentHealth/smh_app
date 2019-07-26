@@ -5,11 +5,7 @@
     {% block head %}
         {% include "include/head.html" %}
     {% endblock %}
-
-    {% block extra_head %}
-    {% endblock %}
-        
-        
+    {% block extra_head %}{% endblock %}
     </head>
 
     <body>
@@ -26,16 +22,16 @@
             <div id="create-member-modal-backdrop"></div>
         </div>
         {% endif %}
-        
+
         {% include "include/footer.html" %}
 
         {% include "include/foot.html" %}
 
         {% block ExtraJSFoot %}
-	
+
 	    {% endblock %}
-        
-        
+
+
         <script src="{% static 'App.js' %}"></script>
     </body>
 </html>
