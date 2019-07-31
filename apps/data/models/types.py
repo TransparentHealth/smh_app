@@ -9,21 +9,29 @@ from ..util import parse_timestamp
 class Coding(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#Coding"""
 
-    system: str = None
-    version: str = None
-    code: str = None
-    display: str = None
-    userSelected: bool = None
+    system:
+        str = None
+    version:
+        str = None
+    code:
+        str = None
+    display:
+        str = None
+    userSelected:
+        bool = None
 
 
 @dataclass
 class CodeableConcept(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#CodeableConcept"""
 
-    coding: List[Coding] = field(default_factory=list)
-    text: str = None
+    coding:
+        List[Coding] = field(default_factory=list)
+    text:
+        str = None
 
-    CONVERTERS = dict(coding=[lambda value: [Coding.from_data(val) for val in value]])
+    CONVERTERS = dict(
+        coding=[lambda value: [Coding.from_data(val) for val in value]])
 
     @classmethod
     def from_data(cls, value):
@@ -38,8 +46,10 @@ class CodeableConcept(DataModel):
 class Period(DataModel):
     """http://www.hl7.org/fhir/STU3/datatypes.html#Period"""
 
-    start: datetime = None
-    end: datetime = None
+    start:
+        datetime = None
+    end:
+        datetime = None
 
     CONVERTERS = dict(start=[parse_timestamp], end=[parse_timestamp])
 
@@ -48,11 +58,15 @@ class Period(DataModel):
 class Reference(DataModel):
     """http://hl7.org/fhir/STU3/references.html#Reference"""
 
-    reference: str = None
-    identifier: dict = None
-    display: str = None
+    reference:
+        str = None
+    identifier:
+        dict = None
+    display:
+        str = None
 
-    # The following is necessary because Identifier is defined below and depends on Reference
+    # The following is necessary because Identifier is defined below and
+    # depends on Reference
     def __post_init__(self):
         super().__post_init__()
         if self.identifier:
@@ -73,24 +87,35 @@ class Reference(DataModel):
 class Identifier(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#Identifier"""
 
-    use: str = None
-    type: CodeableConcept = field(default_factory=CodeableConcept)
-    system: str = None
-    value: str = None
-    period: Period = field(default_factory=Period)
-    assigner: Reference = field(default_factory=Reference)
+    use:
+        str = None
+    type:
+        CodeableConcept = field(default_factory=CodeableConcept)
+    system:
+        str = None
+    value:
+        str = None
+    period:
+        Period = field(default_factory=Period)
+    assigner:
+        Reference = field(default_factory=Reference)
 
     CONVERTERS = dict(
-        type=[CodeableConcept.from_data], period=[Period.from_data], assigner=[Reference.from_data]
+        type=[CodeableConcept.from_data], period=[
+            Period.from_data], assigner=[Reference.from_data]
     )
 
 
 @dataclass
 class Annotation(DataModel):
-    text: str = field()
-    authorReference: Reference = field(default_factory=Reference)
-    authorString: str = None
-    time: datetime = None
+    text:
+        str = field()
+    authorReference:
+        Reference = field(default_factory=Reference)
+    authorString:
+        str = None
+    time:
+        datetime = None
 
     CONVERTERS = dict(time=[parse_timestamp])
 
@@ -99,30 +124,43 @@ class Annotation(DataModel):
 class Quantity(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#Quantity"""
 
-    value: float = None
-    comparator: str = None
-    unit: str = None
-    system: str = None
-    code: str = None
+    value:
+        float = None
+    comparator:
+        str = None
+    unit:
+        str = None
+    system:
+        str = None
+    code:
+        str = None
 
 
 @dataclass
 class HumanName(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#HumanName"""
 
-    use: str = None  # usual | official | temp | nickname | anonymous | old | maiden
-    text: str = None
-    family: str = None
-    given: List[str] = field(default_factory=list)
-    prefix: list = field(default_factory=list)
-    suffix: list = field(default_factory=list)
-    period: Period = None
+    use:
+        str = None  # usual | official | temp | nickname | anonymous | old | maiden
+    text:
+        str = None
+    family:
+        str = None
+    given:
+        List[str] = field(default_factory=list)
+    prefix:
+        list = field(default_factory=list)
+    suffix:
+        list = field(default_factory=list)
+    period:
+        Period = None
 
     CONVERTERS = dict(period=[Period.from_data], given=[list])
 
     def __post_init__(self):
         if not self.text:
-            tokens = self.prefix + self.given + [self.family or ''] + self.suffix
+            tokens = self.prefix + self.given + \
+                [self.family or ''] + self.suffix
             self.text = ' '.join([token for token in tokens if token])
 
 
@@ -130,11 +168,16 @@ class HumanName(DataModel):
 class ContactPoint(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#ContactPoint"""
 
-    system: str = None  # phone | fax | email | pager | url | sms | other
-    value: str = None
-    use: str = None  # home | work | temp | old | mobile
-    rank: int = None
-    period: Period = None
+    system:
+        str = None  # phone | fax | email | pager | url | sms | other
+    value:
+        str = None
+    use:
+        str = None  # home | work | temp | old | mobile
+    rank:
+        int = None
+    period:
+        Period = None
 
     CONVERTERS = dict(period=[Period.from_data])
 
@@ -143,16 +186,26 @@ class ContactPoint(DataModel):
 class Address(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#Address"""
 
-    use: str = None  # home | work | temp | old
-    type: str = None  # postal | physical | both
-    text: str = None
-    line: List[str] = field(default_factory=list)
-    city: str = None
-    district: str = None
-    state: str = None
-    postalCode: str = None
-    country: str = None
-    period: Period = None
+    use:
+        str = None  # home | work | temp | old
+    type:
+        str = None  # postal | physical | both
+    text:
+        str = None
+    line:
+        List[str] = field(default_factory=list)
+    city:
+        str = None
+    district:
+        str = None
+    state:
+        str = None
+    postalCode:
+        str = None
+    country:
+        str = None
+    period:
+        Period = None
 
     CONVERTERS = dict(period=[Period.from_data], line=[list])
 
@@ -161,13 +214,21 @@ class Address(DataModel):
 class Attachment(DataModel):
     """http://hl7.org/fhir/STU3/datatypes.html#Attachment"""
 
-    contentType: str = None
-    language: str = None
-    data: str = None
-    url: str = None
-    size: int = None
-    hash: str = None
-    title: str = None
-    creation: datetime = None
+    contentType:
+        str = None
+    language:
+        str = None
+    data:
+        str = None
+    url:
+        str = None
+    size:
+        int = None
+    hash:
+        str = None
+    title:
+        str = None
+    creation:
+        datetime = None
 
     CONVERTERS = dict(creation=[parse_timestamp])

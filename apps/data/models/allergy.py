@@ -9,28 +9,38 @@ from ..util import parse_timestamp
 @dataclass
 class AllergyReaction(DataModel):
     # required
-    manifestation: List[CodeableConcept] = field()
+    manifestation:
+        List[CodeableConcept] = field()
 
     # not required
-    substance: CodeableConcept = field(default_factory=CodeableConcept)
-    description: str = field(default=None)
-    onset: datetime = field(default=None)
-    severity: str = field(default=None)
-    exposureRoute: CodeableConcept = field(default_factory=CodeableConcept)
-    note: str = field(default=None)
+    substance:
+        CodeableConcept = field(default_factory=CodeableConcept)
+    description:
+        str = field(default=None)
+    onset:
+        datetime = field(default=None)
+    severity:
+        str = field(default=None)
+    exposureRoute:
+        CodeableConcept = field(default_factory=CodeableConcept)
+    note:
+        str = field(default=None)
 
     CONVERTERS = dict(
-        manifestation=[lambda value: [CodeableConcept.from_data(val) for val in value]],
-        substance=[CodeableConcept.from_data],
-        onset=[parse_timestamp],
-        exposureRoute=[CodeableConcept.from_data],
-    )
+        manifestation=[
+            lambda value: [
+                CodeableConcept.from_data(val) for val in value]], substance=[
+            CodeableConcept.from_data], onset=[parse_timestamp], exposureRoute=[
+                    CodeableConcept.from_data], )
 
     VALIDATORS = dict(
         severity=[
-            lambda instance, field, value: not value or value in ['mild', 'moderate', 'severe']
-        ]
-    )
+            lambda instance,
+            field,
+            value: not value or value in [
+                'mild',
+                'moderate',
+                'severe']])
 
 
 @dataclass
@@ -40,25 +50,42 @@ class AllergyIntolerance(DataModel):
     resourceType = 'AllergyIntolerance'
 
     # required
-    id: int = field()
+    id:
+        int = field()
 
     # not required
-    patient: Reference = field(default_factory=Reference)
-    clinicalStatus: CodeableConcept = field(default_factory=CodeableConcept)
-    verificationStatus: CodeableConcept = field(default_factory=CodeableConcept)
-    type: str = field(default=None)
-    category: List[str] = field(default_factory=list)
-    criticality: str = field(default=None)
-    code: CodeableConcept = field(default_factory=CodeableConcept)
-    encounter: int = field(default=None)
-    onsetDateTime: datetime = field(default=None)
-    recorder: Reference = field(default_factory=Reference)
-    recordedDate: datetime = field(default=None)  # per FHIR spec
-    asserter: Reference = field(default_factory=Reference)
-    assertedDate: datetime = field(default=None)  # as in our data
-    lastOccurrence: datetime = field(default=None)
-    note: List[Annotation] = field(default_factory=list)
-    reaction: List[AllergyReaction] = field(default_factory=list)
+    patient:
+        Reference = field(default_factory=Reference)
+    clinicalStatus:
+        CodeableConcept = field(default_factory=CodeableConcept)
+    verificationStatus:
+        CodeableConcept = field(default_factory=CodeableConcept)
+    type:
+        str = field(default=None)
+    category:
+        List[str] = field(default_factory=list)
+    criticality:
+        str = field(default=None)
+    code:
+        CodeableConcept = field(default_factory=CodeableConcept)
+    encounter:
+        int = field(default=None)
+    onsetDateTime:
+        datetime = field(default=None)
+    recorder:
+        Reference = field(default_factory=Reference)
+    recordedDate:
+        datetime = field(default=None)  # per FHIR spec
+    asserter:
+        Reference = field(default_factory=Reference)
+    assertedDate:
+        datetime = field(default=None)  # as in our data
+    lastOccurrence:
+        datetime = field(default=None)
+    note:
+        List[Annotation] = field(default_factory=list)
+    reaction:
+        List[AllergyReaction] = field(default_factory=list)
 
     CONVERTERS = dict(
         patient=[Reference.from_data],
