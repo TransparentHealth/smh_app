@@ -11,7 +11,8 @@ GENDER_CHOICES = (
     ('female', 'Female'),
     ('male', 'Male'),
 )
-# Choices for when a user verifies the new Member's identity. These also come from VMI.
+# Choices for when a user verifies the new Member's identity. These also
+# come from VMI.
 IDENTITY_VERIFICATION_CLASSIFICATIONS = (
     ('', 'None'),
     ('ONE-SUPERIOR-OR-STRONG+', 'One Superior or Strong+ pieces of identity evidence'),
@@ -51,7 +52,8 @@ class UpdateNewMemberAtOrgBasicInfoForm(Form):
         super().clean()
         # even though it's a date field, keep it as a string for json.dumps
         if 'birthdate' in self.cleaned_data:
-            self.cleaned_data['birthdate'] = str(self.cleaned_data['birthdate'])
+            self.cleaned_data['birthdate'] = str(
+                self.cleaned_data['birthdate'])
 
 
 class VerifyMemberIdentityForm(Form):
@@ -61,7 +63,8 @@ class VerifyMemberIdentityForm(Form):
     This form is used in the third step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
-    classification = ChoiceField(choices=IDENTITY_VERIFICATION_CLASSIFICATIONS, required=False)
+    classification = ChoiceField(
+        choices=IDENTITY_VERIFICATION_CLASSIFICATIONS, required=False)
     description = CharField(required=False)
     exp = DateField(required=False, label='Expiration Date')
 
@@ -89,15 +92,19 @@ class UpdateNewMemberAtOrgMemberForm(Form):
     This form is used in the last step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
-    
-    agree_tos_label = mark_safe('Accept the <em><a href="%s"target="_blank">Terms of Service</a></em>' % (settings.TOS_URI))
-    
+
+    agree_tos_label = mark_safe(
+        'Accept the <em><a href="%s"target="_blank">Terms of Service</a></em>' % (settings.TOS_URI))
+
     # Note for BooleanFields: having required=True means the user must check the
     # checkbox in the template
-    accept_terms_and_conditions = BooleanField(required=True, label=agree_tos_label)
+    accept_terms_and_conditions = BooleanField(
+        required=True, label=agree_tos_label)
     give_org_access_to_data = BooleanField(required=True)
-    password1 = CharField(widget=PasswordInput, required=True, label="Password")
-    password2 = CharField(widget=PasswordInput, required=True, label="Confirm Password")
+    password1 = CharField(widget=PasswordInput,
+                          required=True, label="Password")
+    password2 = CharField(widget=PasswordInput,
+                          required=True, label="Confirm Password")
 
     def clean(self):
         """Verify that passwords match each other."""

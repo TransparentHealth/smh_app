@@ -23,7 +23,8 @@ class CodeableConcept(DataModel):
     coding: List[Coding] = field(default_factory=list)
     text: str = None
 
-    CONVERTERS = dict(coding=[lambda value: [Coding.from_data(val) for val in value]])
+    CONVERTERS = dict(
+        coding=[lambda value: [Coding.from_data(val) for val in value]])
 
     @classmethod
     def from_data(cls, value):
@@ -52,7 +53,8 @@ class Reference(DataModel):
     identifier: dict = None
     display: str = None
 
-    # The following is necessary because Identifier is defined below and depends on Reference
+    # The following is necessary because Identifier is defined below and
+    # depends on Reference
     def __post_init__(self):
         super().__post_init__()
         if self.identifier:
@@ -81,7 +83,8 @@ class Identifier(DataModel):
     assigner: Reference = field(default_factory=Reference)
 
     CONVERTERS = dict(
-        type=[CodeableConcept.from_data], period=[Period.from_data], assigner=[Reference.from_data]
+        type=[CodeableConcept.from_data], period=[
+            Period.from_data], assigner=[Reference.from_data]
     )
 
 
@@ -122,7 +125,8 @@ class HumanName(DataModel):
 
     def __post_init__(self):
         if not self.text:
-            tokens = self.prefix + self.given + [self.family or ''] + self.suffix
+            tokens = self.prefix + self.given + \
+                [self.family or ''] + self.suffix
             self.text = ' '.join([token for token in tokens if token])
 
 
