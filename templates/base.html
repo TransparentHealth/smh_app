@@ -4,12 +4,9 @@
     <head>
     {% block head %}
         {% include "include/head.html" %}
-    {% endblock %}
-
-    {% block extra_head %}
-    {% endblock %}
+    {% endblock %} 
         
-        
+    {% block extra_head %}{% endblock %}
     </head>
 
     <body>
@@ -21,21 +18,17 @@
             {% endblock content %}
         </main>
         {% if request.user.organization_set.first %}
-        <div class="modal" id="create-member-modal">
-            <iframe src="{% url 'org:org_create_member' request.user.organization_set.first.slug %}"></iframe>
-            <div id="create-member-modal-backdrop"></div>
-        </div>
+            <div class="modal" id="create-member-modal">
+                <iframe src="{% url 'org:org_create_member' request.user.organization_set.first.slug %}"></iframe>
+                <div id="create-member-modal-backdrop"></div>
+            </div>
         {% endif %}
-        
+
         {% include "include/footer.html" %}
 
         {% include "include/foot.html" %}
 
-        {% block ExtraJSFoot %}
-	
-	    {% endblock %}
-        
-        
-        <script src="{% static 'App.js' %}"></script>
+        {% block ExtraJSFoot %}{% endblock %}
+
     </body>
 </html>

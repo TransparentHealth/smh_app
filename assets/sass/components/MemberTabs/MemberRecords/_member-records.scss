@@ -7,6 +7,14 @@
     flex-wrap: nowrap;
   }
 
+  a {
+      color: $blue;
+      /*border-bottom-color: rgba(0,0,0,0);*/
+      &:hover {
+          border-bottom-color: $blue;
+      }
+  }
+
   .nav-item {
     background-color: transparentize($gray, .3);
     border: 0;
@@ -49,3 +57,74 @@
     }
   }
 }
+
+.record-detail__modal {
+    @extend .modal-dialog;
+
+    .modal-content {
+      max-width: 780px;
+      min-height: 429px;      
+    }
+
+    .modal-header {
+      padding: 1rem 0;
+
+      .close {
+        font-weight: normal;
+        font-size: 2rem;
+        padding: 0 2rem;
+        margin: 0;
+      }
+
+      .modal-title {
+        text-transform: uppercase;
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin: 0 2rem;
+      }
+    }
+
+    .modal-subhead {
+      border-bottom: 2px solid $gray--medium;
+
+      h2 {
+        font-size: 1rem;
+        color: $navy;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+      }
+    }
+
+    .modal-body {
+        padding: 1rem 2rem;
+
+        .modal-image--block {
+          text-align: center;
+          margin: auto;
+        }
+
+        table {
+          margin: 1rem 0;
+          width: 100%;
+        }
+
+        th {
+          color: $gray--lighter;
+          font-size: 0.9rem;
+        }
+
+        td {
+          padding-right: 1rem;
+
+          p {
+            margin-bottom: 0.5em;
+          }
+        }
+
+        img.loading {
+          margin: auto;
+        }
+    }
+
+}
+

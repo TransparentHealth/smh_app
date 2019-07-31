@@ -36,7 +36,10 @@ def mylogout(request):
         logger.info(_("$s logged out."), request.user)
         logout(request)
     # messages.success(request, _('You have been logged out.'))
-    return HttpResponseRedirect(reverse('home'))
+    if request.GET.get('next'):
+        return HttpResponseRedirect(request.GET.get('next'))
+    else:
+        return HttpResponseRedirect(reverse('home'))
 
 
 def authenticated_home(request):
