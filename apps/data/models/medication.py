@@ -10,23 +10,18 @@ class Medication(DataModel):
 
     resourceType = "Medication"
 
-    id:
-        str = field()  # required
-    code:
-        CodeableConcept = None
+    id: str = field()  # required
+    code: CodeableConcept = None
 
     CONVERTERS = dict(code=[CodeableConcept.from_data])
 
 
 @dataclass
 class MedicationRequester(DataModel):
-    agent:
-        Reference = None
-    onBehalfOf:
-        Reference = None
+    agent: Reference = None
+    onBehalfOf: Reference = None
 
-    CONVERTERS = dict(agent=[Reference.from_data],
-                      onBehalfOf=[Reference.from_data])
+    CONVERTERS = dict(agent=[Reference.from_data], onBehalfOf=[Reference.from_data])
 
     VALIDATORS = dict(
         agent=[
@@ -50,19 +45,13 @@ class MedicationRequest(DataModel):
     resourceType = "MedicationRequest"
 
     # required
-    id:
-        str = field()
-    subject:
-        Reference = field()
+    id: str = field()
+    subject: Reference = field()
 
-    identifier:
-        Identifier = None
-    medicationReference:
-        Reference = None
-    requester:
-        MedicationRequester = None
-    subject:
-        Reference = None
+    identifier: Identifier = None
+    medicationReference: Reference = None
+    requester: MedicationRequester = None
+    subject: Reference = None
 
     CONVERTERS = dict(
         identifier=[Identifier.from_data],
@@ -76,8 +65,7 @@ class MedicationRequest(DataModel):
 class Dosage(DataModel):
     """http://hl7.org/fhir/STU3/dosage.html#Dosage"""
 
-    doseQuantity:
-        Quantity = None
+    doseQuantity: Quantity = None
 
     CONVERTERS = dict(doseQuantity=[Quantity.from_data])
 
@@ -89,23 +77,15 @@ class MedicationStatement(DataModel):
     resourceType = "MedicationStatement"
 
     # required
-    id:
-        str = field()
-    status:
-        str = field()
-    taken:
-        str = field()
+    id: str = field()
+    status: str = field()
+    taken: str = field()
 
-    identifier:
-        List[Identifier] = field(default_factory=list)
-    subject:
-        Reference = None
-    medicationReference:
-        Reference = None
-    effectivePeriod:
-        Period = None
-    dosage:
-        List[Dosage] = field(default_factory=list)
+    identifier: List[Identifier] = field(default_factory=list)
+    subject: Reference = None
+    medicationReference: Reference = None
+    effectivePeriod: Period = None
+    dosage: List[Dosage] = field(default_factory=list)
 
     def __str__(self):
         """Provide a string representation that focuses on the key distinguishing data"""
@@ -121,8 +101,7 @@ class MedicationStatement(DataModel):
         )
 
     CONVERTERS = dict(
-        identifier=[lambda value: [
-            Identifier.from_data(val) for val in value]],
+        identifier=[lambda value: [Identifier.from_data(val) for val in value]],
         subject=[Reference.from_data],
         medicationReference=[Reference.from_data],
         effectivePeriod=[Period.from_data],
@@ -131,21 +110,8 @@ class MedicationStatement(DataModel):
 
     VALIDATORS = dict(
         status=[
-            lambda instance,
-            field,
-            value: value in [
-                'active',
-                'completed',
-                'entered-in-error',
-                'intended',
-                'stopped',
-                'on-hold']],
-        taken=[
-            lambda instance,
-            field,
-            value: value in [
-                'y',
-                'n',
-                'unk',
-                'na']],
+            lambda instance, field, value: value
+            in ['active', 'completed', 'entered-in-error', 'intended', 'stopped', 'on-hold']
+        ],
+        taken=[lambda instance, field, value: value in ['y', 'n', 'unk', 'na']],
     )

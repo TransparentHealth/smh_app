@@ -17,14 +17,10 @@ from ..util import parse_timestamp
 
 @dataclass
 class PractitionerQualification(DataModel):
-    identifier:
-        List[Identifier] = field(default_factory=list)
-    code:
-        CodeableConcept = None
-    period:
-        Period = None
-    issuer:
-        Reference = None
+    identifier: List[Identifier] = field(default_factory=list)
+    code: CodeableConcept = None
+    period: Period = None
+    issuer: Reference = None
 
     CONVERTERS = dict(
         identifier=[lambda value: [
@@ -41,29 +37,18 @@ class Practitioner(DataModel):
 
     resourceType = 'Practitioner'
 
-    id:
-        str
+    id: str
 
-    identifier:
-        List[Identifier] = field(default_factory=list)
-    active:
-        bool = None
-    name:
-        List[HumanName] = field(default_factory=list)
-    telecom:
-        List[ContactPoint] = field(default_factory=list)
-    address:
-        List[Address] = field(default_factory=list)
-    gender:
-        str = None  # male | female | other | unknown
-    birthDate:
-        datetime = None
-    photo:
-        List[Attachment] = field(default_factory=list)
-    qualification:
-        List[PractitionerQualification] = field(default_factory=list)
-    communication:
-        List[CodeableConcept] = field(default_factory=list)
+    identifier: List[Identifier] = field(default_factory=list)
+    active: bool = None
+    name: List[HumanName] = field(default_factory=list)
+    telecom: List[ContactPoint] = field(default_factory=list)
+    address: List[Address] = field(default_factory=list)
+    gender: str = None  # male | female | other | unknown
+    birthDate: datetime = None
+    photo: List[Attachment] = field(default_factory=list)
+    qualification: List[PractitionerQualification] = field(default_factory=list)
+    communication: List[CodeableConcept] = field(default_factory=list)
 
     CONVERTERS = dict(
         identifier=[lambda value: [

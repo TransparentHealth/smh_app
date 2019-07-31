@@ -753,7 +753,7 @@ class LocalUserAPI(LoginRequiredMixin, View):
             user['id']: {k: v for k, v in user.items() if k not in 'password'
                          } for user in list(users.values())
         }
-        profile_data = {profile['user_id']                        : profile for profile in list(profiles.values())}
+        profile_data = {profile['user_id']: profile for profile in list(profiles.values())}
         member_values = [{
             'user': user_data.get(member['user_id'], {}),
             'profile': profile_data.get(member['user_id'], {}),
