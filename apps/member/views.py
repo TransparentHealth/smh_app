@@ -1,19 +1,21 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles.templatetags.staticfiles import static
-from django.http.response import HttpResponse, Http404
+from django.http.response import HttpResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
 from django.urls import reverse_lazy
+from django.views.generic.base import View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.detail import DetailView
 from memoize import delete_memoized
 from .constants import RECORDS
 from .models import Member
-from .utils import fetch_member_data, get_resource_data, get_prescriptions
+from .utils import fetch_member_data, get_resource_data, get_prescriptions, get_allergies
+from apps.data.util import parse_timestamp
 from apps.org.models import (
     Organization,
     ResourceGrant,
@@ -26,16 +28,13 @@ from apps.org.models import (
 from apps.users.models import UserProfile
 from apps.notifications.models import Notification
 from .forms import ResourceRequestForm
-from .utils import get_id_token_payload, parse_timestamp
+from .utils import get_id_token_payload
 
 
 class SelfOrApprovedOrgMixin(UserPassesTestMixin):
     def get_login_url(self):
         """Org agents can request access, others go home (login or member:dashboard)."""
-        if (
-            not self.request.user.is_anonymous 
-            and self.request.user.userprofile.user_type == 'O'
-        ):
+        if not self.request.user.is_anonymous and self.request.user.userprofile.user_type == 'O':
             return reverse('member:request-access', args=[self.kwargs['pk']])
         else:
             return reverse('login') + '?next=' + self.request.path
@@ -56,8 +55,7 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
             # an Organization that has been granted access to the member's data,
             # then return False.
             resource_grant = ResourceGrant.objects.filter(
-                organization__users=self.request.user,
-                member=member.user
+                organization__users=self.request.user, member=member.user
             ).first()
             if not resource_grant:
                 return False
@@ -112,18 +110,20 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     def get_context_data(self, **kwargs):
         """Add records data into the context."""
         context = super().get_context_data(**kwargs)
+        member = context['member']
         resource_name = self.kwargs.get('resource_name') or 'list'
 
         # Get the data for the member, and set it in the context
-        data = fetch_member_data(context['member'], 'sharemyhealth')
+        data = fetch_member_data(member, 'sharemyhealth')
         if data is None or 'entry' not in data or not data['entry']:
-            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+            delete_memoized(fetch_member_data, member, 'sharemyhealth')
 
         if resource_name == 'list':
             conditions_data = get_resource_data(data, 'Condition')
             observation_data = get_resource_data(data, 'Observation')
             encounter_data = get_resource_data(data, 'Encounter')
             prescription_data = get_prescriptions(data)
+            allergies = get_allergies(data, keys=['id'])
             all_records = RECORDS
             for record in all_records:
                 # adding data for each resoureType in response from
@@ -144,7 +144,11 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
                     record['count'] = len(encounter_data)
                     record['data'] = encounter_data
 
-                context.setdefault('all_records', all_records)
+                if record['name'] == 'Allergies':
+                    record['count'] = len(allergies)
+                    record['data'] = allergies
+
+            context.setdefault('all_records', all_records)
 
         elif resource_name == 'diagnoses':
             conditions_data = get_resource_data(data, 'Condition')
@@ -152,8 +156,11 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             diagnoses = []
             for condition in conditions_data:
                 diagnosis = dict(
-                    Date=(condition.get('assertedDate')
-                          and parse_timestamp(condition['assertedDate']) or None),
+                    Date=(
+                        condition.get('assertedDate')
+                        and parse_timestamp(condition['assertedDate'])
+                        or None
+                    ),
                     Code=condition['code']['coding'][0].get('code', None),
                     Diagnosis=condition['code']['coding'][0].get('display', None),
                     Provider=condition.get('provider', None),
@@ -173,14 +180,20 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             lab_results = []
             for observation in observation_data:
                 lab = dict(
-                    Date=(observation.get('effectivePeriod', {}).get('start')
-                          and parse_timestamp(observation['effectivePeriod']['start']) or None),
+                    Date=(
+                        observation.get('effectivePeriod', {}).get('start')
+                        and parse_timestamp(observation['effectivePeriod']['start'])
+                        or None
+                    ),
                     Code=observation['code']['coding'][0].get('code', None),
                     Display=observation['code']['coding'][0].get('display', None),
                 )
                 lab_value = observation.get('valueQuantity', None)
-                lab['Value'] = (str(list(lab_value.values())[0]) + list(lab_value.values())[1]
-                                if lab_value else None)
+                lab['Value'] = (
+                    str(list(lab_value.values())[0]) + list(lab_value.values())[1]
+                    if lab_value
+                    else None
+                )
                 lab_results.append(lab)
 
             # sort lab_results in order of date descending
@@ -196,14 +209,19 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             procedures = []
             for encounter in encounter_data:
                 procedure = dict(
-                    Date=(encounter.get('period', {}).get('start')
-                          and parse_timestamp(encounter['period']['start']) or None),
+                    Date=(
+                        encounter.get('period', {}).get('start')
+                        and parse_timestamp(encounter['period']['start'])
+                        or None
+                    ),
                     Type=encounter['type'][0]['text'],
-                    Practitioner=', '.join([
-                        participant['individual']['display']
-                        for participant in encounter.get('participant', [])
-                        if 'Practitioner' in participant['individual']['reference']
-                    ]),
+                    Practitioner=', '.join(
+                        [
+                            participant['individual']['display']
+                            for participant in encounter.get('participant', [])
+                            if 'Practitioner' in participant['individual']['reference']
+                        ]
+                    ),
                     Location=encounter['location'][0]['location']['display'],
                 )
                 procedures.append(procedure)
@@ -217,29 +235,71 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
         elif resource_name == 'prescriptions':
             prescription_data = get_prescriptions(data)
-            headers = ['Date', 'Name', 'Provider']
+            headers = ['Date', 'Medication', 'Provider(s)']
             all_records = []
 
             # sort prescriptions by start date descending
-            ids = [
-                ip[0] for ip in sorted(
-                    [(id, prescription) for id, prescription in prescription_data.items()],
-                    key=lambda ip: ip[1].get('effectivePeriod', {}).get(
-                        'start', datetime(1, 1, 1)),
+            med_names = [
+                np[0]
+                for np in sorted(
+                    [(name, prescription) for name, prescription in prescription_data.items()],
+                    key=lambda np: np[1]['statements']
+                    and np[1]['statements'][0].effectivePeriod.start
+                    or datetime(1, 1, 1),
                     reverse=True,
                 )
             ]
-
-            for id in ids:
-                prescription = prescription_data[id]
+            # set up the display data
+            for med_name in med_names:
+                prescription = prescription_data[med_name]
                 record = {
-                    'Date': prescription.get('effectivePeriod', {}).get('start', None),
-                    'Name': prescription['name'],
-                    'Provider': prescription.get('agent', {}).get('display', None),
+                    'Date': prescription['statements']
+                    and prescription['statements'][0].effectivePeriod.start
+                    or None,
+                    'Medication': med_name,
+                    'Provider(s)': ', '.join(
+                        [request.requester.agent.display for request in prescription['requests']]
+                    ),
+                }
+                record['links'] = {
+                    'Medication': f'/member/{member.id}/modal/prescription/{prescription["medication"].id}'
                 }
                 all_records.append(record)
 
             context.setdefault('title', 'Prescriptions')
+            context.setdefault('headers', headers)
+            context.setdefault('content_list', all_records)
+
+        elif resource_name == 'allergies':
+            allergies = get_allergies(
+                data,
+                keys=['id', 'assertedDate', 'code']
+                + ['clinicalStatus', 'verificationStatus', 'reaction'],
+            )
+            headers = ['Asserted', 'Code', 'Status', 'Verification', 'Reaction']
+            default_timestamp = datetime(1, 1, 1, tzinfo=timezone(timedelta(0)))
+            all_records = sorted(
+                [
+                    {
+                        'Asserted': allergy.assertedDate,
+                        'Code': allergy.code.text,
+                        'Status': allergy.clinicalStatus.text,
+                        'Verification': allergy.verificationStatus.text,
+                        'Reaction': ', '.join(
+                            [
+                                ', '.join([manifestation.text for manifestation in manifestations])
+                                for manifestations in [
+                                    reaction.manifestation for reaction in allergy.reaction
+                                ]
+                            ]
+                        ),
+                    }
+                    for allergy in allergies
+                ],
+                key=lambda r: r.get('Asserted') or default_timestamp,
+                reverse=True,
+            )
+            context.setdefault('title', 'Allergies')
             context.setdefault('headers', headers)
             context.setdefault('content_list', all_records)
 
@@ -250,6 +310,48 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
             return redirect(context.get('redirect_url'))
         else:
             return super().render_to_response(context, **kwargs)
+
+
+class PrescriptionDetailModalView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
+    """modal (bare) HTML for a single prescription"""
+
+    template_name = "member/prescription_modal_content.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['member'] = get_object_or_404(Member.objects.filter(pk=kwargs['pk']))
+        member_data = fetch_member_data(context['member'], 'sharemyhealth')
+        prescriptions = get_prescriptions(
+            member_data, id=context['resource_id'], incl_practitioners=True, json=True
+        )
+        if not prescriptions:
+            return Http404()
+        else:
+            context['prescription'] = next(iter(prescriptions.values()))
+            return context
+
+
+class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
+    """Return JSON containing the requested member data."""
+
+    def get(self, request, *args, **kwargs):
+        member = get_object_or_404(Member.objects.filter(pk=kwargs['pk']))
+        resource_type = kwargs['resource_type']
+        resource_id = kwargs['resource_id']
+        member_data = fetch_member_data(member, 'sharemyhealth')
+        if resource_type == 'prescriptions':
+            data = get_prescriptions(
+                member_data, id=resource_id, incl_practitioners=True, json=True
+            )
+        else:
+            # fallback
+            data = {
+                resource['id']: resource
+                for resource in get_resource_data(
+                    member_data, kwargs['resource_type'], id=resource_id
+                )
+            }
+        return JsonResponse(data)
 
 
 class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
@@ -304,18 +406,21 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
     def get_context_data(self, **kwargs):
         """Add current data sources and data into the context."""
         context = super().get_context_data(**kwargs)
-        available_sources = [{
-            'provider': 'sharemyhealth',
-            'name': 'Hixny',
-            'image_url': static('images/icons/hixny.png'),
-        }]
+        available_sources = [
+            {
+                'provider': 'sharemyhealth',
+                'name': 'Hixny',
+                'image_url': static('images/icons/hixny.png'),
+            }
+        ]
         connected_source_providers = [
             source.provider for source in context['member'].user.social_auth.all()
         ]
-        data_sources = [{
-            'connected': source['provider'] in connected_source_providers,
-            **source
-        } for source in available_sources if source['provider']]
+        data_sources = [
+            {'connected': source['provider'] in connected_source_providers, **source}
+            for source in available_sources
+            if source['provider']
+        ]
         context.setdefault('data_sources', data_sources)
         return context
 
@@ -358,8 +463,7 @@ class RequestAccessView(LoginRequiredMixin, DetailView):
         current = [org for org in orgs if org in member_connected_orgs]
         requested = [org for org in orgs if org in member_requested_orgs]
         available = [
-            org for org in orgs if org 
-            not in member_connected_orgs + member_requested_orgs
+            org for org in orgs if org not in member_connected_orgs + member_requested_orgs
         ]
         context['organizations'] = {
             'current': current,
@@ -367,7 +471,7 @@ class RequestAccessView(LoginRequiredMixin, DetailView):
             'available': available,
         }
         return context
-    
+
 
 class CreateMemberView(LoginRequiredMixin, CreateView):
     model = Member
@@ -411,7 +515,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         notifications = Notification.objects.filter(
-            notify_id=self.request.user.id, dismissed=False).order_by('-created')[:4]
+            notify_id=self.request.user.id, dismissed=False
+        ).order_by('-created')[:4]
         organizations = [
             resource_grant.organization
             for resource_grant in self.request.user.resourcegrant_set.all()
@@ -443,7 +548,8 @@ class NotificationsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         notifications = Notification.objects.filter(
-            notify_id=self.request.user.id, dismissed=False).order_by('-created')
+            notify_id=self.request.user.id, dismissed=False
+        ).order_by('-created')
         context.setdefault('notifications', notifications)
         return context
 
@@ -519,13 +625,15 @@ def resource_request_response(request):
         status = REQUEST_REQUESTED
     else:
         status = None
-    form = ResourceRequestForm({
-        'user': request.user.id,
-        'status': status,
-        'resource_class_path': RESOURCE_CHOICES[0][0],
-        'member': request.POST.get('member'),
-        'organization': request.POST.get('organization'),
-    })
+    form = ResourceRequestForm(
+        {
+            'user': request.user.id,
+            'status': status,
+            'resource_class_path': RESOURCE_CHOICES[0][0],
+            'member': request.POST.get('member'),
+            'organization': request.POST.get('organization'),
+        }
+    )
     if form.is_valid() and (
         form.cleaned_data['member'] == request.user
         or (

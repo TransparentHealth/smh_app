@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.member',
     'apps.users',
     'apps.notifications',
+    'apps.data',
 
     'social_django',
     'memoize',

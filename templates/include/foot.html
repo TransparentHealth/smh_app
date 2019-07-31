@@ -1,0 +1,11 @@
+{% load static %}
+    <!-- JavaScript -->
+        {% if user.is_authenticated %}
+                <script type="text/javascript">
+                    var time = 1000 * 60 * 30; // 10 minutes
+                    var theTimer = setTimeout("document.location.href='/logout'",time);
+            </script>
+             
+        {% endif %}
+
+ <script src="{% static 'App.js' %}"></script>  

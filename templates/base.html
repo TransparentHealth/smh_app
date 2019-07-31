@@ -1,41 +1,12 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
     <head>
-        {% load static %}
-        <meta charset="utf-8" />
-        <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
-        <meta
-                                  name="viewport"
-                                  content="width=device-width, initial-scale=1, shrink-to-fit=no"
-                                  />
-        <meta name="theme-color" content="#000000" />
-        <!-- Hide app until it loads to avoid flash of unstyled content. -->
-        <style>
-.app { opacity: 0; }
-        </style>
-        <!-- CSS from CSS Repo -->
-        <link rel="stylesheet" href="{% static 'App.css' %}" type="text/css" />
-  
-        <link href="https://fonts.googleapis.com/css?family=Poppins:400,400i,500,700" rel="stylesheet">
-        <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
-        <!--
-            manifest.json provides metadata used when your web app is installed on a
-            user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-        -->
-        <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-        <!--
-            Notice the use of %PUBLIC_URL% in the tags above.
-            It will be replaced with the URL of the `public` folder during the build.
-            Only files inside the `public` folder can be referenced from the HTML.
-
-
-            Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-            work correctly both with client-side routing and a non-root public URL.
-            Learn how to configure a non-root public URL by running `npm run build`.
-        -->
-        <title>{% block page_title %}Share My Health{% endblock %}</title>
-
-        {% block extra_head %}{% endblock %}
+    {% block head %}
+        {% include "include/head.html" %}
+    {% endblock %} 
+        
+    {% block extra_head %}{% endblock %}
     </head>
 
     <body>
@@ -47,11 +18,17 @@
             {% endblock content %}
         </main>
         {% if request.user.organization_set.first %}
-        <div class="modal" id="create-member-modal">
-            <iframe src="{% url 'org:org_create_member' request.user.organization_set.first.slug %}"></iframe>
-            <div id="create-member-modal-backdrop"></div>
-        </div>
+            <div class="modal" id="create-member-modal">
+                <iframe src="{% url 'org:org_create_member' request.user.organization_set.first.slug %}"></iframe>
+                <div id="create-member-modal-backdrop"></div>
+            </div>
         {% endif %}
-        <script src="{% static 'App.js' %}"></script>
+
+        {% include "include/footer.html" %}
+
+        {% include "include/foot.html" %}
+
+        {% block ExtraJSFoot %}{% endblock %}
+
     </body>
 </html>

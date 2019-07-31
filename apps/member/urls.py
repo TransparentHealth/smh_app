@@ -4,7 +4,9 @@ from django.conf.urls import url
 from .views import (
     approve_resource_request, revoke_resource_request, resource_request_response,
     CreateMemberView, DeleteMemberView, UpdateMemberView,
-    DashboardView, DataSourcesView, RecordsView, OrganizationsView,
+    DashboardView, DataSourcesView, RecordsView, DataView, 
+    PrescriptionDetailModalView,
+    OrganizationsView, 
     SummaryView, ProvidersView, NotificationsView,
     RequestAccessView,
     redirect_subject_url_to_member,
@@ -28,6 +30,17 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/records/(?P<resource_name>[\w-]+)?/?$',
         RecordsView.as_view(),
         name='records'),
+
+    # JSON to medical data
+    url(r'^(?P<pk>[0-9]+)/data/(?P<resource_type>[\w-]+)/(?P<resource_id>[\w-]+)$',
+        DataView.as_view(),
+        name='data'),
+    
+    # modal HTML content
+    url(r'^(?P<pk>[0-9]+)/modal/prescription/(?P<resource_id>[\w-]+)$',
+        PrescriptionDetailModalView.as_view(),
+        name='prescription-modal'),
+
     url(r'^(?P<pk>[0-9]+)/providers/$',
         ProvidersView.as_view(),
         name='providers'),
@@ -43,7 +56,7 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/organizations/$',
         OrganizationsView.as_view(),
         name='organizations'),
-    url(r'^(?P<pk>[0-9]+)/request-access/$', 
+    url(r'^(?P<pk>[0-9]+)/request-access/$',
         RequestAccessView.as_view(),
         name='request-access'),
     url(r'^new/$',

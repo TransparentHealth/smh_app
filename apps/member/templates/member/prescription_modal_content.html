@@ -1,0 +1,98 @@
+{% load static %}
+<div class="modal-header">
+  <h1 class="modal-title">View Record Detail</h1>
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+
+  <div class="modal-subhead">
+    <h2>Prescription</h2>
+  </div>
+
+  <!-- Medication Infp -->
+  <div class="row mt-2">
+    <div class="col">
+      <table width="100%">
+          <tr><th>Medication Name</th></tr>
+          <tr><td><p>{{ prescription.medication.code.text }}</p></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Practitioners -->
+  <div class="row mt-2">
+    <div class="col">
+      <table width="100%">
+        <tr>
+          <th>Provider Name</th>
+          <th>Contact</th>
+          <th>Address</th>
+        </tr>
+        {% for practitioner in prescription.practitioners.values %}
+        <tr>
+          <td>
+            {% for name in practitioner.name %}
+            <p>{{ name.text }}</p>
+            {% endfor %}
+          </td>
+          <td>
+            {% if not practitioner.telecom %}
+            <p>—</p>
+            {% endif %}
+            {% for contact in practitioner.telecom %}
+            <p>{{ contact.value }}</p>
+            {% endfor %}
+          </td>
+          <td>
+            {% if not practitioner.address %}
+            <p>—</p>
+            {% endif %}
+            {% for address in practitioner.address %}
+            <p>
+              {% if address.text %}
+                {{ address.text }}
+              {% else %}
+                {% for line in address.line %}
+                  {{line}}<br/>
+                {% endfor %}
+                {% firstof address.city '' %}, {% firstof address.state address.district '' %}
+                {% firstof address.postalCode '' %} {% firstof address.country '' %}
+              {% endif %}
+            </p>
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <!-- MedicationStatements -->
+  <div class="row mt-2">
+    <div class="col">
+      <table width="100%">
+        <tr>
+          <th>Dosage</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+        </tr>
+        {% for statement in prescription.statements %}
+        <tr>
+          <td>
+            {% for dosage in statement.dosage %}
+            <p>{{dosage.doseQuantity.value}} {{dosage.doseQuantity.unit}}</p>
+            {% endfor %}
+          </td>
+          <td>
+            <p>{% firstof statement.effectivePeriod.start '—' %}</p>
+          </td>
+          <td>
+            <p>{% firstof statement.effectivePeriod.end '—' %}</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+  </div>
+</div>

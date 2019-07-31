@@ -1,7 +1,9 @@
 from django.forms import (
     BooleanField, CharField, ChoiceField, DateField, EmailField, Form, PasswordInput
 )
+from django.utils.safestring import mark_safe
 
+from django.conf import settings
 
 # Choices for a user's gender field in VMI
 GENDER_CHOICES = (
@@ -87,9 +89,12 @@ class UpdateNewMemberAtOrgMemberForm(Form):
     This form is used in the last step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
+    
+    agree_tos_label = mark_safe('Accept the <em><a href="%s"target="_blank">Terms of Service</a></em>' % (settings.TOS_URI))
+    
     # Note for BooleanFields: having required=True means the user must check the
-    # checkbox in the template.
-    accept_terms_and_conditions = BooleanField(required=True)
+    # checkbox in the template
+    accept_terms_and_conditions = BooleanField(required=True, label=agree_tos_label)
     give_org_access_to_data = BooleanField(required=True)
     password1 = CharField(widget=PasswordInput, required=True, label="Password")
     password2 = CharField(widget=PasswordInput, required=True, label="Confirm Password")
