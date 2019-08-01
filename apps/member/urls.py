@@ -4,9 +4,9 @@ from django.conf.urls import url
 from .views import (
     approve_resource_request, revoke_resource_request, resource_request_response,
     CreateMemberView, DeleteMemberView, UpdateMemberView,
-    DashboardView, DataSourcesView, RecordsView, DataView, 
+    DashboardView, DataSourcesView, RecordsView, DataView,
     PrescriptionDetailModalView,
-    OrganizationsView, 
+    OrganizationsView,
     SummaryView, ProvidersView, NotificationsView,
     RequestAccessView,
     redirect_subject_url_to_member,
@@ -16,7 +16,8 @@ from .views import (
 
 app_name = 'member'
 urlpatterns = [
-    # A member url with a 15-digit id is interpreted as a subject_id, redirected to a url below
+    # A member url with a 15-digit id is interpreted as a subject_id,
+    # redirected to a url below
     url(r'^(?P<subject>[0-9]{15})/$',
         redirect_subject_url_to_member,
         name='subject_url'),
@@ -35,7 +36,7 @@ urlpatterns = [
     url(r'^(?P<pk>[0-9]+)/data/(?P<resource_type>[\w-]+)/(?P<resource_id>[\w-]+)$',
         DataView.as_view(),
         name='data'),
-    
+
     # modal HTML content
     url(r'^(?P<pk>[0-9]+)/modal/prescription/(?P<resource_id>[\w-]+)$',
         PrescriptionDetailModalView.as_view(),
@@ -75,7 +76,8 @@ urlpatterns = [
         DashboardView.as_view(), name='dashboard'),
 
     # Member/Org ResourceRequests
-    url(r'^resource_request_response/$', resource_request_response, name='resource_request_response'),
+    url(r'^resource_request_response/$', resource_request_response,
+        name='resource_request_response'),
     url(r'^approve_resource_request/(?P<pk>[0-9]+)/$',
         approve_resource_request,
         name='approve_resource_request'),

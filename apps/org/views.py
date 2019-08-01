@@ -40,7 +40,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         """Add the user's Organizations, to the context."""
-        # All of the Organizations that the request.user is a part of -- i.e., is an agent in
+        # All of the Organizations that the request.user is a part of -- i.e.,
+        # is an agent in
         orgs_with_members = [
             {
                 'organization': org,
@@ -102,7 +103,8 @@ class JoinOrganizationView(LoginRequiredMixin, BaseDetailView):
     def get_success_url(self):
         """Return the URL to redirect to after processing a valid form."""
         if not self.success_url:
-            raise ImproperlyConfigured("No URL to redirect to. Provide a success_url.")
+            raise ImproperlyConfigured(
+                "No URL to redirect to. Provide a success_url.")
         return str(self.success_url)  # success_url may be lazy
 
     def render_to_response(self, context):
@@ -140,14 +142,18 @@ class OrgCreateMemberMixin:
 
     def get(self, request, *args, **kwargs):
         """Set the self.organization and self.member."""
-        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        self.organization = self.get_organization(
+            request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(
+            self.organization, self.kwargs.get('username'))
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         """Set the self.organization and self.member."""
-        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        self.organization = self.get_organization(
+            request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(
+            self.organization, self.kwargs.get('username'))
         return super().post(request, *args, **kwargs)
 
 
@@ -203,27 +209,33 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
             'phone_number': form.cleaned_data.get('phone_number', 'none').strip(),
             # The following fields are required by VMI, but we don't have values
             # for them yet, so we make up some data now, and require the user
-            # to fill them in during the next steps of the Member creation process.
+            # to fill them in during the next steps of the Member creation
+            # process.
             'gender': '',   # = Unspecified
             'password': str(uuid.uuid4()),
             'birthdate': '2000-01-01',
             'nickname': form.cleaned_data['first_name'],
             'email': '{}_{}_{}@example.com'.format(
-                "".join(re.findall("[a-zA-Z]+", form.cleaned_data['username'])),
-                "".join(re.findall("[a-zA-Z]+", form.cleaned_data['first_name'])),
-                "".join(re.findall("[a-zA-Z]+", form.cleaned_data['last_name'])),
+                "".join(re.findall("[a-zA-Z]+",
+                                   form.cleaned_data['username'])),
+                "".join(re.findall("[a-zA-Z]+",
+                                   form.cleaned_data['first_name'])),
+                "".join(re.findall("[a-zA-Z]+",
+                                   form.cleaned_data['last_name'])),
             ),
         }
         # POST the data to VMI
         response = requests.post(
             url=settings.SOCIAL_AUTH_VMI_HOST + '/api/v1/user/',
             data=data,
-            headers={'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+            headers={'Authorization': "Bearer {}".format(
+                request_user_social_auth.access_token)}
         )
 
         # 3.) Create a new Member with the response from VMI.
         # If the request successfully created a user in VMI, then use that data
-        # to create a Member that is linked to the VMI user through a UserSocialAuth.
+        # to create a Member that is linked to the VMI user through a
+        # UserSocialAuth.
         if response.status_code == 201:
             response_data_dict = json.loads(response.content)
             # Create the Member, and associate with this Organization
@@ -236,7 +248,8 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
 
             # Save the member's picture URL
             if 'picture' in response_data_dict and '/None/' not in response_data_dict['picture']:
-                new_user.userprofile.picture_url = response_data_dict['picture']
+                new_user.userprofile.picture_url = response_data_dict[
+                    'picture']
                 new_user.userprofile.save()
 
             # Create a UserSocialAuth for the new Member
@@ -247,7 +260,8 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
             )
 
             # 4.) Associate the member with this organization
-            organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
+            organization = self.get_organization(
+                self.request, self.kwargs.get('org_slug'))
             new_member.organizations.add(organization)
             ResourceRequest.objects.create(
                 organization=self.organization,
@@ -257,7 +271,8 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
                 status=REQUEST_REQUESTED
             )
 
-            # 5.) Redirect the user to the next step in the Member-creation process
+            # 5.) Redirect the user to the next step in the Member-creation
+            # process
             return HttpResponseRedirect(self.get_success_url(organization.slug, new_user.username))
 
         else:
@@ -308,7 +323,8 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
         member_social_auth = self.member.user.social_auth.filter(
             provider=settings.SOCIAL_AUTH_NAME
         ).first()
-        # If the Member does not have a UserSocialAuth for VMI, return an error to the user.
+        # If the Member does not have a UserSocialAuth for VMI, return an error
+        # to the user.
         if not member_social_auth:
             self.errors = {
                 'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
@@ -321,26 +337,32 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
         data = {k: v for k, v in form.cleaned_data.items() if bool(v) is True}
 
         # PUT the data to VMI
-        url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST, member_social_auth.uid)
-        headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+        url = '{}/api/v1/user/{}/'.format(
+            settings.SOCIAL_AUTH_VMI_HOST, member_social_auth.uid)
+        headers = {'Authorization': "Bearer {}".format(
+            request_user_social_auth.access_token)}
         response = requests.put(url=url, data=data, headers=headers)
 
         # 4.) Update a new Member with the response from VMI.
         # If the request successfully updated a user in VMI, then use that data
-        # to update the Member in smh_app. If not, then show the error to the user.
+        # to update the Member in smh_app. If not, then show the error to the
+        # user.
         if response.status_code == 200:
             response_data_dict = json.loads(response.content)
             # Update the Member
             self.member.user.email = response_data_dict['email']
-            self.member.user.userprofile.picture_url = response_data_dict['picture']
+            self.member.user.userprofile.picture_url = response_data_dict[
+                'picture']
             self.member.user.save()
 
             # Redirect the user to the next step in the Member-creation process
             return HttpResponseRedirect(
-                self.get_success_url(self.organization.slug, self.member.user.username)
+                self.get_success_url(self.organization.slug,
+                                     self.member.user.username)
             )
         else:
-            # The request to update a user in VMI did not succeed, so show errors to the user.
+            # The request to update a user in VMI did not succeed, so show
+            # errors to the user.
             self.errors = json.loads(response.content)
             return self.render_to_response(self.get_context_data())
 
@@ -357,7 +379,8 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
     def get_success_url(self, org_slug, username):
         """A successful verification redirects to the next step in the process."""
         return reverse(
-            'org:org_create_member_almost_done',    # skip 'org:member_additional_info' for now
+            # skip 'org:member_additional_info' for now
+            'org:org_create_member_almost_done',
             kwargs={'org_slug': org_slug, 'username': username}
         )
 
@@ -370,10 +393,13 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
          4.) make a request to VMI to update the user's identity assurance
          5.) redirect the user to the next step in the Member-creation process
         """
-        # Only post the form_data if it's non-empty -- otherwise, we can skip this step
-        form_data = {k: v for k, v in form.cleaned_data.items() if bool(v) is True}
+        # Only post the form_data if it's non-empty -- otherwise, we can skip
+        # this step
+        form_data = {k: v for k, v in form.cleaned_data.items()
+                     if bool(v) is True}
         if bool(form_data) is True:
-            # 1.) Verify that the request.user has a UserSocialAuth object for VMI
+            # 1.) Verify that the request.user has a UserSocialAuth object for
+            # VMI
             request_user_social_auth = self.request.user.social_auth.filter(
                 provider=settings.SOCIAL_AUTH_NAME
             ).first()
@@ -389,14 +415,16 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
             member_social_auth = self.member.user.social_auth.filter(
                 provider=settings.SOCIAL_AUTH_NAME
             ).first()
-            # If the Member does not have a UserSocialAuth for VMI, return an error to the user.
+            # If the Member does not have a UserSocialAuth for VMI, return an
+            # error to the user.
             if not member_social_auth:
                 self.errors = {
                     'member': 'Member has no association with {}'.format(settings.SOCIAL_AUTH_NAME)
                 }
                 return self.render_to_response(self.get_context_data())
 
-            headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+            headers = {'Authorization': "Bearer {}".format(
+                request_user_social_auth.access_token)}
             # 4.) Make a request to VMI to update the user's identity assurance
             url = '{}/api/v1/user/{}/id-assurance/'.format(
                 settings.SOCIAL_AUTH_VMI_HOST,
@@ -412,13 +440,15 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
             response = requests.post(url=url, json=data, headers=headers)
 
             if response.status_code != 201:
-                # The request to update a user in VMI did not succeed, so show errors to the user.
+                # The request to update a user in VMI did not succeed, so show
+                # errors to the user.
                 self.errors = json.loads(response.content)
                 return self.render_to_response(self.get_context_data())
 
         # Redirect the user to the next step in the Member-creation process
         return HttpResponseRedirect(
-            self.get_success_url(self.organization.slug, self.member.user.username)
+            self.get_success_url(self.organization.slug,
+                                 self.member.user.username)
         )
 
 
@@ -442,7 +472,8 @@ class OrgCreateMemberAdditionalInfoInfoView(LoginRequiredMixin, OrgCreateMemberM
         """If form is valid, then redirect user to the next step in the Member-creation process."""
         # Redirect the user to the next step in the Member-creation process
         return HttpResponseRedirect(
-            self.get_success_url(self.organization.slug, self.member.user.username)
+            self.get_success_url(self.organization.slug,
+                                 self.member.user.username)
         )
 
 
@@ -467,7 +498,8 @@ class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         """Add the Organization and Member to the context."""
-        organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
+        organization = self.get_organization(
+            self.request, self.kwargs.get('org_slug'))
         kwargs.setdefault('organization', organization)
         member = self.get_member(organization, self.kwargs.get('username'))
         kwargs.setdefault('member', member)
@@ -485,7 +517,8 @@ class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
                 'token': token
             }
         )
-        full_url_to_set_password = self.request.build_absolute_uri(relative_url_to_set_password)
+        full_url_to_set_password = self.request.build_absolute_uri(
+            relative_url_to_set_password)
         kwargs.setdefault('url_to_set_password', full_url_to_set_password)
         kwargs.setdefault('qrcode', make_qr_code(full_url_to_set_password))
 
@@ -526,34 +559,42 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
 
     def get(self, *args, **kwargs):
         """GETting the OrgCreateMemberCompleteView is only allowed with a valid token."""
-        self.organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        self.organization = self.get_organization(
+            self.request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(
+            self.organization, self.kwargs.get('username'))
 
         if self.token_is_valid(uidb64=kwargs['uidb64'], token=kwargs['token']):
             # The token is valid, so render the page to the user
             return self.render_to_response(self.get_context_data())
         else:
-            # The token is not valid, so redirect user to the org_create_member_invalid_token page
+            # The token is not valid, so redirect user to the
+            # org_create_member_invalid_token page
             redirect_url = reverse(
                 'org:org_create_member_invalid_token',
-                kwargs={'org_slug': kwargs['org_slug'], 'username': kwargs['username']}
+                kwargs={'org_slug': kwargs['org_slug'],
+                        'username': kwargs['username']}
 
             )
             return HttpResponseRedirect(redirect_url)
 
     def post(self, *args, **kwargs):
         """POSTing to the OrgCreateMemberCompleteView is only allowed with a valid token."""
-        self.organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        self.organization = self.get_organization(
+            self.request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(
+            self.organization, self.kwargs.get('username'))
 
         if self.token_is_valid(uidb64=kwargs['uidb64'], token=kwargs['token']):
             # The token is valid, so call the super().post() method
             return super().post(*args, **kwargs)
         else:
-            # The token is not valid, so redirect user to the org_create_member_invalid_token page
+            # The token is not valid, so redirect user to the
+            # org_create_member_invalid_token page
             redirect_url = reverse(
                 'org:org_create_member_invalid_token',
-                kwargs={'org_slug': kwargs['org_slug'], 'username': kwargs['username']}
+                kwargs={'org_slug': kwargs['org_slug'],
+                        'username': kwargs['username']}
 
             )
             return HttpResponseRedirect(redirect_url)
@@ -587,7 +628,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             }
             return self.render_to_response(self.get_context_data())
 
-        # 2.) Find and update the ResourceRequest for this Member to be approved
+        # 2.) Find and update the ResourceRequest for this Member to be
+        # approved
         resource_request = ResourceRequest.objects.filter(
             member=self.member.user,
             organization=self.organization,
@@ -606,7 +648,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         if self.organization not in self.member.organizations.all():
             self.member.organizations.add(self.organization)
 
-        # 3.) Create a ResourceGrant object for the ResourceRequest and the Member
+        # 3.) Create a ResourceGrant object for the ResourceRequest and the
+        # Member
         ResourceGrant.objects.get_or_create(
             organization=resource_request.organization,
             member=resource_request.member,
@@ -621,7 +664,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         data = {'password': form.data['password1']}
         url = '{}/api/v1/user/{}/'.format(settings.SOCIAL_AUTH_VMI_HOST,
                                           request_user_social_auth.uid)
-        headers = {'Authorization': "Bearer {}".format(org_user_social_auth.access_token)}
+        headers = {'Authorization': "Bearer {}".format(
+            org_user_social_auth.access_token)}
         response = requests.put(url=url, data=data, headers=headers)
 
         if response.status_code == 200:
@@ -629,17 +673,21 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             # Update the Member. Note: we set the password locally, in order to
             # invalidate the member's token (the one in kwargs['token']).
             self.member.user.email = response_data_dict['email']
-            self.member.user.userprofile.picture_url = response_data_dict['picture']
+            self.member.user.userprofile.picture_url = response_data_dict[
+                'picture']
             self.member.user.set_password(form.data['password1'])
             self.member.user.save()
 
             # 6.) Redirect the user to authenticate in VMI, and to accept this
             # application's access (and get an access token as a result).
-            url_vmi_auth = reverse('social:begin', args=(settings.SOCIAL_AUTH_NAME,))
-            url_success = self.get_success_url(self.organization.slug, self.member.user.username)
+            url_vmi_auth = reverse(
+                'social:begin', args=(settings.SOCIAL_AUTH_NAME,))
+            url_success = self.get_success_url(
+                self.organization.slug, self.member.user.username)
             return HttpResponseRedirect('{}?next={}'.format(url_vmi_auth, url_success))
         else:
-            # The request to update a user in VMI did not succeed, so show errors to the user.
+            # The request to update a user in VMI did not succeed, so show
+            # errors to the user.
             self.errors = json.loads(response.content)
             return self.render_to_response(self.get_context_data())
 

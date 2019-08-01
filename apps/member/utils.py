@@ -18,7 +18,8 @@ def fetch_member_data(member, provider):
     if sa is not None:
         access_token = sa.extra_data.get('access_token')
         if access_token is not None:
-            r = requests.get(url, headers={'Authorization': 'Bearer %s' % access_token})
+            r = requests.get(
+                url, headers={'Authorization': 'Bearer %s' % access_token})
             if r.status_code == 200:
                 return r.json()
     # fallback: empty member data
@@ -47,7 +48,8 @@ def get_prescriptions(data, id=None, incl_practitioners=False, json=False):
         for medication in get_resource_data(data, 'Medication', Medication.from_data)
         if id is None or medication.id == id
     }
-    # organize all MedicationRequests & MedicationStatements by Medication.code.text (its name)
+    # organize all MedicationRequests & MedicationStatements by
+    # Medication.code.text (its name)
     for med_req in get_resource_data(data, 'MedicationRequest', MedicationRequest.from_data):
         name = med_req.medicationReference.display
         if (
@@ -67,7 +69,8 @@ def get_prescriptions(data, id=None, incl_practitioners=False, json=False):
     # add MedicationStatements
     for med_stmt in get_resource_data(data, 'MedicationStatement', MedicationStatement.from_data):
         name = med_stmt.medicationReference.display
-        # only add non-duplicate MedicationStatements (based on its __str__ representation)
+        # only add non-duplicate MedicationStatements (based on its __str__
+        # representation)
         if name in prescriptions and str(med_stmt) not in (
             str(ms) for ms in prescriptions[name]['statements']
         ):
@@ -81,9 +84,11 @@ def get_prescriptions(data, id=None, incl_practitioners=False, json=False):
             reverse=True,
         )
 
-    # include practitioners if requested, on each prescription -- keyed to their id
+    # include practitioners if requested, on each prescription -- keyed to
+    # their id
     if incl_practitioners:
-        practitioners = get_resource_data(data, 'Practitioner', Practitioner.from_data)
+        practitioners = get_resource_data(
+            data, 'Practitioner', Practitioner.from_data)
         for name in prescriptions:
             agent_ids = [
                 request.requester.agent.id
@@ -99,7 +104,8 @@ def get_prescriptions(data, id=None, incl_practitioners=False, json=False):
     # render dicts if we're going to be converting to JSON
     if json:
         for name in prescriptions:
-            prescriptions[name]['medication'] = prescriptions[name]['medication'].dict()
+            prescriptions[name]['medication'] = prescriptions[
+                name]['medication'].dict()
             prescriptions[name]['requests'] = [
                 request.dict() for request in prescriptions[name]['requests']
             ]

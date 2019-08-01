@@ -23,7 +23,8 @@ class PractitionerQualification(DataModel):
     issuer: Reference = None
 
     CONVERTERS = dict(
-        identifier=[lambda value: [Identifier.from_data(val) for val in value]],
+        identifier=[lambda value: [
+            Identifier.from_data(val) for val in value]],
         code=[CodeableConcept.from_data],
         period=[Period.from_data],
         issuer=[Reference.from_data],
@@ -50,12 +51,15 @@ class Practitioner(DataModel):
     communication: List[CodeableConcept] = field(default_factory=list)
 
     CONVERTERS = dict(
-        identifier=[lambda value: [Identifier.from_data(val) for val in value]],
+        identifier=[lambda value: [
+            Identifier.from_data(val) for val in value]],
         name=[lambda value: [HumanName.from_data(val) for val in value]],
         telecom=[lambda value: [ContactPoint.from_data(val) for val in value]],
         address=[lambda value: [Address.from_data(val) for val in value]],
         birthDate=[parse_timestamp],
         photo=[lambda value: [Attachment.from_data(val) for val in value]],
-        qualification=[lambda value: [PractitionerQualification.from_data(val) for val in value]],
-        communication=[lambda value: [CodeableConcept.from_data(val) for val in value]],
+        qualification=[lambda value: [
+            PractitionerQualification.from_data(val) for val in value]],
+        communication=[lambda value: [
+            CodeableConcept.from_data(val) for val in value]],
     )
