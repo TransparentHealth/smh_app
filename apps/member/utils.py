@@ -22,6 +22,11 @@ def fetch_member_data(member, provider):
                 url, headers={'Authorization': 'Bearer %s' % access_token})
             if r.status_code == 200:
                 return r.json()
+            else:
+                return {
+                    'error': 'Could not access member data: Status = %d' % r.status_code,
+                    'responses': [r.text],
+                }
     # fallback: empty member data
     return {'entry': []}
 
