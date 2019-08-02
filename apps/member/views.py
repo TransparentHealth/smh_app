@@ -122,7 +122,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DetailView):
 
         # Get the data for the member, and set it in the context
         data = fetch_member_data(member, 'sharemyhealth')
-        
+
         if settings.DEBUG:
             context['data'] = data
         if data is None or 'entry' not in data or not data['entry']:
@@ -373,8 +373,6 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
         resource_type = kwargs['resource_type']
         resource_id = kwargs['resource_id']
         member_data = fetch_member_data(member, 'sharemyhealth')
-        if settings.DEBUG:
-            context['data'] = member_data
         if resource_type == 'prescriptions':
             data = get_prescriptions(
                 member_data, id=resource_id, incl_practitioners=True, json=True
