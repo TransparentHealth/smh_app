@@ -13,7 +13,7 @@
     {% include "member_sidebar.html" with member=member %}
     <div class="member-tabs col-lg-9 p-5">
         {% include "member_tabbed_nav.html" with member=member %}
-         <div role="tabpanel" aria-hidden="true" class=" tab-pane">
+        <div role="tabpanel" aria-hidden="true" class=" tab-pane">
 
             <!--
                 request data in context but not being shown here:
@@ -92,9 +92,21 @@
                 </div>
             {% endif %}
         </div>
+
+        {% if settings.DEBUG and data.error %}
+        <div class="debug-panel">
+            <p class="alert alert-danger">{{ data.error }}</p>
+            {% for response in data.responses %}
+            <pre>
+{{ response }}
+            </pre>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </div>
 {% include 'member/record_detail_modal.html' %}
+
 {% endblock content %}
 
 {% block ExtraJSFoot %}
