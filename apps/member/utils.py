@@ -1,4 +1,3 @@
-import logging
 from time import time
 from memoize import memoize
 import requests
@@ -12,8 +11,7 @@ from apps.data.models.medication import (
     MedicationStatement,
 )
 from apps.data.models.practitioner import Practitioner
-
-log = logging.getLogger(__name__)
+from apps.users.utils import refresh_access_token
 
 
 @memoize(timeout=300)
@@ -41,43 +39,6 @@ def fetch_member_data(member, provider):
                 }
     # fallback: empty member data
     return {'entry': []}
-
-
-def refresh_access_token(social_auth):
-    log.debug(f'refresh_access_token() {social_auth.user} {social_auth.provider}')
-    if 'refresh_token' in social_auth.extra_data:
-        if social_auth.provider == 'sharemyhealth': 
-            refresh_url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/o/token/"
-            refresh_data = {
-                'grant_type': 'refresh_token',
-                'refresh_token': social_auth.extra_data['refresh_token'],
-                'client_id': settings.SOCIAL_AUTH_SHAREMYHEALTH_KEY,
-                'client_secret': settings.SOCIAL_AUTH_SHAREMYHEALTH_SECRET,
-            }
-        elif social_auth.provider == 'vmi':
-            refresh_url = f"{settings.SOCIAL_AUTH_VMI_HOST}/o/token/"
-            refresh_data = {
-                'grant_type': 'refresh_token',
-                'refresh_token': social_auth.extra_data['refresh_token'],
-                'client_id': settings.SOCIAL_AUTH_VMI_KEY,
-                'client_secret': settings.SOCIAL_AUTH_VMI_SECRET,
-            }
-        else:
-            return
-
-        refresh_response = requests.post(refresh_url, data=refresh_data)
-        if refresh_response.status_code == 200:
-            log.debug(f"refreshed=True {refresh_response.json()}")
-            social_auth.extra_data.update(
-                auth_time=time(),
-                **{
-                    k: v
-                    for k, v in refresh_response.json().items()
-                    if k in ['access_token', 'refresh_token', 'expires_in']
-                },
-            )
-            social_auth.save()
-            return True
 
 
 def get_resource_data(data, resource_type, constructor=dict, id=None):

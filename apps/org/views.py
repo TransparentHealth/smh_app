@@ -32,8 +32,8 @@ from .models import (
 )
 from libs.qrcode import make_qr_code
 from apps.member.models import Member
-from apps.member.utils import refresh_access_token
 from apps.users.models import UserProfile
+from apps.users.utils import refresh_access_token
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
