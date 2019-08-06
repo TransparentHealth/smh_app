@@ -44,7 +44,7 @@ class UpdateNewMemberAtOrgBasicInfoForm(Form):
     to help a person become a Member at that Organization.
     """
     birthdate = DateField(required=True, label="Birth Date (yyyy-mm-dd)")
-    gender = ChoiceField(choices=GENDER_CHOICES, required=True)
+    gender = ChoiceField(choices=GENDER_CHOICES, required=False)
     email = EmailField(required=False, label="Email (Not required but recommended)")
     nickname = CharField(required=False, label="Nickname (not required)")
 
