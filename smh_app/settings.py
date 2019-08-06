@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-import logging
 import dj_database_url
 from django.contrib.messages import constants as messages
 from getenv import env

@@ -1,4 +1,3 @@
-from time import time
 from memoize import memoize
 import requests
 from django.conf import settings
