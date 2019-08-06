@@ -32,6 +32,7 @@ from .models import (
 )
 from libs.qrcode import make_qr_code
 from apps.member.models import Member
+from apps.member.utils import refresh_access_token
 from apps.users.models import UserProfile
 
 
@@ -225,12 +226,14 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
             ),
         }
         # POST the data to VMI
-        response = requests.post(
-            url=settings.SOCIAL_AUTH_VMI_HOST + '/api/v1/user/',
-            data=data,
-            headers={'Authorization': "Bearer {}".format(
-                request_user_social_auth.access_token)}
-        )
+        url = settings.SOCIAL_AUTH_VMI_HOST + '/api/v1/user/'
+        headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+        response = requests.post(url=url, data=data, headers=headers)
+        if response.status_code in [401, 403]:
+            refreshed = refresh_access_token(request_user_social_auth)
+            if refreshed:   # repeat the previous request
+                headers = {'Authorization': "Bearer {}".format(request_user_social_auth.access_token)}
+                response = requests.post(url=url, data=data, headers=headers)
 
         # 3.) Create a new Member with the response from VMI.
         # If the request successfully created a user in VMI, then use that data
@@ -343,6 +346,13 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
             request_user_social_auth.access_token)}
         response = requests.put(url=url, data=data, headers=headers)
 
+        if response.status_code in [401, 403]:
+            refreshed = refresh_access_token(request_user_social_auth)
+            if refreshed:   # repeat the previous request
+                headers = {'Authorization': "Bearer {}".format(
+                    request_user_social_auth.access_token)}
+                response = requests.put(url=url, data=data, headers=headers)
+
         # 4.) Update a new Member with the response from VMI.
         # If the request successfully updated a user in VMI, then use that data
         # to update the Member in smh_app. If not, then show the error to the
@@ -438,6 +448,13 @@ class OrgCreateMemberVerifyIdentityView(LoginRequiredMixin, OrgCreateMemberMixin
 
             # POST the data to the VMI endpoint for identity verification
             response = requests.post(url=url, json=data, headers=headers)
+
+            if response.status_code in [401, 403]:
+                refreshed = refresh_access_token(request_user_social_auth)
+                if refreshed:   # repeat the previous request
+                    headers = {'Authorization': "Bearer {}".format(
+                        request_user_social_auth.access_token)}
+                    response = requests.post(url=url, json=data, headers=headers)
 
             if response.status_code != 201:
                 # The request to update a user in VMI did not succeed, so show
@@ -667,6 +684,13 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         headers = {'Authorization': "Bearer {}".format(
             org_user_social_auth.access_token)}
         response = requests.put(url=url, data=data, headers=headers)
+
+        if response.status_code in [401, 403]:
+            refreshed = refresh_access_token(org_user_social_auth)
+            if refreshed:   # repeat the previous request
+                headers = {'Authorization': "Bearer {}".format(
+                    org_user_social_auth.access_token)}
+                response = requests.put(url=url, data=data, headers=headers)
 
         if response.status_code == 200:
             response_data_dict = json.loads(response.content)
