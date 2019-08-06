@@ -33,7 +33,7 @@ class CreateNewMemberAtOrgForm(Form):
     first_name = CharField(required=True)
     last_name = CharField(required=True)
     username = CharField(required=True)
-    phone_number = CharField(required=False)
+    phone_number = CharField(required=False, label="Mobile Phone Number (Not required but recommended)")
 
 
 class UpdateNewMemberAtOrgBasicInfoForm(Form):
@@ -43,10 +43,10 @@ class UpdateNewMemberAtOrgBasicInfoForm(Form):
     This form is used in the second step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
-    birthdate = DateField(required=True, label="Birth Date yyyy/mm/dd")
+    birthdate = DateField(required=True, label="Birth Date (yyyy-mm-dd)")
     gender = ChoiceField(choices=GENDER_CHOICES, required=False)
-    nickname = CharField(required=False)
-    email = EmailField(required=False)
+    email = EmailField(required=False, label="Email (Not required but recommended)")
+    nickname = CharField(required=False, label="Nickname (not required)")
 
     def clean(self):
         super().clean()
@@ -66,7 +66,7 @@ class VerifyMemberIdentityForm(Form):
     classification = ChoiceField(
         choices=IDENTITY_VERIFICATION_CLASSIFICATIONS, required=False)
     description = CharField(required=False)
-    exp = DateField(required=False, label="Expiration Date yyyy/mm/dd")
+    exp = DateField(required=False, label="Expiration Date (yyyy-mm-dd)")
 
     def clean(self):
         super().clean()
