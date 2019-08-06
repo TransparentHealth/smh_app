@@ -296,12 +296,14 @@ ORGANIZATION_URI = env('DJANGO_ORGANIZATION_URI', 'https://abhealth.us')
 
 POLICY_URI = env(
     'DJANGO_POLICY_URI',
-    'https://abhealth.us')
-
+    'http://sharemy.health/privacy-policy1.0.html')
 POLICY_TITLE = env('DJANGO_POLICY_TITLE', 'Privacy Policy')
-TOS_URI = env('DJANGO_TOS_URI', 'https://abhealth.us')
+TOS_TITLE = env('DJANGO_TOS_TITLE',
+              'Terms of Service')
+TOS_URI = env('DJANGO_TOS_URI',
+              'http://sharemy.health/terms-of-service1.0.html')
 
-TOS_TITLE = env('DJANGO_TOS_TITLE', 'Terms of Service')
+CONTACT_EMAIL =  env('DJANGO_CONTACT_EMAIL', 'sharemyhealth@abhealth.us')
 TAG_LINE = env('DJANGO_TAG_LINE',
                'Share your health data with applications, organizations, and people you trust.')
 
@@ -339,6 +341,7 @@ SETTINGS_EXPORT = [
     'DISCLOSURE_TEXT',
     'TOS_URI',
     'TOS_TITLE',
+    'CONTACT_EMAIL',
     'TAG_LINE',
     'EXPLAINATION_LINE',
     'USER_DOCS_URI',
