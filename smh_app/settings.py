@@ -178,7 +178,8 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-# When a user logs in, they are redirected to the appropriate page by the user_member_router
+# When a user logs in, they are redirected to the appropriate page by the
+# user_member_router
 LOGIN_REDIRECT_URL = 'users:user_member_router'
 LOGIN_URL = '/social-auth/login/vmi'
 
@@ -299,11 +300,11 @@ POLICY_URI = env(
     'http://sharemy.health/privacy-policy1.0.html')
 POLICY_TITLE = env('DJANGO_POLICY_TITLE', 'Privacy Policy')
 TOS_TITLE = env('DJANGO_TOS_TITLE',
-              'Terms of Service')
+                'Terms of Service')
 TOS_URI = env('DJANGO_TOS_URI',
               'http://sharemy.health/terms-of-service1.0.html')
 
-CONTACT_EMAIL =  env('DJANGO_CONTACT_EMAIL', 'sharemyhealth@abhealth.us')
+CONTACT_EMAIL = env('DJANGO_CONTACT_EMAIL', 'sharemyhealth@abhealth.us')
 TAG_LINE = env('DJANGO_TAG_LINE',
                'Share your health data with applications, organizations, and people you trust.')
 
