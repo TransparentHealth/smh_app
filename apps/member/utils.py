@@ -15,6 +15,7 @@ from apps.data.models.practitioner import Practitioner
 
 log = logging.getLogger(__name__)
 
+
 @memoize(timeout=300)
 def fetch_member_data(member, provider):
     '''Fetch FHIR data from HIXNY data provider (sharemyhealth)
