@@ -10,10 +10,11 @@ from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect
 from requests_oauthlib import OAuth2Session
 from social_django.models import UserSocialAuth
-from .forms import UserSettingsForm
-from .models import UserProfile
 from django.contrib.auth import logout
 from django.utils.translation import ugettext_lazy as _
+from apps.users.utils import refresh_access_token
+from .forms import UserSettingsForm
+from .models import UserProfile
 
 
 logger = logging.getLogger('smhapp_.%s' % __name__)
@@ -28,7 +29,17 @@ def mylogout(request):
             oas = OAuth2Session(token=token)
             oas.access_token = token
             remote_logout = settings.REMOTE_LOGOUT_ENDPOINT
-            oas.get(remote_logout)
+            response = oas.get(remote_logout)
+            print(response.status_code, response.content)
+            if response.status_code in [401, 403]:
+                refreshed = refresh_access_token(social)
+                if refreshed:
+                    token = social.extra_data['access_token']
+                    oas = OAuth2Session(token=token)
+                    oas.access_token = token
+                    response = oas.get(remote_logout)
+                    print(response.status_code, response.content)
+
             logger.info(_("%s remote logout of %s") %
                         (request.user, settings.REMOTE_LOGOUT_ENDPOINT))
         except UserSocialAuth.DoesNotExist:
