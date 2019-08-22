@@ -13,15 +13,17 @@ GENDER_CHOICES = (
 )
 # Choices for when a user verifies the new Member's identity. These also
 # come from VMI.
-IDENTITY_VERIFICATION_CLASSIFICATIONS = (
+IAL_EVIDENCE_CLASSIFICATIONS = [
     ('', 'None'),
-    ('ONE-SUPERIOR-OR-STRONG+', 'One Superior or Strong+ pieces of identity evidence'),
-    ('ONE-STRONG-TWO-FAIR', 'One Strong and Two Fair pieces of identity evidence'),
-    ('TWO-STRONG', 'Two Pieces of Strong identity evidence'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'Valid New York State Driver’s License'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'Valid New York State Identification Card'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'New York State Medicaid ID'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'Valid Medicare ID Card'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'Valid US Passport'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'Valid Veteran ID Card'),
+    ('TWO-STRONG', 'Original Birth Certificate and a Social Security Card'),
     ('TRUSTED-REFEREE-VOUCH', 'I am a Trusted Referee Vouching for this person'),
-    ('KBA', 'Knowledged-Based Identity Verification'),
-)
-
+]
 
 class CreateNewMemberAtOrgForm(Form):
     """
@@ -64,7 +66,7 @@ class VerifyMemberIdentityForm(Form):
     to help a person become a Member at that Organization.
     """
     classification = ChoiceField(
-        choices=IDENTITY_VERIFICATION_CLASSIFICATIONS, required=False)
+        choices=IAL_EVIDENCE_CLASSIFICATIONS, required=False)
     description = CharField(required=False)
     exp = DateField(required=False, label="Expiration Date (yyyy-mm-dd)")
 
