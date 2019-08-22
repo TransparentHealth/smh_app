@@ -25,6 +25,7 @@ IAL_EVIDENCE_CLASSIFICATIONS = [
     ('TRUSTED-REFEREE-VOUCH', 'I am a Trusted Referee Vouching for this person'),
 ]
 
+
 class CreateNewMemberAtOrgForm(Form):
     """
     A form creating a new Member at an Organization.
