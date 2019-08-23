@@ -14,7 +14,7 @@ class UserProfile(models.Model):
     subject = models.CharField(
         max_length=64, blank=True, null=True, help_text='Subject for identity token', db_index=True)
     picture_url = models.TextField(
-        blank=True, help_text="The URL of the User's image (from VMI)")
+        blank=True, null=True, help_text="The URL of the User's image (from VMI)")
     user_type = models.CharField(
         max_length=255,
         blank=True,
