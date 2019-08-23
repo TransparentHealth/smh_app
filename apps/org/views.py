@@ -251,8 +251,7 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
 
             # Save the member's picture URL
             if 'picture' in response_data_dict and '/None/' not in response_data_dict['picture']:
-                new_user.userprofile.picture_url = response_data_dict[
-                    'picture']
+                new_user.userprofile.picture_url = response_data_dict['picture']
                 new_user.userprofile.save()
 
             # Create a UserSocialAuth for the new Member
@@ -361,8 +360,7 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
             response_data_dict = json.loads(response.content)
             # Update the Member
             self.member.user.email = response_data_dict['email']
-            self.member.user.userprofile.picture_url = response_data_dict[
-                'picture']
+            self.member.user.userprofile.picture_url = response_data_dict.get('picture')
             self.member.user.save()
 
             # Redirect the user to the next step in the Member-creation process
@@ -697,8 +695,7 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             # Update the Member. Note: we set the password locally, in order to
             # invalidate the member's token (the one in kwargs['token']).
             self.member.user.email = response_data_dict['email']
-            self.member.user.userprofile.picture_url = response_data_dict[
-                'picture']
+            self.member.user.userprofile.picture_url = response_data_dict.get('picture')
             self.member.user.set_password(form.data['password1'])
             self.member.user.save()
 
