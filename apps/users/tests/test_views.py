@@ -100,7 +100,7 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
             )
             # The self.user's UserProfile was not updated
             self.user.userprofile.refresh_from_db()
-            self.assertEqual(self.user.userprofile.picture_url, '')
+            self.assertEqual(self.user.userprofile.picture_url, None)
             # No requests were made to VMI
             self.assertEqual(self.response_content_success.call['count'], 0)
 
@@ -118,7 +118,7 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
             )
             # The self.user's UserProfile was not updated
             self.user.userprofile.refresh_from_db()
-            self.assertEqual(self.user.userprofile.picture_url, '')
+            self.assertEqual(self.user.userprofile.picture_url, None)
             # No requests were made to VMI
             self.assertEqual(self.response_content_success.call['count'], 0)
 
@@ -144,7 +144,7 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
 
             # The self.user's UserProfile was not updated
             self.user.userprofile.refresh_from_db()
-            self.assertEqual(self.user.userprofile.picture_url, '')
+            self.assertEqual(self.user.userprofile.picture_url, None)
             # No requests were made to VMI
             self.assertEqual(self.response_content_success.call['count'], 0)
 

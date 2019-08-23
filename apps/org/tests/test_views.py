@@ -406,7 +406,7 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             # response (from get_successful_response_data_from_vmi()).
             self.assertEqual(
                 new_member.user.userprofile.picture_url,
-                ''
+                None
             )
             # A new ResourceRequest was created from the Organization to the new Member
             expected_num_resource_requests += 1
