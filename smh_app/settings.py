@@ -14,6 +14,7 @@ import os
 import dj_database_url
 from django.contrib.messages import constants as messages
 from getenv import env
+from .utils import bool_env
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,7 +28,7 @@ HOSTNAME_URL = env('HOSTNAME_URL', 'http://sharemyhealthapp:8002').rstrip('/')
 SECRET_KEY = '-bnmd8**&!68$lk(2@!_c^2=6m-v)$7no55+%@x8sjxp1e^s9!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool_env(env('DEBUG', True))
 
 if DEBUG:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -313,7 +314,7 @@ EXPLAINATION_LINE = env('DJANGO_EXPLAINATION_LINE ', EXPLAINATION_LINE)
 
 USER_DOCS_URI = "https://abhealth.us"
 USER_DOCS_TITLE = "User Documentation"
-USER_DOCS = "USer Docs"
+USER_DOCS = "User Docs"
 
 DEFAULT_DISCLOSURE_TEXT = """
     This system may be monitored, recorded and
@@ -361,3 +362,6 @@ PHONENUMBER_DEFAULT_FORMAT = 'NATIONAL'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = int(env('SESSION_COOKIE_AGE', int(10 * 60)))
+
+# This setting fixes a bug with OAuth on Safari
+SESSION_COOKIE_SAMESITE = None
