@@ -1,7 +1,6 @@
 from memoize import memoize
 import requests
 from django.conf import settings
-from jwkest.jwt import JWT
 
 from apps.data.models.allergy import AllergyIntolerance
 from apps.data.models.medication import (

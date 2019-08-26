@@ -2,6 +2,7 @@ from time import time
 import logging
 import requests
 from django.conf import settings
+from jwkest.jwt import JWT
 
 log = logging.getLogger(__name__)
 
@@ -9,7 +10,7 @@ log = logging.getLogger(__name__)
 def get_id_token_payload(user):
     # Get the ID Token and parse it.
     try:
-        vmi = user.social_auth.filter(provider='vmi')[0]
+        vmi = user.social_auth.filter(provider='vmi').first()
         extra_data = vmi.extra_data
         if 'id_token' in vmi.extra_data.keys():
             id_token = extra_data.get('id_token')
