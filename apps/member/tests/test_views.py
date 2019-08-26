@@ -430,7 +430,7 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
             "A member's data sources with approved ResourceRequest from request.user's Organization"
         ):
             # The request.user is now in the organization
-            organization.users.add(self.user)
+            organization.agents.add(self.user)
 
             # We mock the use of the requests library, so we don't make real
             # requests from within the test.

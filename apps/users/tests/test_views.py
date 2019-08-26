@@ -247,7 +247,7 @@ class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
 
                     if has_org:
                         organization = OrganizationFactory()
-                        organization.users.add(self.user)
+                        organization.agents.add(self.user)
                     else:
                         self.user.organization_set.clear()
 

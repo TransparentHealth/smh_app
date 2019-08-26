@@ -54,7 +54,7 @@ class DismissNotificationTestCase(SMHAppTestMixin, TestCase):
     def test_post_org_valid(self):
         """posting dismissal of a notification to an org that the user is an agent for works"""
         org = OrganizationFactory()
-        org.users.add(self.user)
+        org.agents.add(self.user)
         notification = Notification.objects.create(notify=org, actor=self.user, message="Notify Us")
 
         response = self.client.post(

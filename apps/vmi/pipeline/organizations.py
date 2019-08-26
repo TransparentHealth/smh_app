@@ -25,14 +25,12 @@ def create_or_update_org(backend, user, response, *args, **kwargs):
                     org.website = organization['website']
                     org.phone = organization['phone_number']
                     org.picture_url = organization.get('picture', None)
-
-                    # Now add the user to the Organization
-                    org.users.add(user)
+                    org.agents.add(user)  # Make sure the user is an org agent.
                     org.save()
-                    # print(org, "Saved!")
+
         # remove an agent from organization if they have been removed.
         all_orgs = Organization.objects.all()
         for o in all_orgs:
             if o.slug not in org_slugs:
-                o.users.remove(user)
+                o.agents.remove(user)
                 o.save()

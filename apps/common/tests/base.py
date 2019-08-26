@@ -113,7 +113,7 @@ class MockResourceDataMixin:
         """
         # The user is a part of an Organization
         organization = OrganizationFactory()
-        organization.users.add(user)
+        organization.agents.add(user)
         # The member has received an access_token to get their own data.
         provider_name = provider_name
         access_token = 'accessTOKENhere'

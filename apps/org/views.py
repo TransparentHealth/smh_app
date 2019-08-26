@@ -67,7 +67,7 @@ class CreateOrganizationView(LoginRequiredMixin, CreateView):
         # Now that the form has passed validation, save the object, then add
         # the request.user to its users.
         response = super().form_valid(form)
-        form.instance.users.add(self.request.user)
+        form.instance.agents.add(self.request.user)
         return response
 
 
@@ -111,7 +111,7 @@ class JoinOrganizationView(LoginRequiredMixin, BaseDetailView):
     def render_to_response(self, context):
         tkn = self.kwargs.get(self.token_kwarg)
         if self.token_generator.check_token(self.object, tkn):
-            self.object.users.add(self.request.user)
+            self.object.agents.add(self.request.user)
             return HttpResponseRedirect(self.get_success_url())
         raise Http404()
 

@@ -29,7 +29,7 @@ class OrganizationDashboardTestCase(SMHAppTestMixin, TestCase):
         """GETting the organization dashboard shows the user's organizations."""
         # An Organization associated with the self.user
         organization = OrganizationFactory()
-        organization.users.add(self.user)
+        organization.agents.add(self.user)
         # An Organization not associated with the self.user
         OrganizationFactory()
 
@@ -77,7 +77,7 @@ class CreateOrganizationTestCase(SMHAppTestMixin, TestCase):
         # The Organization's creator is automatically associated with the new
         # Organization, even though the user didn't add themselves in the form data.
         self.assertEqual(
-            set(new_organization.users.values_list('id', flat=True)),
+            set(new_organization.agents.values_list('id', flat=True)),
             set([self.user.id])
         )
 
@@ -104,7 +104,7 @@ class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
         """The user may update an Organization."""
         # An Organization associated with the self.user
         organization = OrganizationFactory()
-        organization.users.add(self.user)
+        organization.agents.add(self.user)
 
         data = {'name': 'New Name'}
         url = reverse('org:organization-update', kwargs={'pk': organization.pk})
@@ -140,7 +140,7 @@ class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
         """The user must be authenticated to update an Organization."""
         # An Organization associated with the self.user
         organization = OrganizationFactory()
-        organization.users.add(self.user)
+        organization.agents.add(self.user)
 
         with self.subTest('Authenticated'):
             self.client.force_login(self.user)
@@ -168,7 +168,7 @@ class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
         """The user may delete an Organization."""
         # An Organization associated with the self.user
         organization = OrganizationFactory()
-        organization.users.add(self.user)
+        organization.agents.add(self.user)
 
         url = reverse('org:organization-delete', kwargs={'pk': organization.pk})
 
@@ -200,7 +200,7 @@ class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
         """The user must be authenticated to delete an Organization."""
         # An Organization associated with the self.user
         organization = OrganizationFactory()
-        organization.users.add(self.user)
+        organization.agents.add(self.user)
 
         with self.subTest('Authenticated'):
             self.client.force_login(self.user)
@@ -228,7 +228,7 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         # An Organization associated with the self.user
         self.organization = OrganizationFactory()
-        self.organization.users.add(self.user)
+        self.organization.agents.add(self.user)
         # The URL for creating a Member associated with the self.organization
         self.url = reverse(self.url_name, kwargs={'org_slug': self.organization.slug})
 
@@ -457,7 +457,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         # An Organization associated with the self.user
         self.organization = OrganizationFactory()
-        self.organization.users.add(self.user)
+        self.organization.agents.add(self.user)
         # A Member at the Organization
         self.member = UserFactory(email='test_{}@example.com'.format(random.random())).member
         self.organization.members.add(self.member)
@@ -540,7 +540,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
             if user_at_org:
-                organization.users.add(self.user)
+                organization.agents.add(self.user)
             member = UserFactory().member
             if member_at_org:
                 organization.members.add(member)
@@ -749,7 +749,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         # An Organization associated with the self.user
         self.organization = OrganizationFactory()
-        self.organization.users.add(self.user)
+        self.organization.agents.add(self.user)
         # A Member at the Organization
         self.member = UserFactory().member
         self.organization.members.add(self.member)
@@ -847,7 +847,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
             if user_at_org:
-                organization.users.add(self.user)
+                organization.agents.add(self.user)
             member = UserFactory().member
             if member_at_org:
                 organization.members.add(member)
@@ -1089,7 +1089,7 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         # An Organization associated with the self.user
         self.organization = OrganizationFactory()
-        self.organization.users.add(self.user)
+        self.organization.agents.add(self.user)
         # A Member at the Organization
         self.member = UserFactory().member
         self.organization.members.add(self.member)
@@ -1117,7 +1117,7 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
             if user_at_org:
-                organization.users.add(self.user)
+                organization.agents.add(self.user)
             member = UserFactory().member
             if member_at_org:
                 organization.members.add(member)
@@ -1191,7 +1191,7 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         # An Organization associated with the self.user
         self.organization = OrganizationFactory()
-        self.organization.users.add(self.user)
+        self.organization.agents.add(self.user)
         # A Member at the Organization
         self.member = UserFactory().member
         self.organization.members.add(self.member)
@@ -1219,7 +1219,7 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
             if user_at_org:
-                organization.users.add(self.user)
+                organization.agents.add(self.user)
             member = UserFactory().member
             if member_at_org:
                 organization.members.add(member)
@@ -1363,9 +1363,9 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
         )
         for (user_at_org, member_at_org, valid_token, expected_status_code) in subtests:
             if user_at_org:
-                self.organization.users.add(self.user)
+                self.organization.agents.add(self.user)
             else:
-                self.organization.users.clear()
+                self.organization.agents.clear()
             if member_at_org:
                 self.organization.members.add(self.member)
             else:
@@ -1417,7 +1417,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             member_at_org=True,
             expected_status_code=302
         ):
-            self.organization.users.add(self.user)
+            self.organization.agents.add(self.user)
             self.organization.members.add(self.member)
 
             # Make the token expire
@@ -1731,7 +1731,7 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         # An Organization associated with the self.user
         self.organization = OrganizationFactory()
-        self.organization.users.add(self.user)
+        self.organization.agents.add(self.user)
         # A Member at the Organization
         self.member = UserFactory().member
         self.organization.members.add(self.member)
@@ -1759,7 +1759,7 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
             if user_at_org:
-                organization.users.add(self.user)
+                organization.agents.add(self.user)
             member = UserFactory().member
             if member_at_org:
                 organization.members.add(member)
@@ -1816,7 +1816,7 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         # An Organization associated with the self.user
         self.organization = OrganizationFactory()
-        self.organization.users.add(self.user)
+        self.organization.agents.add(self.user)
         # A Member at the Organization
         self.member = UserFactory().member
         self.organization.members.add(self.member)
@@ -1844,7 +1844,7 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
         for (user_at_org, member_at_org, expected_success) in subtests:
             organization = OrganizationFactory()
             if user_at_org:
-                organization.users.add(self.user)
+                organization.agents.add(self.user)
             member = UserFactory().member
             if member_at_org:
                 organization.members.add(member)
