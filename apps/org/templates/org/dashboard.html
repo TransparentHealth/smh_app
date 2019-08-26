@@ -38,7 +38,7 @@
                   {% for user in org_with_mems.members %}
                       <li class="user-link">
                           <a href="{% url 'member:member-update' pk=user.member.pk %}">
-                              <img class="mr-3"  src="{% if user.userprofile.picture_url %}{{ user.userprofile.picture_url }}{% else %}{% static '/images/icons/avatar_default.png' %}{% endif %}" >
+                              <img class="mr-3"  src="{% if user.userprofile.picture %}{{ user.userprofile.picture }}{% else %}{% static '/images/icons/avatar_default.png' %}{% endif %}" >
                               {{ user.first_name }} {{ user.last_name }}
                           </a>
                       </li>
