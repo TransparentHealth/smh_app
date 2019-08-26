@@ -132,21 +132,3 @@ def get_allergies(data, keys=None):
         for entry in data.get('entry', [])
         if entry['resource']['resourceType'] == 'AllergyIntolerance'
     ]
-
-
-def get_id_token_payload(user):
-    # Get the ID Token and parse it.
-    try:
-        vmi = user.social_auth.filter(provider='vmi')[0]
-        extra_data = vmi.extra_data
-        if 'id_token' in vmi.extra_data.keys():
-            id_token = extra_data.get('id_token')
-            parsed_id_token = JWT().unpack(id_token)
-            parsed_id_token = parsed_id_token.payload()
-        else:
-            parsed_id_token = {'sub': '', 'ial': '1'}
-
-    except Exception:
-        parsed_id_token = {'sub': '', 'ial': '1'}
-
-    return parsed_id_token

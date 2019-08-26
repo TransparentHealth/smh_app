@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from .utils import get_id_token_payload
+from apps.users.utils import get_id_token_payload
 from apps.org.models import Organization
 
 """

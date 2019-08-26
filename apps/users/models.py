@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from django.urls import reverse
 from phonenumber_field.modelfields import PhoneNumberField
 
-from ..member.utils import get_id_token_payload
+from .utils import get_id_token_payload
 
 
 class UserType:
