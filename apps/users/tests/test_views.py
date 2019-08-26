@@ -205,7 +205,7 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
 
 
 class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
-    url_name = 'users:user_member_router'
+    url_name = 'users:user_router'
 
     def setUp(self):
         super().setUp()
@@ -213,7 +213,7 @@ class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
 
     def test_get_post(self):
         """
-        GETting or POSTing the user_member_router redirects the user, based on who the User is:
+        GETting or POSTing the user_router redirects the user, based on who the User is:
          - if the request.user is an Organization User, the User is redirected to the org dashboard
          - if the request.user is a member, the User is redirected to the member dashboard
          - otherwise, the User is redirected to the org dashboard
@@ -269,7 +269,7 @@ class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
                     self.assertRedirects(response, reverse(expected_redirect))
 
     def test_authenticated(self):
-        """The user must be authenticated to use the user_member_router view."""
+        """The user must be authenticated to use the user_router view."""
         with self.subTest('Authenticated GET'):
             self.client.force_login(self.user)
             response = self.client.get(self.url)

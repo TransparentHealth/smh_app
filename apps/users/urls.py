@@ -1,16 +1,13 @@
 # Copyright Videntity Systems, Inc.
 from django.conf.urls import url
-from .views import UserSettingsView, user_member_router
+from .views import user_router
 
 
 # Copyright Videntity Systems Inc.
 
 app_name = 'users'
 urlpatterns = [
-    url(r'^user_member_router/$',
-        user_member_router,
-        name='user_member_router'),
-    url(r'^settings$',
-        UserSettingsView.as_view(),
-        name='user_settings'),
+    url(r'^router/$',
+        user_router,
+        name='user_router'),
 ]
