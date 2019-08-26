@@ -33,8 +33,16 @@ class Organization(CreatedUpdatedModel, models.Model):
     slug = models.SlugField(unique=True, max_length=255, db_index=True)
     name = models.CharField(max_length=255, blank=True)
     sub = models.CharField(max_length=255, blank=True)
+
+    agents = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True, related_name="agent_organizations")
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True, related_name="member_organizations")
+    
+    # users field DEPRECATED: use Organization.agents field instead
     users = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, blank=True, verbose_name="Agents")
+        settings.AUTH_USER_MODEL, blank=True, verbose_name="Agents", related_name="organizations")
+
     phone = PhoneNumberField(blank=True)
     street_line_1 = models.CharField(max_length=255, blank=True)
     street_line_2 = models.CharField(max_length=255, blank=True)

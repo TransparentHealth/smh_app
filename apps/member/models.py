@@ -10,12 +10,10 @@ from datetime import date, datetime
 
 class Member(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    emergency_contact_name = models.CharField(
-        null=True, blank=True, max_length=40)
-    emergency_contact_number = PhoneNumberField(
-        null=True, blank=True, unique=False)
+
+    # organizations field DEPRECATED: use Organization.members field instead
     organizations = models.ManyToManyField(
-        Organization, blank=True, related_name='members')
+        Organization, blank=True, related_name='members_organizations')
 
     def __str__(self):
         return self.user.username
