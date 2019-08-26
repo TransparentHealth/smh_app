@@ -7,6 +7,13 @@ from .utils import get_id_token_payload
 from apps.org.models import Organization
 from datetime import date, datetime
 
+"""
+The Member model is DEPRECATED -- retained until we're sure all data successfully migrates.
+
+* User profile data is migrated to apps.users.models.UserProfile
+* Organization membership relationships are migrated to Organization.members
+  (which points to User, which has related_name User.member_organizations)
+"""
 
 class Member(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -21,13 +28,3 @@ class Member(models.Model):
     def parsed_id_token(self):
         return get_id_token_payload(self.user)
 
-
-@receiver(post_save, sender=User)
-def create_or_update_user_profile(sender, instance, created, **kwargs):
-    """
-        If the User is being created or does not have a related Member model, create one.
-        Otherwise update existing member
-    """
-    if created or not hasattr(instance, 'member'):
-        Member.objects.create(user=instance)
-    instance.member.save()
