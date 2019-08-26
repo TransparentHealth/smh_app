@@ -31,7 +31,6 @@ from .models import (
     ResourceGrant, ResourceRequest
 )
 from libs.qrcode import make_qr_code
-from apps.member.models import Member
 from apps.users.models import UserProfile
 from apps.users.utils import refresh_access_token
 
