@@ -1,11 +1,7 @@
 from django.db import models
-from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from .utils import get_id_token_payload
 from apps.org.models import Organization
-from datetime import date, datetime
 
 """
 The Member model is DEPRECATED -- retained until we're sure all data successfully migrates.
