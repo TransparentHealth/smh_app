@@ -30,7 +30,7 @@ class DismissNotificationView(LoginRequiredMixin, View):
                 ) or (
                     'organization' in str(notification.notify_content_type)
                     and notification.notify_id
-                    not in [org.pk for org in request.user.organization_set.all()]
+                    not in [org.pk for org in request.user.agent_organizations.all()]
                 ):
                     raise Notification.DoesNotExist()
 

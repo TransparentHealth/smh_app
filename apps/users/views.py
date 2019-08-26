@@ -139,7 +139,7 @@ def user_member_router(request):
     """
     # If the request.user is an Organization User, then redirect to the org
     # dashboard
-    if request.user.organization_set.exists():
+    if request.user.agent_organizations.exists():
         return redirect(reverse('org:dashboard'))
 
     # If the request.user is a Member, then redirect to the member dashboard

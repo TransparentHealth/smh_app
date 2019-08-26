@@ -249,7 +249,7 @@ class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
                         organization = OrganizationFactory()
                         organization.agents.add(self.user)
                     else:
-                        self.user.organization_set.clear()
+                        self.user.agent_organizations.clear()
 
                     if has_member:
                         if not hasattr(self.user, 'member'):

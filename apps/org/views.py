@@ -48,7 +48,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 'organization': org,
                 'members': [rg.member for rg in org.resourcegrant_set.all()]
             }
-            for org in self.request.user.organization_set.all()
+            for org in self.request.user.agent_organizations.all()
         ]
 
         kwargs.setdefault('orgs_with_members', orgs_with_members)

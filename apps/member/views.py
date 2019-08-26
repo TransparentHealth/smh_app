@@ -505,7 +505,7 @@ class RequestAccessView(LoginRequiredMixin, DetailView):
             rr.organization for rr in member_requests if rr.status == REQUEST_APPROVED]
         member_requested_orgs = [
             rr.organization for rr in member_requests if rr.status == REQUEST_REQUESTED]
-        orgs = self.request.user.organization_set.all()  # Orgs this user is agent for
+        orgs = self.request.user.agent_organizations.all()  # Orgs this user is agent for
         current = [org for org in orgs if org in member_connected_orgs]
         requested = [org for org in orgs if org in member_requested_orgs]
         available = [
@@ -691,7 +691,7 @@ def resource_request_response(request):
     if form.is_valid() and (
         form.cleaned_data['member'] == request.user
         or (
-            form.cleaned_data['organization'] in request.user.organization_set.all()
+            form.cleaned_data['organization'] in request.user.agent_organizations.all()
             and form.cleaned_data['status'] in [REQUEST_DENIED, REQUEST_REQUESTED]
         )
     ):

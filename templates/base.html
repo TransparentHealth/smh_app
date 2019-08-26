@@ -4,8 +4,8 @@
     <head>
     {% block head %}
         {% include "include/head.html" %}
-    {% endblock %} 
-        
+    {% endblock %}
+
     {% block extra_head %}{% endblock %}
     </head>
 
@@ -17,9 +17,9 @@
             {% block content %}
             {% endblock content %}
         </main>
-        {% if request.user.organization_set.first %}
+        {% if request.user.agent_organizations.first %}
             <div class="modal" id="create-member-modal">
-                <iframe src="{% url 'org:org_create_member' request.user.organization_set.first.slug %}"></iframe>
+                <iframe src="{% url 'org:org_create_member' request.user.agent_organizations.first.slug %}"></iframe>
                 <div id="create-member-modal-backdrop"></div>
             </div>
         {% endif %}
