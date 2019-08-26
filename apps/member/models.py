@@ -21,16 +21,6 @@ class Member(models.Model):
     def parsed_id_token(self):
         return get_id_token_payload(self.user)
 
-    def age(self):
-        try:
-            idt = get_id_token_payload(self.user)
-            bd = idt['birthdate']
-            born = datetime.strptime(bd, '%Y-%m-%d').date()
-            today = date.today()
-            return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-        except Exception:
-            return "Unknown"
-
 
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):

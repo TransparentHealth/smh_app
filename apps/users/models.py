@@ -31,7 +31,8 @@ class UserProfile(models.Model):
         return self.user.username
 
     def __getattr__(self, key):
-        """self.__getattribute__(key) failed, so check self.id_token_payload"""
+        """Provide direct read access to attributes of the id_token."""
+        # self.__getattribute__(key) failed, so check self.id_token_payload
         return self.id_token_payload.get(key)
 
     @property
@@ -48,6 +49,18 @@ class UserProfile(models.Model):
         if 'organization_agent' in payload and len(payload['organization_agent']) > 0:
             return UserType.ORG_AGENT
         return UserType.MEMBER
+
+    @property
+    def age(self):
+        try:
+            idt = self.id_token_payload()
+            bd = idt['birthdate']
+            born = datetime.strptime(bd, '%Y-%m-%d').date()
+            today = date.today()
+            return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+        except Exception:
+            return "Unknown"
+
 
 
 @receiver(post_save, sender=User)

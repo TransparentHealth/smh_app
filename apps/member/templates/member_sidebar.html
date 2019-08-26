@@ -11,7 +11,7 @@
     <div class="member-sidebar__nav">
         <div class="member-sidebar__heading">
             <h1>{{ member.user.first_name }} {{ member.user.last_name }}</h1>
-            <p>{{ member.parsed_id_token.gender|title  }}  <span class="mr-2 ml-2">·</span> Age  {{ member.age }}</p>
+            <p>{{ member.parsed_id_token.gender|title  }}  <span class="mr-2 ml-2">·</span> Age  {{ member.user.userprofile.age }}</p>
         </div>
         {% with request.resolver_match.url_name as url_name %}
         <div class="flex-column nav">
