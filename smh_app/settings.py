@@ -199,7 +199,6 @@ SOCIAL_AUTH_VMI_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
     'apps.users.pipeline.oidc.save_profile',
-    'apps.vmi.pipeline.organizations.set_user_type',
     'apps.vmi.pipeline.organizations.create_or_update_org',
     'social_core.pipeline.debug.debug'
 )
