@@ -51,6 +51,14 @@ class UserProfile(models.Model):
         return UserType.MEMBER
 
     @property
+    def user_type_code(self):
+        return self.user_type[0]
+
+    @property
+    def user_type_display(self):
+        return self.user_type[1]
+
+    @property
     def age(self):
         try:
             idt = self.id_token_payload()
