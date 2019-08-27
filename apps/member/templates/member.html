@@ -37,7 +37,7 @@
                     </dd>
                     {% endif %}
 
-                    <dt>{{ form.birth_date.label_tag|title }}</dt>
+                    <dt>Birthdate:</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">{{ form.birth_date }}</dd>
                     <dd class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.birth_date.errors }}</dd>
                     <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.userprofile.birthdate }}</dd>
@@ -53,7 +53,7 @@
 
                     <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.phone_number|default:"" }}</dd>
 
-                    <dt>{{ form.address.label_tag|title }}</dt>
+                    <dt>Address:</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
                         {{ form.address }}
                         <span class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.address.errors }}</span>
@@ -61,13 +61,11 @@
                     <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.address|default:"" }}</dd>
 
                     <dt class="read_only_element {% if not member.id %}hide{% endif %}">Emergency Contact:</dt>
-                    <dt class="form_element {% if member.id %}hide{% endif %}">{{ form.emergency_contact_name.label_tag|title }}</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
                         {{ form.emergency_contact_name }}
                         <span class="invalid-feedback">{{ form.emergency_contact_name.errors }}</span>
                     </dd>
 
-                    <dt class="form_element {% if member.id %}hide{% endif %}">{{ form.emergency_contact_number.label_tag|title }}</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
                         {{ form.emergency_contact_number }}
                          <span class="invalid-feedback">{{ form.emergency_contact_number.errors }}</span>
