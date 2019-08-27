@@ -38,9 +38,7 @@
 
 .header--auth {
   .navbar-expand-lg .navbar-collapse {
-    @include media-breakpoint-up(lg) {
-      display: block !important;
-    }
+    display: block !important;
   }
 
   .navbar-collapse {
