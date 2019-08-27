@@ -49,6 +49,9 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
     def handle_no_permission(self):
         return redirect(self.get_login_url())
 
+    def get_member(self):
+        return get_object_or_404(get_user_model().objects.filter(pk=self.kwargs['pk']))
+
     def test_func(self):
         """
         The request.user may see the member's data sources if:
@@ -56,7 +59,7 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
          - the request.user is in an Organization that has been granted access
            to the member's data
         """
-        member = get_object_or_404(get_user_model().objects.filter(pk=self.kwargs['pk']))
+        member = self.get_member()
         if member != self.request.user:
             # The request.user is not the member. If the request.user is not in
             # an Organization that has been granted access to the member's data,
@@ -73,7 +76,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['member'] = get_object_or_404(get_user_model().objects.filter(pk=kwargs['pk']))
+        context['member'] = self.get_member()
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
         if settings.DEBUG:
@@ -117,16 +120,16 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
     def get_context_data(self, **kwargs):
         """Add records data into the context."""
         context = super().get_context_data(**kwargs)
-        member = context['member']
+        context['member'] = self.get_member()
         resource_name = self.kwargs.get('resource_name') or 'list'
 
         # Get the data for the member, and set it in the context
-        data = fetch_member_data(member, 'sharemyhealth')
+        data = fetch_member_data(context['member'], 'sharemyhealth')
 
         if settings.DEBUG:
             context['data'] = data
         if data is None or 'entry' not in data or not data['entry']:
-            delete_memoized(fetch_member_data, member, 'sharemyhealth')
+            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
         if resource_name == 'list':
             conditions_data = get_resource_data(data, 'Condition')
@@ -254,7 +257,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                         [request.requester.agent.display for request in prescription['requests']]),
                 }
                 record['links'] = {
-                    'Medication': f'/member/{member.id}/modal/prescription/{prescription["medication"].id}'
+                    'Medication': f"/member/{context['member'].id}/modal/prescription/{prescription['medication'].id}"
                 }
                 all_records.append(record)
 
@@ -304,7 +307,7 @@ class PrescriptionDetailModalView(LoginRequiredMixin, SelfOrApprovedOrgMixin, Te
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['member'] = get_object_or_404(Member.objects.filter(pk=kwargs['pk']))
+        context['member'] = self.get_member()
         member_data = fetch_member_data(context['member'], 'sharemyhealth')
         if settings.DEBUG:
             context['data'] = member_data
@@ -321,7 +324,7 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
     """Return JSON containing the requested member data."""
 
     def get(self, request, *args, **kwargs):
-        member = get_object_or_404(Member.objects.filter(pk=kwargs['pk']))
+        member = self.get_member()
         resource_type = kwargs['resource_type']
         resource_id = kwargs['resource_id']
         member_data = fetch_member_data(member, 'sharemyhealth')
@@ -342,6 +345,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['member'] = self.get_member()
         data = fetch_member_data(context['member'], 'sharemyhealth')
         if settings.DEBUG:
             context['data'] = data
@@ -389,13 +393,14 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
     def get_context_data(self, **kwargs):
         """Add current data sources and data into the context."""
         context = super().get_context_data(**kwargs)
+        context['member'] = self.get_member()
         available_sources = [{
             'provider': 'sharemyhealth',
             'name': 'Hixny',
             'image_url': static('images/icons/hixny.png'),
         }]
         connected_source_providers = [
-            source.provider for source in context['member'].user.social_auth.all()
+            source.provider for source in context['member'].social_auth.all()
         ]
         data_sources = [{
             'connected': source['provider'] in connected_source_providers,
@@ -411,8 +416,9 @@ class OrganizationsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView
     def get_context_data(self, **kwargs):
         """Add organizations data into the context."""
         context = super().get_context_data(**kwargs)
+        context['member'] = self.get_member()
         orgs = Organization.objects.all().order_by('name')
-        resources = ResourceRequest.objects.filter(member=context['member'].user)
+        resources = ResourceRequest.objects.filter(member=context['member'])
         current = [r.organization for r in resources if r.status == REQUEST_APPROVED]
         requested = [r.organization for r in resources if r.status == REQUEST_REQUESTED]
         available = [org for org in orgs if org not in current and org not in requested]
@@ -429,8 +435,8 @@ class RequestAccessView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        member = context['member']
-        member_requests = ResourceRequest.objects.filter(member=member)
+        context['member'] = get_object_or_404(get_user_model().objects.filter(pk=self.kwargs['pk']))
+        member_requests = ResourceRequest.objects.filter(member=context['member'])
         member_connected_orgs = [
             rr.organization for rr in member_requests if rr.status == REQUEST_APPROVED
         ]
@@ -460,8 +466,7 @@ class ProfileView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['member'] = get_object_or_404(get_user_model().objects.filter(pk=self.kwargs['pk']))
-        context['id_token_payload'] = get_id_token_payload(self.request.user)
+        context['member'] = self.get_member()
         return context
 
 
