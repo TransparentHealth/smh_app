@@ -1,4 +1,5 @@
 from importlib import import_module
+from datetime import date, timedelta
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
@@ -9,6 +10,7 @@ from django.urls import reverse
 from phonenumber_field.modelfields import PhoneNumberField
 
 from .utils import get_id_token_payload
+from apps.data.util import parse_timestamp
 
 
 class UserType:
@@ -61,12 +63,15 @@ class UserProfile(models.Model):
 
     @property
     def age(self):
+        print('birthdate:', self.birthdate)
         try:
-            idt = self.id_token_payload()
-            bd = idt['birthdate']
-            born = datetime.strptime(bd, '%Y-%m-%d').date()
+            born = parse_timestamp(self.birthdate).date()
             today = date.today()
-            return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+            age = today.year - born.year
+            if age < 0: 
+                return "Unknown"
+            else:
+                return age
         except Exception:
             return "Unknown"
 
