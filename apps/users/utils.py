@@ -11,11 +11,9 @@ def get_id_token_payload(user):
     # Get the ID Token and parse it.
     try:
         vmi = user.social_auth.filter(provider='vmi').first()
-        extra_data = vmi.extra_data
         if 'id_token' in vmi.extra_data.keys():
-            id_token = extra_data.get('id_token')
-            parsed_id_token = JWT().unpack(id_token)
-            parsed_id_token = parsed_id_token.payload()
+            id_token = vmi.extra_data.get('id_token')
+            parsed_id_token = JWT().unpack(id_token).payload()
         else:
             parsed_id_token = {'sub': '', 'ial': '1'}
 

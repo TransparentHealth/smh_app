@@ -1,6 +1,8 @@
 from importlib import import_module
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
@@ -23,6 +25,9 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
+    # Holds the payload value of the VMI socialauth id_token
+    id_token_payload = JSONField(default=dict, encoder=DjangoJSONEncoder)
+
     # Most of the UserProfile data is stored in the VMI socialauth id_token, but these are not
     emergency_contact_name = models.CharField(null=True, blank=True, max_length=128)
     emergency_contact_number = PhoneNumberField(null=True, blank=True)
@@ -34,10 +39,6 @@ class UserProfile(models.Model):
         """Provide direct read access to attributes of the id_token."""
         # self.__getattribute__(key) failed, so check self.id_token_payload
         return self.id_token_payload.get(key)
-
-    @property
-    def id_token_payload(self):
-        return get_id_token_payload(self.user)
 
     @property
     def name(self):
@@ -69,6 +70,10 @@ class UserProfile(models.Model):
         except Exception:
             return "Unknown"
 
+    @property
+    def subject(self):
+        return self.id_token_payload.get('sub')
+    
 
 
 @receiver(post_save, sender=User)
