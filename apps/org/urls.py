@@ -3,7 +3,7 @@ from django.conf.urls import url
 from django.urls import path
 from .views import (
     CreateOrganizationView, DashboardView, DeleteOrganizationView, OrgCreateMemberView,
-    OrgCreateMemberAdditionalInfoInfoView, OrgCreateMemberAlmostDoneView, LocalUserAPI, SearchView,
+    OrgCreateMemberAdditionalInfoInfoView, OrgCreateMemberAlmostDoneView, SearchMembersAPI, SearchView,
     OrgCreateMemberBasicInfoView, OrgCreateMemberCompleteView, OrgCreateMemberInvalidTokenView,
     OrgCreateMemberSuccessView, OrgCreateMemberVerifyIdentityView, UpdateOrganizationView,
     JoinOrganizationView,
@@ -55,7 +55,7 @@ urlpatterns = [
         OrgCreateMemberSuccessView.as_view(),
         name='org_create_member_success'),
     url(r'^org-member-api$',
-        LocalUserAPI.as_view(),
+        SearchMembersAPI.as_view(),
         name='org_member_api'),
     url(r'^search$',
         SearchView.as_view(),

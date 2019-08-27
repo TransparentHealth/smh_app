@@ -1893,7 +1893,7 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
 
 
 @override_settings(LOGIN_URL='/accounts/login/')
-class OrgLocalUserAPITestCase(SMHAppTestMixin, TestCase):
+class OrgSearchMembersAPITestCase(SMHAppTestMixin, TestCase):
     url_name = 'org:org_member_api'
 
     def test_get(self):

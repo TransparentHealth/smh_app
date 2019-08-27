@@ -42,6 +42,30 @@ class UserProfile(models.Model):
         # self.__getattribute__(key) failed, so check self.id_token_payload
         return self.id_token_payload.get(key)
 
+    def as_dict(self):
+        """return the UserProfile object as a json-able dict"""
+        print('id_token_payload =', self.id_token_payload)
+        data = {}
+        data.update(**self.id_token_payload)
+        data.update(
+            **{
+                k: (str(v) if k in ['emergency_contact_number'] else v)
+                for k, v in self.__dict__.items()
+                if k[0] != '_'
+            }
+        )
+        print('UserProfile.as_dict() =', data)
+        return data
+
+    @classmethod
+    def get_non_agent_profiles(cls):
+        return cls.objects.select_related('user').raw(
+            """
+            SELECT * FROM users_userprofile WHERE id_token_payload->'organization_agent' = '[]' 
+            OR id_token_payload->'organization_agent' is null
+            """
+        )
+
     @property
     def name(self):
         return ' '.join([self.user.first_name or '', self.user.last_name or '']).strip()
@@ -68,7 +92,7 @@ class UserProfile(models.Model):
             born = parse_timestamp(self.birthdate).date()
             today = date.today()
             age = today.year - born.year
-            if age < 0: 
+            if age < 0:
                 return "Unknown"
             else:
                 return age
@@ -78,7 +102,6 @@ class UserProfile(models.Model):
     @property
     def subject(self):
         return self.id_token_payload.get('sub')
-    
 
 
 @receiver(post_save, sender=User)
@@ -90,7 +113,9 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=UserProfile)
-def create_user_profile_connect_to_hixny_notification(sender, instance, created, **kwargs):
+def create_user_profile_connect_to_hixny_notification(
+    sender, instance, created, **kwargs
+):
     """Create Notifications related to the ResourceRequest, while deleting existing notifications"""
     Notification = import_module('apps.notifications.models').Notification
     if instance.user_type_code == 'O':  # Org agent
@@ -112,9 +137,11 @@ def create_user_profile_connect_to_hixny_notification(sender, instance, created,
             actor=instance.user,
             instance=instance,
             message="Connect your account to <b>Hixny</b> (Health Information Exchange of New York)",
-            actions=[{
-                'url': reverse('social:begin', args=['sharemyhealth']),
-                'method': 'get',
-                'text': "Connect Now",
-            }],
+            actions=[
+                {
+                    'url': reverse('social:begin', args=['sharemyhealth']),
+                    'method': 'get',
+                    'text': "Connect Now",
+                }
+            ],
         )

@@ -753,27 +753,28 @@ class LocalUserAPI(LoginRequiredMixin, View):
     ''' Setting up a local endpoint for users here. '''
 
     def get(self, request, *args, **kwargs):
-        # get Member objects that are members, not orgs (user_type_code='M', not 'O')
+        # get User objects that are members, not orgs (user_type_code='M', not 'O')
         # along with related User and UserProfile objects
-        members = Member.objects.filter(user__userprofile__user_type='M')
-        users = get_user_model().objects.filter(member__in=members)
-        profiles = UserProfile.objects.filter(user__in=users)
+        profiles = list(UserProfile.get_non_agent_profiles())
 
         # Create list of data objects, one per member
-        user_data = {
-            user['id']: {k: v for k, v in user.items() if k not in 'password'
-                         } for user in list(users.values())
+        data = [
+            {
+                'user': {
+                    key: val
+                    for key, val in profile.user.__dict__.items()
+                    if key not in ['password'] and key[0] != '_' and key[:3] != 'is_'
+                },
+                'profile': profile.as_dict(),
         }
-        profile_data = {profile['user_id']: profile for profile in list(profiles.values())}
-        member_values = [{
-            'user': user_data.get(member['user_id'], {}),
-            'profile': profile_data.get(member['user_id'], {}),
-            'member': member,
-        } for member in list(members.values())]
+            for profile in profiles
+        ]
 
-        return JsonResponse(member_values, safe=False)
+        print('data =', data)
+        return JsonResponse(data, safe=False)
 
 
 class SearchView(LoginRequiredMixin, TemplateView):
     """template view that mostly uses javascript to render content"""
+
     template_name = "org/search.html"
