@@ -23,3 +23,13 @@
             {% endif %}
         </div>
  </div>
+
+<!-- JavaScript auto-logout -->
+{% if user.is_authenticated %}
+    <script type="text/javascript">
+        var time = 1000 * {% firstof settings.SESSION_COOKIE_AGE 1800 %}; // default 30 minutes
+        var theTimer = setTimeout("document.location.href='/logout'",time);
+    </script>
+{% endif %}
+
+ <script src="{% static 'App.js' %}"></script>
