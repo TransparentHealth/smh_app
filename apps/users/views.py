@@ -71,13 +71,13 @@ def user_router(request):
      - if the request.user is a member, redirect to the member dashboard
      - otherwise, redirect to the org dashboard
     """
-    # If the request.user is an Organization User, then redirect to the org
+    # If the request.user is an Organization Agent, then redirect to the org
     # dashboard
-    if request.user.agent_organizations.exists():
+    if request.user.userprofile.user_type_code == 'O':
         return redirect(reverse('org:dashboard'))
 
-    # If the request.user is a Member, then redirect to the member dashboard
-    if hasattr(request.user, 'member'):
+    # If the request.user is a member of an organization, then redirect to the member dashboard
+    if request.user.member_organizations.exists():
         return redirect(reverse('member:dashboard'))
 
     # The request.user is not associated with any Organizations, and is not a Member.
