@@ -9,6 +9,7 @@ from django.http.response import HttpResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView
+from django.views.generic.edit import FormView
 from django.urls import reverse_lazy
 from django.views.generic.base import View
 from memoize import delete_memoized
@@ -55,7 +56,7 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
          - the request.user is in an Organization that has been granted access
            to the member's data
         """
-        member = get_object_or_404(User.objects.filter(pk=self.kwargs['pk']))
+        member = get_object_or_404(get_user_model().objects.filter(pk=self.kwargs['pk']))
         if member != self.request.user:
             # The request.user is not the member. If the request.user is not in
             # an Organization that has been granted access to the member's data,
@@ -72,7 +73,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['member'] = get_object_or_404(User.objects.filter(pk=kwargs['pk']))
+        context['member'] = get_object_or_404(get_user_model().objects.filter(pk=kwargs['pk']))
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
         if settings.DEBUG:
@@ -459,7 +460,7 @@ class ProfileView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['member'] = get_object_or_404(User.objects.filter(pk=self.kwargs['pk']))
+        context['member'] = get_object_or_404(get_user_model().objects.filter(pk=self.kwargs['pk']))
         context['id_token_payload'] = get_id_token_payload(self.request.user)
         return context
 
@@ -469,7 +470,7 @@ class ProfileView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 #     template_name = 'member_confirm_delete.html'
 #     success_url = reverse_lazy('org:dashboard')
 #         context = super().get_context_data(**kwargs)
-#         context['member'] = get_object_or_404(User.objects.filter(pk=self.kwargs['pk']))
+#         context['member'] = get_object_or_404(get_user_model().objects.filter(pk=self.kwargs['pk']))
 #         context['id_token_payload'] = get_id_token_payload(self.request.user)
 #         return context
 
