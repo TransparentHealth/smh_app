@@ -18,7 +18,7 @@ def fetch_member_data(member, provider):
     If data not available, returns None
     '''
     url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything"
-    social_auth = member.user.social_auth.filter(provider=provider).first()
+    social_auth = member.social_auth.filter(provider=provider).first()
     if social_auth is not None:
         access_token = social_auth.extra_data.get('access_token')
         if access_token is not None:

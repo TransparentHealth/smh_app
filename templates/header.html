@@ -10,7 +10,7 @@
         <div class="navbar-collapse collapse" id="responsive-navbar-nav">
             <div class="navbar-nav__wrapper d-flex justify-content-end align-items-center">
                 <div class="nav-item nav-item--search pr-3 pl-3">
-                    {% if request.user.userprofile.user_type == "O" %}
+                    {% if request.user.userprofile.user_type_code == "O" %}
                     <form action="{% url 'org:search' %}" id="header-search-form" class="form--search form--search--header form-inline">
                         <label class="sr-only sr-only-focusable form-label">Search</label>
                         <input id="member-search" type="text" placeholder="Search members" name="term" class="bg-white" value="">
@@ -33,7 +33,7 @@
                 <div class="mr-auto align-items-center navbar-nav">
                     <div class="nav-item nav-item--button pr-3 pl-3">
                         {% if request.user.agent_organizations.first %}
-                          {% if request.user.userprofile.user_type == "O" %}
+                          {% if request.user.userprofile.user_type_code == "O" %}
                             <a id="create-account-btn" href="#" class="btn btn-primary" role="button">
                                 <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" class="svg-inline--fa fa-plus fa-w-14 mr-1" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"></path></svg>
                                 Create Account
@@ -86,7 +86,7 @@
                 </div>
             </div>
             <div id="profile-dropdown" class="account-menu dropdown nav-item">
-                <a class="account-menu nav-item" aria-haspopup="true" aria-expanded="false" href="/member/{{ request.user.member.id }}" class="dropdown-toggle nav-link" role="button" data-toggle="dropdown">
+                <a class="account-menu nav-item" aria-haspopup="true" aria-expanded="false" href="/member/{{ request.user.id }}" class="dropdown-toggle nav-link" role="button" data-toggle="dropdown">
                     {% if request.user.userprofile.picture %}
                       <img src="{{ request.user.userprofile.picture }}" >
                     {% else %}
@@ -95,7 +95,7 @@
                 </a>
                 <div class="dropdown-menu" aria-labelledby="">
                     <span class="navbar-text">
-                         {% if request.user.userprofile.user_type == "O" %}
+                         {% if request.user.userprofile.user_type_code == "O" %}
                         <a class="account-menu nav-item" href="/org/dashboard">Dashboard</a>
                          {% else %}
                          <a class="account-menu nav-item" href="/member">Dashboard</a>
@@ -103,7 +103,7 @@
                     </span>
                     <div role="separator" class="dropdown-divider"></div>
                     <span class="navbar-text">
-                        <a class="account-menu nav-item" href="/member/{{ request.user.member.id }}">Profile</a>
+                        <a class="account-menu nav-item" href="/member/{{ request.user.id }}">Profile</a>
                     </span>
                     <div role="separator" class="dropdown-divider"></div>
                     <span class="navbar-text">

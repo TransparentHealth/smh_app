@@ -10,12 +10,12 @@
                 <span>Basic Information</span>
                 <span>
                     {% if member.id %}
-                        <a id="delete_member" href="/member/{{ member.id }}/delete/">
+                        <!-- <a id="delete_member" href="/member/{{ member.id }}/delete/">
                             <img src="{% static '/images/icons/trash_can.jpg' %}" />
-                        </a>
-                        <a id="edit_member">
+                        </a> -->
+                        <!-- <a id="edit_member">
                             <img src="{% static '/images/icons/edit_icon.jpg' %}" />
-                        </a>
+                        </a> -->
                     {% endif %}
                 </span>
             </h2>
@@ -28,11 +28,11 @@
                         <dd class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.user.errors }}</dd>
                     {% endif %}
 
-                    {% if member.user.userprofile.subject %}
+                    {% if member.userprofile.sub %}
                     <dt>Permanent Link:</dt>
                     <dd>
-                        <a class="member-tabs__link" href="{% url 'member:subject_url' subject=member.user.userprofile.subject %}">
-                            {{ settings.HOSTNAME_URL }}{% url 'member:subject_url' subject=member.user.userprofile.subject %}
+                        <a class="member-tabs__link" href="{% url 'member:subject_url' subject=member.userprofile.sub %}">
+                            {{ settings.HOSTNAME_URL }}{% url 'member:subject_url' subject=member.userprofile.sub %}
                         </a>
                     </dd>
                     {% endif %}
@@ -43,7 +43,7 @@
                     <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ id_token_payload.birthdate }}</dd>
 
                     <dt>Email:</dt>
-                    <dd>{{ member.user.email }}</dd>
+                    <dd>{{ member.email }}</dd>
 
                     <dt>{{ form.phone_number.label_tag|title }}</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
@@ -78,7 +78,7 @@
                     <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.emergency_contact_number|default:"" }}</dd>
 
                     <dt>Member since:</dt>
-                    <dd>{{ member.user.date_joined|date:"d/m/Y" }}</dd>
+                    <dd>{{ member.date_joined|date:"d/m/Y" }}</dd>
                                         <dt>Identification:</dt>
                     <dd>Identity Assurance Level (IAL): {{ id_token_payload.ial }}</dd>
                     <dd>Authenticator Assurance Level(AAL): {{ id_token_payload.aal }}</dd>

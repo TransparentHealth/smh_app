@@ -210,7 +210,7 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
         """Revoking a ResourceRequest that isn't for the request.user is not allowed."""
         resource_request_other_user = ResourceRequestFactory(status=REQUEST_APPROVED)
         ResourceGrantFactory(
-            member=resource_request_other_user.member,
+            member=resource_request_other_user,
             organization=resource_request_other_user.organization,
             resource_class_path=resource_request_other_user.resource_class_path
         )
@@ -475,7 +475,7 @@ class OrganizationsViewTestCase(SMHAppTestMixin, TestCase):
 
     def test_get(self):
         """The organizations GET view includes context['organizations'], with three values
-        for the current (logged-in) request.user.member:
+        for the current (logged-in) request.user:
             {'current': [list of REQUEST_APPROVED ResourceRequests],
             'requested': [list of REQUEST_REQUESTED ResourceRequests],
             'available': [list of REQUEST_DENIED ResourceRequests + orgs w/no ResourceRequest]},
@@ -691,7 +691,7 @@ class RedirectSubjectURLTestCase(SMHAppTestMixin, TestCase):
         user_profile.save()
 
         subject_url = reverse(self.url_name, kwargs={'subject': user_profile.subject})
-        member_url = reverse('member:member-update', kwargs={'pk': self.user.member.pk})
+        member_url = reverse('member:member-profile', kwargs={'pk': self.user.pk})
         response = self.client.get(subject_url)
 
         self.assertRedirects(response, member_url, fetch_redirect_response=False)

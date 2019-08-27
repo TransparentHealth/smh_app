@@ -228,7 +228,7 @@ def create_or_update_resource_request_notifications(sender, instance, created, *
             actor=instance.member,
             instance=instance,
             actions=[{
-                'url': reverse('member:records', args=[instance.member.pk]),
+                'url': reverse('member:records', args=[instance.member.id]),
                 'text': 'View Health Records',
             }],
             message="<b>{instance.member.userprofile.name}</b> accepted your request",

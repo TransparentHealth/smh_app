@@ -57,7 +57,7 @@ def authenticated_home(request):
 
     if request.user.is_authenticated:
         up, g_o_c = UserProfile.objects.get_or_create(user=request.user)
-        if up.user_type == "O":
+        if up.user_type_code == "O":
             return HttpResponseRedirect(reverse('org:dashboard'))
         return HttpResponseRedirect(reverse('member:dashboard'))
     return render(request, 'homepage.html', {'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME})

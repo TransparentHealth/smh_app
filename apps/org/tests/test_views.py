@@ -13,7 +13,6 @@ from social_django.models import UserSocialAuth
 
 from apps.common.tests.base import SMHAppTestMixin
 from apps.common.tests.factories import UserFactory
-from apps.member.models import Member
 from apps.org.tests.factories import UserSocialAuthFactory
 from .factories import OrganizationFactory, ResourceRequestFactory
 from ..models import (
@@ -405,7 +404,7 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             # The new Member's UserProfile has the picture_url from the VMI
             # response (from get_successful_response_data_from_vmi()).
             self.assertEqual(
-                new_member.user.userprofile.picture_url,
+                new_member.userprofile.picture_url,
                 None
             )
             # A new ResourceRequest was created from the Organization to the new Member
@@ -414,7 +413,7 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(
                 ResourceRequest.objects.filter(
                     organization=self.organization,
-                    member=new_member.user,
+                    member=new_member,
                     user=self.user
                 ).count(),
                 1
@@ -459,14 +458,14 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
         self.organization = OrganizationFactory()
         self.organization.agents.add(self.user)
         # A Member at the Organization
-        self.member = UserFactory(email='test_{}@example.com'.format(random.random())).member
+        self.member = UserFactory(email='test_{}@example.com'.format(random.random()))
         self.organization.members.add(self.member)
         # The URL for creating a Member associated with the self.organization
         self.url = reverse(
             self.url_name,
             kwargs={
                 'org_slug': self.organization.slug,
-                'username': self.member.user.username
+                'username': self.member.username
             }
         )
 
@@ -541,12 +540,12 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             organization = OrganizationFactory()
             if user_at_org:
                 organization.agents.add(self.user)
-            member = UserFactory().member
+            member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.user.username}
+                kwargs={'org_slug': organization.slug, 'username': member.username}
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -578,8 +577,8 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
                 }
             )
             # The self.member was not updated
-            self.member.user.refresh_from_db()
-            self.assertNotEqual(self.member.user.email, data.get('email', ''))
+            self.member.refresh_from_db()
+            self.assertNotEqual(self.member.email, data.get('email', ''))
 
         with self.subTest('incomplete data'):
             data = {'birthdate': '2000-01-01', 'gender': ''}
@@ -594,8 +593,8 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
                 }
             )
             # The self.member was not updated
-            self.member.user.refresh_from_db()
-            self.assertNotEqual(self.member.user.email, data.get('email', ''))
+            self.member.refresh_from_db()
+            self.assertNotEqual(self.member.email, data.get('email', ''))
 
         with self.subTest('invalid data'):
             data = {
@@ -612,8 +611,8 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
                 {'birthdate': ['Enter a valid date.']}
             )
             # The self.member was not updated
-            self.member.user.refresh_from_db()
-            self.assertNotEqual(self.member.user.email, data.get('email', ''))
+            self.member.refresh_from_db()
+            self.assertNotEqual(self.member.email, data.get('email', ''))
 
         with self.subTest('valid data, no request.user UserSocialAuth object'):
             # If the request.user does not have a UserSocialAuth object for VMI,
@@ -634,8 +633,8 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             )
 
             # The self.member was not updated
-            self.member.user.refresh_from_db()
-            self.assertNotEqual(self.member.user.email, data.get('email', ''))
+            self.member.refresh_from_db()
+            self.assertNotEqual(self.member.email, data.get('email', ''))
 
         with self.subTest('valid data, no UserSocialAuth object for Member'):
             # If the Member does not have a UserSocialAuth object for VMI,
@@ -666,13 +665,13 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             )
 
             # The self.member was not updated
-            self.member.user.refresh_from_db()
-            self.assertNotEqual(self.member.user.email, data.get('email', ''))
+            self.member.refresh_from_db()
+            self.assertNotEqual(self.member.email, data.get('email', ''))
 
         with self.subTest('valid data, request.user & member have a UserSocialAuth object'):
             # Create a UserSocialAuth object for the Member for VMI
             UserSocialAuthFactory(
-                user=self.member.user,
+                user=self.member,
                 provider=settings.SOCIAL_AUTH_NAME,
                 extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'MeMbEraccessTOKEN'},
                 uid=random.randint(100000000000000, 999999999999999),
@@ -697,17 +696,17 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
                 'org:org_create_member_verify_identity',
                 kwargs={
                     'org_slug': self.organization.slug,
-                    'username': self.member.user.username
+                    'username': self.member.username
                 }
             )
             self.assertRedirects(response, expected_url_next_page)
             # The self.member was updated
-            self.member.user.refresh_from_db()
-            self.assertEqual(self.member.user.email, data.get('email', ''))
+            self.member.refresh_from_db()
+            self.assertEqual(self.member.email, data.get('email', ''))
             # The self.member's UserProfile object's picture_url was updated based
             # on the value of 'picture' from get_successful_response_data_from_vmi()
             self.assertEqual(
-                self.member.user.userprofile.picture_url,
+                self.member.userprofile.picture_url,
                 'http://localhost:8000/media/profile-picture/None/no-img.jpg'
             )
 
@@ -751,21 +750,21 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         self.organization = OrganizationFactory()
         self.organization.agents.add(self.user)
         # A Member at the Organization
-        self.member = UserFactory().member
+        self.member = UserFactory()
         self.organization.members.add(self.member)
         # The URL for verifying the identity of a Member associated with the self.organization
         self.url = reverse(
             self.url_name,
             kwargs={
                 'org_slug': self.organization.slug,
-                'username': self.member.user.username
+                'username': self.member.username
             }
         )
         self.next_url = reverse(
             self.next_url_name,
             kwargs={
                 'org_slug': self.organization.slug,
-                'username': self.member.user.username
+                'username': self.member.username
             }
         )
 
@@ -848,12 +847,12 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             organization = OrganizationFactory()
             if user_at_org:
                 organization.agents.add(self.user)
-            member = UserFactory().member
+            member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.user.username}
+                kwargs={'org_slug': organization.slug, 'username': member.username}
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -990,7 +989,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('valid data, request.user & member have a UserSocialAuth object'):
             # Create a UserSocialAuth object for the Member for VMI
             UserSocialAuthFactory(
-                user=self.member.user,
+                user=self.member,
                 provider=settings.SOCIAL_AUTH_NAME,
                 extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'MeMbEraccessTOKEN'},
                 uid=random.randint(100000000000000, 999999999999999),
@@ -1015,7 +1014,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
                 'org:org_create_member_almost_done',
                 kwargs={
                     'org_slug': self.organization.slug,
-                    'username': self.member.user.username
+                    'username': self.member.username
                 }
             )
             self.assertRedirects(response, expected_url_next_page)
@@ -1091,14 +1090,14 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
         self.organization = OrganizationFactory()
         self.organization.agents.add(self.user)
         # A Member at the Organization
-        self.member = UserFactory().member
+        self.member = UserFactory()
         self.organization.members.add(self.member)
         # The URL for verifying the identity of a Member associated with the self.organization
         self.url = reverse(
             self.url_name,
             kwargs={
                 'org_slug': self.organization.slug,
-                'username': self.member.user.username
+                'username': self.member.username
             }
         )
 
@@ -1118,12 +1117,12 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
             organization = OrganizationFactory()
             if user_at_org:
                 organization.agents.add(self.user)
-            member = UserFactory().member
+            member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.user.username}
+                kwargs={'org_slug': organization.slug, 'username': member.username}
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -1149,7 +1148,7 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
                 'org:org_create_member_almost_done',
                 kwargs={
                     'org_slug': self.organization.slug,
-                    'username': self.member.user.username
+                    'username': self.member.username
                 }
             )
             self.assertRedirects(response, expected_url_next_page)
@@ -1193,14 +1192,14 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
         self.organization = OrganizationFactory()
         self.organization.agents.add(self.user)
         # A Member at the Organization
-        self.member = UserFactory().member
+        self.member = UserFactory()
         self.organization.members.add(self.member)
         # The URL for seeing that new Member creation at the self.organization is almost done
         self.url = reverse(
             self.url_name,
             kwargs={
                 'org_slug': self.organization.slug,
-                'username': self.member.user.username
+                'username': self.member.username
             }
         )
 
@@ -1220,12 +1219,12 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
             organization = OrganizationFactory()
             if user_at_org:
                 organization.agents.add(self.user)
-            member = UserFactory().member
+            member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.user.username}
+                kwargs={'org_slug': organization.slug, 'username': member.username}
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -1240,12 +1239,12 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
                     self.assertEqual(response.context['member'], member)
                     # Verify the url_to_set_password in the context
                     member_uid = urlsafe_base64_encode(force_bytes(member.pk)).decode('utf-8')
-                    member_token = token_generator.make_token(member.user)
+                    member_token = token_generator.make_token(member)
                     expected_relative_url = reverse(
                         'org:org_create_member_complete',
                         kwargs={
                             'org_slug': organization.slug,
-                            'username': member.user.username,
+                            'username': member.username,
                             'uidb64': member_uid,
                             'token': member_token
                         }
@@ -1292,19 +1291,19 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         self.organization = OrganizationFactory()
         # The self.user in this test is a member who is trying to set their password
-        self.member = self.user.member
+        self.member = self.user
         self.organization.members.add(self.member)
         # It's assumed that the self.user is not authenticated, because they are
         # setting their password for the first time.
         self.client.logout()
         # The URL for completing new Member creation at the self.organization
         self.member_uid = urlsafe_base64_encode(force_bytes(self.member.pk)).decode('utf-8')
-        self.member_token = token_generator.make_token(self.member.user)
+        self.member_token = token_generator.make_token(self.member)
         self.url = reverse(
             self.url_name,
             kwargs={
                 'org_slug': self.organization.slug,
-                'username': self.member.user.username,
+                'username': self.member.username,
                 'uidb64': self.member_uid,
                 'token': self.member_token
             }
@@ -1388,7 +1387,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                     self.url_name,
                     kwargs={
                         'org_slug': self.organization.slug,
-                        'username': self.member.user.username,
+                        'username': self.member.username,
                         'uidb64': self.member_uid,
                         'token': token
                     }
@@ -1404,7 +1403,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                         'org:org_create_member_invalid_token',
                         kwargs={
                             'org_slug': self.organization.slug,
-                            'username': self.member.user.username
+                            'username': self.member.username
                         }
                     )
                     self.assertRedirects(response, expected_url)
@@ -1430,7 +1429,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # The user should be redirected to the invalid_token page
             expected_url = reverse(
                 'org:org_create_member_invalid_token',
-                kwargs={'org_slug': self.organization.slug, 'username': self.member.user.username}
+                kwargs={'org_slug': self.organization.slug, 'username': self.member.username}
             )
             self.assertRedirects(response, expected_url)
 
@@ -1441,7 +1440,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
         resource_request = ResourceRequestFactory(
             user=self.user,
             organization=self.organization,
-            member=self.member.user,
+            member=self.member,
         )
         # The current number of ResourceRequests and ResourceGrants
         expected_num_resource_requests = ResourceRequest.objects.count()
@@ -1605,7 +1604,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'org:org_create_member_invalid_token',
                 kwargs={
                     'org_slug': self.organization.slug,
-                    'username': self.member.user.username
+                    'username': self.member.username
                 }
             )
             self.assertRedirects(response, expected_url_next_page)
@@ -1622,7 +1621,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
         ):
             # Create a UserSocialAuth object for the Member for VMI
             UserSocialAuthFactory(
-                user=self.member.user,
+                user=self.member,
                 provider=settings.SOCIAL_AUTH_NAME,
                 extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'MeMbEraccessTOKEN'},
                 uid=random.randint(100000000000000, 999999999999999),
@@ -1653,7 +1652,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(
                 ResourceGrant.objects.filter(
                     organization=self.organization,
-                    member=self.member.user,
+                    member=self.member,
                     resource_request=resource_request,
                 ).count(),
                 1
@@ -1664,8 +1663,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # Since we use VMI for authentication, the member's password does not
             # need to be set in smh_app. However, we do so in order to invalidate
             # the self.member_token.
-            self.member.user.refresh_from_db()
-            self.assertTrue(self.member.user.check_password(data['password1']))
+            self.member.refresh_from_db()
+            self.assertTrue(self.member.check_password(data['password1']))
             # A request was made to the user detail API endpoint in VMI
             self.assertEqual(self.response_user_detail.call['count'], 1)
 
@@ -1690,7 +1689,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'org:org_create_member_invalid_token',
                 kwargs={
                     'org_slug': self.organization.slug,
-                    'username': self.member.user.username
+                    'username': self.member.username
                 }
             )
             self.assertRedirects(response, expected_url_next_page)
@@ -1733,14 +1732,14 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
         self.organization = OrganizationFactory()
         self.organization.agents.add(self.user)
         # A Member at the Organization
-        self.member = UserFactory().member
+        self.member = UserFactory()
         self.organization.members.add(self.member)
         # The URL for completing new Member creation at the self.organization
         self.url = reverse(
             self.url_name,
             kwargs={
                 'org_slug': self.organization.slug,
-                'username': self.member.user.username
+                'username': self.member.username
             }
         )
 
@@ -1760,12 +1759,12 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
             organization = OrganizationFactory()
             if user_at_org:
                 organization.agents.add(self.user)
-            member = UserFactory().member
+            member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.user.username}
+                kwargs={'org_slug': organization.slug, 'username': member.username}
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -1818,14 +1817,14 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
         self.organization = OrganizationFactory()
         self.organization.agents.add(self.user)
         # A Member at the Organization
-        self.member = UserFactory().member
+        self.member = UserFactory()
         self.organization.members.add(self.member)
         # The URL for completing new Member creation at the self.organization
         self.url = reverse(
             self.url_name,
             kwargs={
                 'org_slug': self.organization.slug,
-                'username': self.member.user.username
+                'username': self.member.username
             }
         )
 
@@ -1845,12 +1844,12 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
             organization = OrganizationFactory()
             if user_at_org:
                 organization.agents.add(self.user)
-            member = UserFactory().member
+            member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.user.username}
+                kwargs={'org_slug': organization.slug, 'username': member.username}
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -1899,12 +1898,12 @@ class OrgLocalUserAPITestCase(SMHAppTestMixin, TestCase):
 
     def test_get(self):
         """GET should return only data for members who are not org agents
-        * Users for whom UserProfile.user_type='M'
+        * Users for whom UserProfile.user_type_code='M'
         * Data is formatted as {'user': ..., 'profile': ..., 'member': ...}.
         * 'user' data should not include password (even hashed)
         """
 
-        # (there's already a self.user whose .userprofile.user_type should default to 'M')
+        # (there's already a self.user whose .userprofile.user_type_code should default to 'M')
         # add a 'regular' member
         member = UserFactory()
         member.userprofile.user_type = 'M'

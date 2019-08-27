@@ -8,7 +8,7 @@
         <form method="post">
           {% csrf_token %}
           <button class="btn btn-primary" type=submit>Yes</button>
-          <a class="btn btn-secondary" href="{% url 'member:member-update' member.id %}">No</a>
+          <a class="btn btn-secondary" href="{% url 'member:member-profile' member.id %}">No</a>
         </form>
     </div>
 </div>
