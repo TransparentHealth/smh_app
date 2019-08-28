@@ -40,10 +40,7 @@ from .utils import (
 class SelfOrApprovedOrgMixin(UserPassesTestMixin):
     def get_login_url(self):
         """Org agents can request access, others go home (login or member:dashboard)."""
-        if (
-            not self.request.user.is_anonymous
-            and self.request.user.userprofile.user_type_code == 'O'
-        ):
+        if not self.request.user.is_anonymous and self.request.user.user_type == 'O':
             return reverse('member:request-access', args=[self.kwargs['pk']])
         else:
             return reverse('login') + '?next=' + self.request.path

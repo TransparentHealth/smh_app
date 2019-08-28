@@ -1,4 +1,6 @@
+from collections import OrderedDict
 from datetime import date
+from enum import Enum
 from importlib import import_module
 
 from django.contrib.auth.models import User
@@ -13,13 +15,32 @@ from phonenumber_field.modelfields import PhoneNumberField
 from apps.data.util import parse_timestamp
 
 
-class UserType:
-    OTHER = ('', 'Other')
-    MEMBER = ('M', 'Member')
-    ORG_AGENT = ('O', 'Organization Agent')
+class UserType(Enum):
+    OTHER = ''
+    MEMBER = 'M'
+    ORG_AGENT = 'O'
 
 
-USER_TYPE_CHOICES = (UserType.OTHER, UserType.MEMBER, UserType.ORG_AGENT)
+USER_TYPE_CHOICES = OrderedDict(
+    (
+        (UserType.OTHER.value, 'Other'),
+        (UserType.MEMBER.value, 'Member'),
+        (UserType.ORG_AGENT.value, "Organization Agent"),
+    )
+)
+
+
+# Make user_type a property of the User model, because that is where it is tested
+def user_type(self):
+    if self.agent_organizations.exists():
+        return UserType.ORG_AGENT.value
+    elif self.member_organizations.exists():
+        return UserType.MEMBER.value
+    else:
+        return UserType.OTHER.value
+
+
+User.user_type = property(user_type)
 
 
 class UserProfile(models.Model):
@@ -44,9 +65,7 @@ class UserProfile(models.Model):
 
     def as_dict(self):
         """return the UserProfile object as a json-able dict"""
-        print('id_token_payload =', self.id_token_payload)
-        data = {}
-        data.update(**self.id_token_payload)
+        data = dict(**self.id_token_payload)
         data.update(
             **{
                 k: (str(v) if k in ['emergency_contact_number'] else v)
@@ -54,40 +73,14 @@ class UserProfile(models.Model):
                 if k[0] != '_'
             }
         )
-        print('UserProfile.as_dict() =', data)
         return data
-
-    @classmethod
-    def get_non_agent_profiles(cls):
-        return cls.objects.select_related('user').raw(
-            """
-            SELECT * FROM users_userprofile WHERE id_token_payload->'organization_agent' = '[]' 
-            OR id_token_payload->'organization_agent' is null
-            """
-        )
 
     @property
     def name(self):
         return ' '.join([self.user.first_name or '', self.user.last_name or '']).strip()
 
     @property
-    def user_type(self):
-        payload = self.id_token_payload
-        if 'organization_agent' in payload and len(payload['organization_agent']) > 0:
-            return UserType.ORG_AGENT
-        return UserType.MEMBER
-
-    @property
-    def user_type_code(self):
-        return self.user_type[0]
-
-    @property
-    def user_type_display(self):
-        return self.user_type[1]
-
-    @property
     def age(self):
-        print('birthdate:', self.birthdate)
         try:
             born = parse_timestamp(self.birthdate).date()
             today = date.today()
@@ -112,30 +105,30 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     instance.userprofile.save()
 
 
+# This is still tied to UserProfile (rather than User) for historical migration reasons.
 @receiver(post_save, sender=UserProfile)
 def create_user_profile_connect_to_hixny_notification(
     sender, instance, created, **kwargs
 ):
-    """Create Notifications related to the ResourceRequest, while deleting existing notifications"""
+    """Create Notifications related to the ResourceRequest, 
+        while deleting existing notifications
+    """
     Notification = import_module('apps.notifications.models').Notification
-    if instance.user_type_code == 'O':  # Org agent
+    user = instance.user
+    if user.user_type == 'O':  # Org agent
         # Delete any Hixny connection notifications for this UserProfile
         Notification.objects.filter(
-            notify_id=instance.user.id,
-            actor_id=instance.user.id,
-            message__contains='Hixny',
+            notify_id=user.id, actor_id=user.id, message__contains='Hixny'
         ).delete()
     elif created:
         # Create a notification to connect to Hixny
         Notification.objects.filter(
-            notify_id=instance.user.id,
-            actor_id=instance.user.id,
-            message__contains='Hixny',
+            notify_id=user.id, actor_id=user.id, message__contains='Hixny'
         ).delete()
         Notification.objects.create(
-            notify=instance.user,
-            actor=instance.user,
-            instance=instance,
+            notify=user,
+            actor=user,
+            instance=user,
             message="Connect your account to <b>Hixny</b> (Health Information Exchange of New York)",
             actions=[
                 {

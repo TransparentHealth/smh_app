@@ -73,7 +73,7 @@ def user_router(request):
     """
     # If the request.user is an Organization Agent, then redirect to the org
     # dashboard
-    if request.user.userprofile.user_type_code == 'O':
+    if request.user.agent_organizations.exists():
         return redirect(reverse('org:dashboard'))
 
     # If the request.user is a member of an organization, then redirect to the member dashboard
