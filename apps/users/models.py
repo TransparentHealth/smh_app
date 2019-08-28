@@ -1,15 +1,15 @@
+from datetime import date
 from importlib import import_module
-from datetime import date, timedelta
-from django.db import models
+
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from phonenumber_field.modelfields import PhoneNumberField
 
-from .utils import get_id_token_payload
 from apps.data.util import parse_timestamp
 
 

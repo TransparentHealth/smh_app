@@ -1,21 +1,17 @@
-import json
-import requests
-from urllib.parse import urlparse
 import logging
+
 from django.conf import settings
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import redirect, reverse, render
-from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect
+from django.shortcuts import redirect, render, reverse
+from django.utils.translation import ugettext_lazy as _
 from requests_oauthlib import OAuth2Session
 from social_django.models import UserSocialAuth
-from django.contrib.auth import logout
-from django.utils.translation import ugettext_lazy as _
-from apps.users.utils import refresh_access_token
-from .forms import UserSettingsForm
-from .models import UserProfile
 
+from apps.users.utils import refresh_access_token
+
+from .models import UserProfile
 
 logger = logging.getLogger('smhapp_.%s' % __name__)
 
@@ -40,8 +36,10 @@ def mylogout(request):
                     response = oas.get(remote_logout)
                     print(response.status_code, response.content)
 
-            logger.info(_("%s remote logout of %s") %
-                        (request.user, settings.REMOTE_LOGOUT_ENDPOINT))
+            logger.info(
+                _("%s remote logout of %s")
+                % (request.user, settings.REMOTE_LOGOUT_ENDPOINT)
+            )
         except UserSocialAuth.DoesNotExist:
             pass
         logger.info(_("$s logged out."), request.user)
@@ -60,7 +58,9 @@ def authenticated_home(request):
         if up.user_type_code == "O":
             return HttpResponseRedirect(reverse('org:dashboard'))
         return HttpResponseRedirect(reverse('member:dashboard'))
-    return render(request, 'homepage.html', {'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME})
+    return render(
+        request, 'homepage.html', {'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME}
+    )
 
 
 @login_required(login_url='home')

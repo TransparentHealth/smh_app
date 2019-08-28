@@ -11,24 +11,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='member',
-            name='address',
-        ),
-        migrations.RemoveField(
-            model_name='member',
-            name='birth_date',
-        ),
-        migrations.RemoveField(
-            model_name='member',
-            name='phone_number',
-        ),
-        migrations.RemoveField(
-            model_name='member',
-            name='emergency_contact_name',
-        ),
-        migrations.RemoveField(
-            model_name='member',
-            name='emergency_contact_number',
-        ),
+        migrations.RemoveField(model_name='member', name='address'),
+        migrations.RemoveField(model_name='member', name='birth_date'),
+        migrations.RemoveField(model_name='member', name='phone_number'),
+        migrations.RemoveField(model_name='member', name='emergency_contact_name'),
+        migrations.RemoveField(model_name='member', name='emergency_contact_number'),
     ]

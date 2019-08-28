@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from libs.qrcode import make_qr_code
 
 fixtures = {

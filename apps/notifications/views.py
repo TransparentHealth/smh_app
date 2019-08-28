@@ -1,11 +1,11 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Notification
 from .forms import DismissNotificationForm
+from .models import Notification
 
 
 class DismissNotificationView(LoginRequiredMixin, View):

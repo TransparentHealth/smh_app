@@ -2,6 +2,7 @@
 
 import logging
 from importlib import import_module
+
 from django.db import migrations
 
 log = logging.getLogger(__name__)
@@ -20,7 +21,9 @@ def forward(apps, schema_editor):
     try:
         Member = import_module('apps.member.models').Member
     except AttributeError:
-        log.warn('The Member model has been removed, so Member.organizations will not be migrated')
+        log.warn(
+            'The Member model has been removed, so Member.organizations will not be migrated'
+        )
         return
 
     # Copy org member relationships from the Member.organizations field.
@@ -35,10 +38,6 @@ def reverse(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('org', '0008_org_members_agents_1_create_fields'),
-    ]
+    dependencies = [('org', '0008_org_members_agents_1_create_fields')]
 
-    operations = [
-        migrations.RunPython(forward, reverse)
-    ]
+    operations = [migrations.RunPython(forward, reverse)]

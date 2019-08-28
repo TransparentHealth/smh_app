@@ -20,15 +20,15 @@ def forward(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('users', '0007_emergency_contact_data'),
-    ]
+    dependencies = [('users', '0007_emergency_contact_data')]
 
     operations = [
         migrations.AddField(
             model_name='userprofile',
             name='id_token_payload',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default=dict, encoder=django.core.serializers.json.DjangoJSONEncoder),
+            field=django.contrib.postgres.fields.jsonb.JSONField(
+                default=dict, encoder=django.core.serializers.json.DjangoJSONEncoder
+            ),
         ),
-        migrations.RunPython(forward, lambda: None)
+        migrations.RunPython(forward, lambda: None),
     ]

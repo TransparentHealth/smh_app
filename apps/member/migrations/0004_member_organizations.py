@@ -5,14 +5,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('member', '0003_update_userprofile'),
-    ]
+    dependencies = [('member', '0003_update_userprofile')]
 
     operations = [
         migrations.AlterField(
             model_name='member',
             name='organizations',
-            field=models.ManyToManyField(blank=True, related_name='members_organizations', to='org.Organization'),
-        ),
+            field=models.ManyToManyField(
+                blank=True, related_name='members_organizations', to='org.Organization'
+            ),
+        )
     ]

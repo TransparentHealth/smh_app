@@ -1,6 +1,6 @@
-from memoize import memoize
 import requests
 from django.conf import settings
+from memoize import memoize
 
 from apps.data.models.allergy import AllergyIntolerance
 from apps.data.models.medication import (
@@ -27,12 +27,15 @@ def fetch_member_data(member, provider):
                 refreshed = refresh_access_token(social_auth)
                 if refreshed:  # repeat the previous request
                     access_token = social_auth.extra_data.get('access_token')
-                    r = requests.get(url, headers={'Authorization': 'Bearer %s' % access_token})
+                    r = requests.get(
+                        url, headers={'Authorization': 'Bearer %s' % access_token}
+                    )
             if r.status_code == 200:
                 return r.json()
             else:
                 return {
-                    'error': 'Could not access member data: Status = %d' % r.status_code,
+                    'error': 'Could not access member data: Status = %d'
+                    % r.status_code,
                     'responses': [r.text],
                 }
     # fallback: empty member data
@@ -67,11 +70,20 @@ def get_prescriptions(data, id=None, incl_practitioners=False, json=False):
     }
     # organize all MedicationRequests & MedicationStatements by
     # Medication.code.text (its name)
-    for med_req in get_resource_data(data, 'MedicationRequest', MedicationRequest.from_data):
+    for med_req in get_resource_data(
+        data, 'MedicationRequest', MedicationRequest.from_data
+    ):
         name = med_req.medicationReference.display
-        if (name in prescriptions and med_req.requester and med_req.requester.agent.display not in [
-                mr.requester.agent.display for mr in prescriptions[name]['requests'] if mr.requester
-        ]):
+        if (
+            name in prescriptions
+            and med_req.requester
+            and med_req.requester.agent.display
+            not in [
+                mr.requester.agent.display
+                for mr in prescriptions[name]['requests']
+                if mr.requester
+            ]
+        ):
             prescriptions[name]['requests'].append(med_req)
     # filter out prescriptions with no MedicationRequests
     for name in list(prescriptions.keys()):
@@ -79,12 +91,15 @@ def get_prescriptions(data, id=None, incl_practitioners=False, json=False):
             del prescriptions[name]
 
     # add MedicationStatements
-    for med_stmt in get_resource_data(data, 'MedicationStatement', MedicationStatement.from_data):
+    for med_stmt in get_resource_data(
+        data, 'MedicationStatement', MedicationStatement.from_data
+    ):
         name = med_stmt.medicationReference.display
         # only add non-duplicate MedicationStatements (based on its __str__
         # representation)
         if name in prescriptions and str(med_stmt) not in (
-                str(ms) for ms in prescriptions[name]['statements']):
+            str(ms) for ms in prescriptions[name]['statements']
+        ):
             prescriptions[name]['statements'].append(med_stmt)
 
     # sort MedicationStatements in effectiveDate.start descending order

@@ -1,7 +1,9 @@
-from django.db import models
 from django.contrib.auth.models import User
-from apps.users.utils import get_id_token_payload
+from django.db import models
+
 from apps.org.models import Organization
+from apps.users.utils import get_id_token_payload
+
 
 """
 The Member model is DEPRECATED -- retained until we're sure all data successfully migrates.
@@ -11,16 +13,17 @@ The Member model is DEPRECATED -- retained until we're sure all data successfull
   (which points to User, which has related_name User.member_organizations)
 """
 
+
 class Member(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     # organizations field DEPRECATED: use Organization.members field instead
     organizations = models.ManyToManyField(
-        Organization, blank=True, related_name='members_organizations')
+        Organization, blank=True, related_name='members_organizations'
+    )
 
     def __str__(self):
         return self.user.username
 
     def parsed_id_token(self):
         return get_id_token_payload(self.user)
-

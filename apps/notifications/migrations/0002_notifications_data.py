@@ -4,8 +4,14 @@ from django.db import migrations
 from django.db.models.signals import post_save
 
 from apps.notifications.models import Notification
-from apps.users.models import UserProfile, create_user_profile_connect_to_hixny_notification
-from apps.org.models import ResourceRequest, create_or_update_resource_request_notifications
+from apps.org.models import (
+    ResourceRequest,
+    create_or_update_resource_request_notifications,
+)
+from apps.users.models import (
+    UserProfile,
+    create_user_profile_connect_to_hixny_notification,
+)
 
 
 def notifications_up(apps, schema_editor):
@@ -17,11 +23,14 @@ def notifications_up(apps, schema_editor):
     """
     for user_profile in UserProfile.objects.all():
         # pretend that the UserProfile was just created in order to create the notification
-        create_user_profile_connect_to_hixny_notification(UserProfile, user_profile, created=True)
+        create_user_profile_connect_to_hixny_notification(
+            UserProfile, user_profile, created=True
+        )
 
     for resource_request in ResourceRequest.objects.all():
         create_or_update_resource_request_notifications(
-            ResourceRequest, resource_request, created=False)
+            ResourceRequest, resource_request, created=False
+        )
 
 
 def notifications_dn(apps, schema_editor):
@@ -37,6 +46,4 @@ class Migration(migrations.Migration):
         ('users', '0004_auto_20190616_1737'),
     ]
 
-    operations = [
-        migrations.RunPython(notifications_up, notifications_dn),
-    ]
+    operations = [migrations.RunPython(notifications_up, notifications_dn)]

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4
-from ..models import UserProfile
+
 from jwkest.jwt import JWT
-import json
+
+from ..models import UserProfile
 
 __author__ = "Alan Viars"
 
@@ -11,7 +12,7 @@ __author__ = "Alan Viars"
 def save_profile(backend, user, response, *args, **kwargs):
     if backend.name == 'vmi':
         # make sure there is a UserProfile object for the given User
-        profile, created = UserProfile.objects.get_or_create(user=user) 
+        profile, created = UserProfile.objects.get_or_create(user=user)
         print(profile, created)
 
         # Save the id_token payload to the UserProfile object
@@ -21,4 +22,3 @@ def save_profile(backend, user, response, *args, **kwargs):
             profile.id_token_payload = JWT().unpack(id_token).payload()
             print(f'payload: {profile.id_token_payload}')
             profile.save()
-

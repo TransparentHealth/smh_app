@@ -4,8 +4,7 @@ from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
-
-from httmock import remember_called, urlmatch, HTTMock
+from httmock import HTTMock, remember_called, urlmatch
 from social_django.models import UserSocialAuth
 
 from apps.common.tests.base import SMHAppTestMixin
@@ -21,7 +20,8 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
         self.url = reverse(self.url_name)
 
     vmi_picture_url = '{}/media/profile-picture/None/no-img.jpg'.format(
-        settings.SOCIAL_AUTH_VMI_HOST)
+        settings.SOCIAL_AUTH_VMI_HOST
+    )
 
     @urlmatch(path=r'^/api/v1/user/([0-9]+)?/$')
     @remember_called
@@ -39,20 +39,10 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
             request.original.data.get('gender'),
             request.original.data.get('email'),
         )
-        return {
-            'status_code': 200,
-            'content': content
-        }
+        return {'status_code': 200, 'content': content}
 
     def get_successful_response_data_from_vmi(
-        self,
-        first_name,
-        last_name,
-        username,
-        birthdate,
-        nickname,
-        gender,
-        email
+        self, first_name, last_name, username, birthdate, nickname, gender, email
     ):
         """The expected content of a response for a successful PUT to update a VMI user."""
         return {
@@ -76,7 +66,7 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
             'vot': 'P0.Cc',
             'website': '',
             'address': [],
-            'document': []
+            'document': [],
         }
 
     def test_get(self):
@@ -96,7 +86,7 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
                 response.context['form'].errors,
-                {'picture': ['This field is required.']}
+                {'picture': ['This field is required.']},
             )
             # The self.user's UserProfile was not updated
             self.user.userprofile.refresh_from_db()
@@ -114,7 +104,7 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
                 response.context['form'].errors,
-                {'picture': ['This field is required.']}
+                {'picture': ['This field is required.']},
             )
             # The self.user's UserProfile was not updated
             self.user.userprofile.refresh_from_db()
@@ -133,13 +123,21 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
             with HTTMock(self.response_content_success):
                 response = self.client.post(
                     self.url,
-                    {'picture': SimpleUploadedFile('picture.png', test_image.getvalue())}
+                    {
+                        'picture': SimpleUploadedFile(
+                            'picture.png', test_image.getvalue()
+                        )
+                    },
                 )
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
                 response.context['errors'],
-                {'user': 'User has no association with {}'.format(settings.SOCIAL_AUTH_NAME)}
+                {
+                    'user': 'User has no association with {}'.format(
+                        settings.SOCIAL_AUTH_NAME
+                    )
+                },
             )
 
             # The self.user's UserProfile was not updated
@@ -153,7 +151,10 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
             UserSocialAuthFactory(
                 user=self.user,
                 provider=settings.SOCIAL_AUTH_NAME,
-                extra_data={'refresh_token': 'refreshTOKEN', 'access_token': 'accessTOKENhere'},
+                extra_data={
+                    'refresh_token': 'refreshTOKEN',
+                    'access_token': 'accessTOKENhere',
+                },
                 uid=random.randint(100000000000000, 999999999999999),
             )
 
@@ -164,7 +165,12 @@ class UserSettingsViewTestCase(SMHAppTestMixin, TestCase):
             # library here.
             with HTTMock(self.response_content_success):
                 response = self.client.post(
-                    self.url, {'picture': SimpleUploadedFile('picture.png', test_image.getvalue())}
+                    self.url,
+                    {
+                        'picture': SimpleUploadedFile(
+                            'picture.png', test_image.getvalue()
+                        )
+                    },
                 )
 
             # A successful create redirects to the next page of the creation process.
@@ -230,7 +236,6 @@ class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
             (True, False, False, 'org:dashboard'),
             (True, True, False, 'org:dashboard'),
             (True, True, True, 'org:dashboard'),
-
             (False, True, False, 'member:dashboard'),
             (False, True, True, 'member:dashboard'),
             (False, False, False, 'org:dashboard'),

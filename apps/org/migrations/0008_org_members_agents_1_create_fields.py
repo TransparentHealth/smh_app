@@ -15,16 +15,29 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='organization',
             name='agents',
-            field=models.ManyToManyField(blank=True, related_name='agent_organizations', to=settings.AUTH_USER_MODEL),
+            field=models.ManyToManyField(
+                blank=True,
+                related_name='agent_organizations',
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
             model_name='organization',
             name='members',
-            field=models.ManyToManyField(blank=True, related_name='member_organizations', to=settings.AUTH_USER_MODEL),
+            field=models.ManyToManyField(
+                blank=True,
+                related_name='member_organizations',
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
             model_name='organization',
             name='users',
-            field=models.ManyToManyField(blank=True, related_name='organizations', to=settings.AUTH_USER_MODEL, verbose_name='Agents'),
+            field=models.ManyToManyField(
+                blank=True,
+                related_name='organizations',
+                to=settings.AUTH_USER_MODEL,
+                verbose_name='Agents',
+            ),
         ),
     ]

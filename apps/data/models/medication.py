@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 from typing import List
+
 from .model import DataModel
-from .types import Reference, CodeableConcept, Identifier, Period, Quantity
+from .types import CodeableConcept, Identifier, Period, Quantity, Reference
 
 
 @dataclass
@@ -95,7 +96,10 @@ class MedicationStatement(DataModel):
             + f", effectivePeriod=('{self.effectivePeriod.start}', '{self.effectivePeriod.end}'"
             + f", dosage=["
             + ', '.join(
-                [f"'{dose.doseQuantity.value} {dose.doseQuantity.unit}'" for dose in self.dosage]
+                [
+                    f"'{dose.doseQuantity.value} {dose.doseQuantity.unit}'"
+                    for dose in self.dosage
+                ]
             )
             + '])'
         )
@@ -111,7 +115,14 @@ class MedicationStatement(DataModel):
     VALIDATORS = dict(
         status=[
             lambda instance, field, value: value
-            in ['active', 'completed', 'entered-in-error', 'intended', 'stopped', 'on-hold']
+            in [
+                'active',
+                'completed',
+                'entered-in-error',
+                'intended',
+                'stopped',
+                'on-hold',
+            ]
         ],
         taken=[lambda instance, field, value: value in ['y', 'n', 'unk', 'na']],
     )

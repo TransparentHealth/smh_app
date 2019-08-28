@@ -1,5 +1,6 @@
-from time import time
 import logging
+from time import time
+
 import requests
 from django.conf import settings
 from jwkest.jwt import JWT
@@ -32,7 +33,9 @@ def refresh_access_token(social_auth):
         if host:
             refresh_url = f"{host}/o/token/"
             client_id = getattr(settings, f"SOCIAL_AUTH_{provider_upper}_KEY", "")
-            client_secret = getattr(settings, f"SOCIAL_AUTH_{provider_upper}_SECRET", "")
+            client_secret = getattr(
+                settings, f"SOCIAL_AUTH_{provider_upper}_SECRET", ""
+            )
             refresh_data = {
                 'grant_type': 'refresh_token',
                 'refresh_token': refresh_token,

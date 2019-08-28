@@ -5,9 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('org', '0004_resourcerequest_and_resourcegrant'),
-    ]
+    dependencies = [('org', '0004_resourcerequest_and_resourcegrant')]
 
     operations = [
         migrations.RenameField(

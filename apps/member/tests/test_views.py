@@ -1,20 +1,25 @@
-from httmock import HTTMock
-
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from httmock import HTTMock
 
 from apps.common.tests.base import MockResourceDataMixin, SMHAppTestMixin
 from apps.common.tests.factories import UserFactory
+from apps.notifications.models import Notification
 from apps.org.models import (
-    ResourceGrant, ResourceRequest, RESOURCE_CHOICES,
-    REQUEST_APPROVED, REQUEST_DENIED, REQUEST_REQUESTED,
+    REQUEST_APPROVED,
+    REQUEST_DENIED,
+    REQUEST_REQUESTED,
+    RESOURCE_CHOICES,
+    ResourceGrant,
+    ResourceRequest,
 )
 from apps.org.tests.factories import (
-    OrganizationFactory, ResourceGrantFactory, ResourceRequestFactory,
-    UserSocialAuthFactory
+    OrganizationFactory,
+    ResourceGrantFactory,
+    ResourceRequestFactory,
+    UserSocialAuthFactory,
 )
 from apps.sharemyhealth.resources import Resource
-from apps.notifications.models import Notification
 
 
 @override_settings(LOGIN_URL='/accounts/login/')
@@ -37,13 +42,9 @@ class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
         # expected_resources_granted_ids = []
         for i in range(0, 3):
             resource_request = ResourceRequestFactory(
-                member=self.user,
-                status=REQUEST_APPROVED
+                member=self.user, status=REQUEST_APPROVED
             )
-            ResourceGrantFactory(
-                member=self.user,
-                resource_request=resource_request
-            )
+            ResourceGrantFactory(member=self.user, resource_request=resource_request)
             # expected_resources_granted_ids.append(resource_request.id)
         # Some ResourceGrants for other users
         for i in range(0, 2):
@@ -75,8 +76,7 @@ class MemberDashboardTestCase(SMHAppTestMixin, TestCase):
             self.client.logout()
             response = self.client.get(reverse(self.url_name))
             expected_redirect = '{}?next={}'.format(
-                reverse('login'),
-                reverse(self.url_name)
+                reverse('login'), reverse(self.url_name)
             )
             self.assertRedirects(response, expected_redirect)
 
@@ -89,9 +89,7 @@ class ApproveResourceRequestTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         # A ResourceRequest for the self.user
         self.resource_request = ResourceRequestFactory(
-            member=self.user,
-            resourcegrant=None,
-            status=REQUEST_REQUESTED
+            member=self.user, resourcegrant=None, status=REQUEST_REQUESTED
         )
 
     def test_methods(self):
@@ -160,15 +158,13 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
         super().setUp()
         # A ResourceRequest for the self.user that has been approved
         self.resource_request = ResourceRequestFactory(
-            member=self.user,
-            resourcegrant=None,
-            status=REQUEST_APPROVED
+            member=self.user, resourcegrant=None, status=REQUEST_APPROVED
         )
         ResourceGrantFactory(
             member=self.user,
             resource_request=self.resource_request,
             organization=self.resource_request.organization,
-            resource_class_path=self.resource_request.resource_class_path
+            resource_class_path=self.resource_request.resource_class_path,
         )
 
     def test_methods(self):
@@ -212,7 +208,7 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
         ResourceGrantFactory(
             member=resource_request_other_user,
             organization=resource_request_other_user.organization,
-            resource_class_path=resource_request_other_user.resource_class_path
+            resource_class_path=resource_request_other_user.resource_class_path,
         )
 
         url = reverse(self.url_name, kwargs={'pk': resource_request_other_user.pk})
@@ -318,10 +314,7 @@ class RecordsViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         with self.subTest('Not authenticated'):
             self.client.logout()
             response = self.client.get(url)
-            expected_redirect = '{}?next={}'.format(
-                reverse('login'),
-                url
-            )
+            expected_redirect = '{}?next={}'.format(reverse('login'), url)
             self.assertRedirects(response, expected_redirect)
 
 
@@ -353,10 +346,7 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         # Give the self.user access to the member's access_token.
         provider_name = Resource.name
         self.give_user_access_to_member_token(self.user, member, provider_name)
-        url = reverse(
-            self.url_name,
-            kwargs={'pk': member.pk}
-        )
+        url = reverse(self.url_name, kwargs={'pk': member.pk})
 
         with self.subTest('Authenticated'):
             self.client.force_login(self.user)
@@ -384,13 +374,15 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
         UserSocialAuthFactory(
             user=member,
             provider=provider_name,
-            extra_data={'refresh_token': 'refreshTOKEN', 'access_token': access_token}
+            extra_data={'refresh_token': 'refreshTOKEN', 'access_token': access_token},
         )
 
         # The URLs that will be used in this test
         member_data_url = reverse(self.url_name, kwargs={'pk': member.pk})
 
-        with self.subTest("A member's data sources without an approved ResourceRequest"):
+        with self.subTest(
+            "A member's data sources without an approved ResourceRequest"
+        ):
 
             # We mock the use of the requests library, so we don't make real
             # requests from within the test.
@@ -409,13 +401,13 @@ class DataSourcesViewTestCase(MockResourceDataMixin, SMHAppTestMixin, TestCase):
                 member=member,
                 organization=organization,
                 resourcegrant=None,
-                status=REQUEST_APPROVED
+                status=REQUEST_APPROVED,
             )
             resource_grant = ResourceGrantFactory(
                 member=resource_request.member,
                 organization=resource_request.organization,
                 resource_class_path=resource_request.resource_class_path,
-                resource_request=resource_request
+                resource_request=resource_request,
             )
 
             # We mock the use of the requests library, so we don't make real
@@ -471,7 +463,9 @@ class OrganizationsViewTestCase(SMHAppTestMixin, TestCase):
         """set up organizations that will be used in the tests."""
         super().setUp()
         # 3 orgs is sufficient
-        self.organizations = [OrganizationFactory(name="Org %d" % i) for i in range(1, 4)]
+        self.organizations = [
+            OrganizationFactory(name="Org %d" % i) for i in range(1, 4)
+        ]
 
     def test_get(self):
         """The organizations GET view includes context['organizations'], with three values
@@ -488,8 +482,12 @@ class OrganizationsViewTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('User should have no org ResourceRequests'):
             response = self.client.get(member_orgs_url)
             self.assertEqual(len(response.context_data['organizations']['current']), 0)
-            self.assertEqual(len(response.context_data['organizations']['requested']), 0)
-            self.assertEqual(len(response.context_data['organizations']['available']), 3)
+            self.assertEqual(
+                len(response.context_data['organizations']['requested']), 0
+            )
+            self.assertEqual(
+                len(response.context_data['organizations']['available']), 3
+            )
 
         # create 1 approved and 1 requested resource request for the user
         resource_requests = [
@@ -498,20 +496,26 @@ class OrganizationsViewTestCase(SMHAppTestMixin, TestCase):
                 member=self.user,
                 user=self.user,
                 status=REQUEST_REQUESTED,
-                resource_class_path=resource_class_path),
+                resource_class_path=resource_class_path,
+            ),
             ResourceRequest.objects.create(
                 organization=self.organizations[1],
                 member=self.user,
                 user=self.user,
                 status=REQUEST_APPROVED,
-                resource_class_path=resource_class_path),
+                resource_class_path=resource_class_path,
+            ),
         ]
 
         with self.subTest('User should have 1 requested and 1 approved organization'):
             response = self.client.get(member_orgs_url)
             self.assertEqual(len(response.context_data['organizations']['current']), 1)
-            self.assertEqual(len(response.context_data['organizations']['requested']), 1)
-            self.assertEqual(len(response.context_data['organizations']['available']), 1)
+            self.assertEqual(
+                len(response.context_data['organizations']['requested']), 1
+            )
+            self.assertEqual(
+                len(response.context_data['organizations']['available']), 1
+            )
 
         # now make the 'requested' request 'denied'
         resource_requests[0].status = REQUEST_DENIED
@@ -521,8 +525,12 @@ class OrganizationsViewTestCase(SMHAppTestMixin, TestCase):
             # one of the 'available' organizations has been denied
             response = self.client.get(member_orgs_url)
             self.assertEqual(len(response.context_data['organizations']['current']), 1)
-            self.assertEqual(len(response.context_data['organizations']['requested']), 0)
-            self.assertEqual(len(response.context_data['organizations']['available']), 2)
+            self.assertEqual(
+                len(response.context_data['organizations']['requested']), 0
+            )
+            self.assertEqual(
+                len(response.context_data['organizations']['available']), 2
+            )
 
 
 @override_settings(LOGIN_URL='/accounts/login/')
@@ -533,7 +541,9 @@ class ResourceRequestResponseTestCase(SMHAppTestMixin, TestCase):
         """set up organizations that will be used in the tests."""
         super().setUp()
         # 3 orgs is sufficient
-        self.organizations = [OrganizationFactory(name="Org %d" % i) for i in range(1, 4)]
+        self.organizations = [
+            OrganizationFactory(name="Org %d" % i) for i in range(1, 4)
+        ]
 
     def test_post_valid(self):
         """Posting changes in a member's organizations should result in ResourceRequest changes."""
@@ -541,32 +551,43 @@ class ResourceRequestResponseTestCase(SMHAppTestMixin, TestCase):
         resource_class_path = RESOURCE_CHOICES[0][0]
         request_url = reverse(self.url_name)
 
-        with self.subTest('POST approval for a requested resource '
-                          'should result in approved status and a new ResourceGrant'):
+        with self.subTest(
+            'POST approval for a requested resource '
+            'should result in approved status and a new ResourceGrant'
+        ):
             ResourceRequestFactory(
                 organization=self.organizations[0],
                 user=self.user,
                 member=self.user,
                 resource_class_path=resource_class_path,
-                status=REQUEST_REQUESTED)
+                status=REQUEST_REQUESTED,
+            )
 
             response = self.client.post(
                 request_url,
                 {
                     'approve': 'Approve It',  # value doesn't matter, just the key
                     'member': self.user.pk,
-                    'organization': self.organizations[0].pk,  # same as the requested org above
+                    'organization': self.organizations[
+                        0
+                    ].pk,  # same as the requested org above
                 },
             )
             resource_request = ResourceRequest.objects.filter(member=self.user).first()
-            resource_grant = ResourceGrant.objects.filter(resource_request=resource_request).first()
+            resource_grant = ResourceGrant.objects.filter(
+                resource_request=resource_request
+            ).first()
 
-            self.assertEqual(response.status_code, 302)  # redirects, we don't care where
+            self.assertEqual(
+                response.status_code, 302
+            )  # redirects, we don't care where
             self.assertEqual(resource_request.status, REQUEST_APPROVED)
             self.assertIsNotNone(resource_grant)
 
-        with self.subTest('POST approve for available resource '
-                          'should result in approved status and a new ResourceGrant'):
+        with self.subTest(
+            'POST approve for available resource '
+            'should result in approved status and a new ResourceGrant'
+        ):
             response = self.client.post(
                 request_url,
                 {
@@ -576,21 +597,29 @@ class ResourceRequestResponseTestCase(SMHAppTestMixin, TestCase):
                 },
             )
             resource_request = ResourceRequest.objects.filter(
-                member=self.user, organization=self.organizations[1]).first()
-            resource_grant = ResourceGrant.objects.filter(resource_request=resource_request).first()
+                member=self.user, organization=self.organizations[1]
+            ).first()
+            resource_grant = ResourceGrant.objects.filter(
+                resource_request=resource_request
+            ).first()
 
-            self.assertEqual(response.status_code, 302)  # redirects, we don't care where
+            self.assertEqual(
+                response.status_code, 302
+            )  # redirects, we don't care where
             self.assertEqual(resource_request.status, REQUEST_APPROVED)
             self.assertIsNotNone(resource_grant)
 
-        with self.subTest('POST deny for requested resource '
-                          'should result in denied status and no ResourceGrants'):
+        with self.subTest(
+            'POST deny for requested resource '
+            'should result in denied status and no ResourceGrants'
+        ):
             ResourceRequestFactory(
                 organization=self.organizations[2],
                 user=self.user,
                 member=self.user,
                 resource_class_path=resource_class_path,
-                status=REQUEST_REQUESTED)
+                status=REQUEST_REQUESTED,
+            )
             organization = self.organizations[2]
             response = self.client.post(
                 request_url,
@@ -601,19 +630,27 @@ class ResourceRequestResponseTestCase(SMHAppTestMixin, TestCase):
                 },
             )
             resource_request = ResourceRequest.objects.filter(
-                member=self.user, organization=organization).first()
-            resource_grant = ResourceGrant.objects.filter(resource_request=resource_request).first()
+                member=self.user, organization=organization
+            ).first()
+            resource_grant = ResourceGrant.objects.filter(
+                resource_request=resource_request
+            ).first()
 
             self.assertEqual(resource_request.status, REQUEST_DENIED)
             self.assertIsNone(resource_grant)
 
-        with self.subTest('POST revoke for approved resource '
-                          'should result in denied status and no ResourceGrants'):
+        with self.subTest(
+            'POST revoke for approved resource '
+            'should result in denied status and no ResourceGrants'
+        ):
             # starting state: approved and granted (from above subTest)
             organization = self.organizations[1]
             resource_request = ResourceRequest.objects.filter(
-                member=self.user, organization=organization).first()
-            resource_grant = ResourceGrant.objects.filter(resource_request=resource_request).first()
+                member=self.user, organization=organization
+            ).first()
+            resource_grant = ResourceGrant.objects.filter(
+                resource_request=resource_request
+            ).first()
             self.assertEqual(resource_request.status, REQUEST_APPROVED)
             self.assertIsNotNone(resource_grant)  # should exist from earlier subTest
 
@@ -626,8 +663,11 @@ class ResourceRequestResponseTestCase(SMHAppTestMixin, TestCase):
                 },
             )
             resource_request = ResourceRequest.objects.filter(
-                member=self.user, organization=organization).first()
-            resource_grant = ResourceGrant.objects.filter(resource_request=resource_request).first()
+                member=self.user, organization=organization
+            ).first()
+            resource_grant = ResourceGrant.objects.filter(
+                resource_request=resource_request
+            ).first()
 
             self.assertEqual(resource_request.status, REQUEST_DENIED)
             self.assertIsNone(resource_grant)  # should have been deleted
@@ -654,7 +694,9 @@ class ResourceRequestResponseTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(response.status_code, 422)
             self.assertIn(b'member', response.content)  # error with the member field
 
-        with self.subTest('post with non-existing organization results in error message'):
+        with self.subTest(
+            'post with non-existing organization results in error message'
+        ):
             new_org = OrganizationFactory()
             new_org_pk = new_org.pk
             new_org.delete()  # now we know they don't exist.
@@ -667,15 +709,14 @@ class ResourceRequestResponseTestCase(SMHAppTestMixin, TestCase):
                 },
             )
             self.assertEqual(response.status_code, 422)
-            self.assertIn(b'organization', response.content)  # error with the organization field
+            self.assertIn(
+                b'organization', response.content
+            )  # error with the organization field
 
         with self.subTest('post with wrong status results in error message'):
             response = self.client.post(
                 request_url,
-                {
-                    'member': self.user.pk,
-                    'organization': self.organizations[0].pk,
-                },
+                {'member': self.user.pk, 'organization': self.organizations[0].pk},
             )
             self.assertEqual(response.status_code, 422)
             self.assertIn(b'status', response.content)  # error with the status field
@@ -711,10 +752,14 @@ class MemberNotificationsTestCase(SMHAppTestMixin, TestCase):
         but not the notifications created for another user.
         """
         for i in range(3):
-            Notification.objects.create(notify=self.user, actor=self.user, message="Notify %d" % i)
+            Notification.objects.create(
+                notify=self.user, actor=self.user, message="Notify %d" % i
+            )
         other_user = UserFactory()
         for i in range(1):
-            Notification.objects.create(notify=other_user, actor=self.user, message="Notify %d" % i)
+            Notification.objects.create(
+                notify=other_user, actor=self.user, message="Notify %d" % i
+            )
 
         response = self.client.get(reverse(self.url_name))
 

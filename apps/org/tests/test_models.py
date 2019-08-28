@@ -54,8 +54,8 @@ class ResourceGrantTestCase(TestCase):
             "{} access to {} for {}".format(
                 org_resource_access.organization,
                 org_resource_access.provider_name,
-                org_resource_access.member
-            )
+                org_resource_access.member,
+            ),
         )
 
     @mock.patch('apps.sharemyhealth.resources.Resource')
@@ -88,7 +88,7 @@ class ResourceGrantTestCase(TestCase):
             resource_class_path='apps.sharemyhealth.resources.Resource'
         )
 
-        self.assertEqual(resource_grant .provider_name, test_resource_class_name)
+        self.assertEqual(resource_grant.provider_name, test_resource_class_name)
 
 
 class ResourceRequestTestCase(TestCase):
@@ -100,8 +100,8 @@ class ResourceRequestTestCase(TestCase):
             "Request by {} for access to {} for {}".format(
                 resource_request.organization,
                 resource_request.provider_name,
-                resource_request.member
-            )
+                resource_request.member,
+            ),
         )
 
     @mock.patch('apps.sharemyhealth.resources.Resource')

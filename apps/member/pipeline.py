@@ -1,4 +1,5 @@
 from django.shortcuts import reverse
+
 from apps.notifications.models import Notification
 
 
@@ -9,7 +10,7 @@ def connection_notifications(backend, user, response, *args, **kwargs):
         notifications = Notification.objects.filter(
             notify_id=user.id,
             actor_id=user.id,
-            actions__contains=f'''"url": "{reverse('social:begin', args=[backend.name])}"'''
+            actions__contains=f'''"url": "{reverse('social:begin', args=[backend.name])}"''',
         )
         for notification in notifications:
             notification.dismissed = True
@@ -20,7 +21,7 @@ def connection_notifications(backend, user, response, *args, **kwargs):
         notifications = Notification.objects.filter(
             notify_id=user.id,
             actor_id=user.id,
-            actions__contains=f'''"url": "{action_url}"'''
+            actions__contains=f'''"url": "{action_url}"''',
         )
         for notification in notifications:
             notification.dismissed = True
@@ -42,7 +43,7 @@ def disconnection_notifications(backend, user, *args, **kwargs):
         notifications = Notification.objects.filter(
             notify_id=user.id,
             actor_id=user.id,
-            actions__contains=f'''"url": "{action_url}"'''
+            actions__contains=f'''"url": "{action_url}"''',
         )
         for notification in notifications:
             notification.dismissed = True

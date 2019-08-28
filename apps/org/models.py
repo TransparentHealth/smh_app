@@ -6,14 +6,12 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.html import mark_safe
-
 from localflavor.us.models import USStateField, USZipCodeField
 from phonenumber_field.modelfields import PhoneNumberField
 
-from .utils import set_unique_slug
-from .tokens import default_token_generator
 from ..common.models import CreatedUpdatedModel
-
+from .tokens import default_token_generator
+from .utils import set_unique_slug
 
 RESOURCE_CHOICES = [
     (value, value) for value in settings.RESOURCE_NAME_AND_CLASS_MAPPING.values()
@@ -30,18 +28,25 @@ RESOURCE_REQUEST_STATUSES = [
 
 class Organization(CreatedUpdatedModel, models.Model):
     """An Organization."""
+
     slug = models.SlugField(unique=True, max_length=255, db_index=True)
     name = models.CharField(max_length=255, blank=True)
     sub = models.CharField(max_length=255, blank=True)
 
     agents = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, blank=True, related_name="agent_organizations")
+        settings.AUTH_USER_MODEL, blank=True, related_name="agent_organizations"
+    )
     members = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, blank=True, related_name="member_organizations")
-    
+        settings.AUTH_USER_MODEL, blank=True, related_name="member_organizations"
+    )
+
     # users field DEPRECATED: use Organization.agents field instead
     users = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, blank=True, verbose_name="Agents", related_name="organizations")
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        verbose_name="Agents",
+        related_name="organizations",
+    )
 
     phone = PhoneNumberField(blank=True)
     street_line_1 = models.CharField(max_length=255, blank=True)
@@ -49,10 +54,10 @@ class Organization(CreatedUpdatedModel, models.Model):
     city = models.CharField(max_length=80, blank=True)
     state = USStateField(blank=True)
     zipcode = USZipCodeField(blank=True)
-    website = models.TextField(
-        null=True, blank=True, help_text="Populated from VMI.")
+    website = models.TextField(null=True, blank=True, help_text="Populated from VMI.")
     picture_url = models.TextField(
-        null=True, blank=True, help_text="The URL of Organization's logo (from VMI)")
+        null=True, blank=True, help_text="The URL of Organization's logo (from VMI)"
+    )
 
     def __str__(self):
         return self.name
@@ -75,29 +80,24 @@ class Organization(CreatedUpdatedModel, models.Model):
 
 class ResourceGrant(CreatedUpdatedModel, models.Model):
     """A model to track which Organizations have access to which users' resources."""
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE
-    )
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     member = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        help_text='The member who has granted this Organization access to the resource'
+        help_text='The member who has granted this Organization access to the resource',
     )
     resource_class_path = models.CharField(
-        max_length=255,
-        choices=RESOURCE_CHOICES,
-        default=RESOURCE_CHOICES[0][0]
+        max_length=255, choices=RESOURCE_CHOICES, default=RESOURCE_CHOICES[0][0]
     )
     resource_request = models.OneToOneField(
-        'org.ResourceRequest',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
+        'org.ResourceRequest', on_delete=models.SET_NULL, null=True, blank=True
     )
 
     def __str__(self):
-        return "{} access to {} for {}".format(self.organization, self.provider_name, self.member)
+        return "{} access to {} for {}".format(
+            self.organization, self.provider_name, self.member
+        )
 
     @property
     def provider_name(self):
@@ -117,38 +117,30 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
 
 class ResourceRequest(CreatedUpdatedModel, models.Model):
     """A request from an Organization for access to a member's access token."""
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE
-    )
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     member = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='resource_requests_received',
-        help_text='The member who can grant this Organization access to the resource'
+        help_text='The member who can grant this Organization access to the resource',
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='resource_requests_sent',
-        help_text='The user at the Organization who initiated this request'
+        help_text='The user at the Organization who initiated this request',
     )
     resource_class_path = models.CharField(
-        max_length=255,
-        choices=RESOURCE_CHOICES,
-        default=RESOURCE_CHOICES[0][0]
+        max_length=255, choices=RESOURCE_CHOICES, default=RESOURCE_CHOICES[0][0]
     )
     status = models.CharField(
-        max_length=10,
-        choices=RESOURCE_REQUEST_STATUSES,
-        default=REQUEST_REQUESTED
+        max_length=10, choices=RESOURCE_REQUEST_STATUSES, default=REQUEST_REQUESTED
     )
 
     def __str__(self):
         return "Request by {} for access to {} for {}".format(
-            self.organization,
-            self.provider_name,
-            self.member
+            self.organization, self.provider_name, self.member
         )
 
     @property
@@ -166,12 +158,19 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
     @property
     def member_notification_message(self):
         if self.status == REQUEST_REQUESTED:
-            return mark_safe("<b>{}</b> requested access to your data".format(self.organization))
+            return mark_safe(
+                "<b>{}</b> requested access to your data".format(self.organization)
+            )
         elif self.status == REQUEST_APPROVED:
-            return mark_safe("You allowed <b>{}</b> to access your data".format(self.organization))
+            return mark_safe(
+                "You allowed <b>{}</b> to access your data".format(self.organization)
+            )
         elif self.status == REQUEST_DENIED:
-            return mark_safe("You revoked access to your data from <b>{}</b>".format(
-                self.organization))
+            return mark_safe(
+                "You revoked access to your data from <b>{}</b>".format(
+                    self.organization
+                )
+            )
 
     @property
     def member_notification_actions(self):
@@ -187,27 +186,35 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
                 },
             ]
         elif self.status == REQUEST_APPROVED:
-            return [{
-                'url': reverse('member:revoke_resource_request', args=[self.pk]),
-                'text': 'Revoke Access',
-            }]
+            return [
+                {
+                    'url': reverse('member:revoke_resource_request', args=[self.pk]),
+                    'text': 'Revoke Access',
+                }
+            ]
         elif self.status == REQUEST_DENIED:
-            return [{
-                'url': reverse('member:approve_resource_request', args=[self.pk]),
-                'text': 'Re-Approve Access',
-            }]
+            return [
+                {
+                    'url': reverse('member:approve_resource_request', args=[self.pk]),
+                    'text': 'Re-Approve Access',
+                }
+            ]
 
     class Meta:
         verbose_name_plural = "Resource Requests"
 
 
 @receiver(post_save, sender=ResourceRequest)
-def create_or_update_resource_request_notifications(sender, instance, created, **kwargs):
+def create_or_update_resource_request_notifications(
+    sender, instance, created, **kwargs
+):
     """Create Notifications related to the ResourceRequest, while deleting existing notifications"""
     Notification = import_module('apps.notifications.models').Notification
 
     # notify the User
-    Notification.objects.filter(notify_id=instance.member.id, instance_id=instance.id).delete()
+    Notification.objects.filter(
+        notify_id=instance.member.id, instance_id=instance.id
+    ).delete()
     notification = Notification.objects.create(
         notify=instance.member,
         actor=instance.organization,
@@ -222,15 +229,18 @@ def create_or_update_resource_request_notifications(sender, instance, created, *
     if instance.status == REQUEST_APPROVED:
         # notify the Org
         Notification.objects.filter(
-            notify_id=instance.organization.id, instance_id=instance.id).delete()
+            notify_id=instance.organization.id, instance_id=instance.id
+        ).delete()
         notification = Notification.objects.create(
             notify=instance.organization,
             actor=instance.member,
             instance=instance,
-            actions=[{
-                'url': reverse('member:records', args=[instance.member.id]),
-                'text': 'View Health Records',
-            }],
+            actions=[
+                {
+                    'url': reverse('member:records', args=[instance.member.id]),
+                    'text': 'View Health Records',
+                }
+            ],
             message="<b>{instance.member.userprofile.name}</b> accepted your request",
             picture_url=instance.member.userprofile.picture_url,
         )
