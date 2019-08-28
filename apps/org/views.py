@@ -19,7 +19,6 @@ from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
 from social_django.models import UserSocialAuth
 
-from apps.users.models import UserProfile
 from apps.users.utils import refresh_access_token
 from libs.qrcode import make_qr_code
 
@@ -83,9 +82,9 @@ class UpdateOrganizationView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('org:dashboard')
 
     def get_queryset(self):
-        """A user may only edit Organizations that they are associated with."""
+        """A user may only edit Organizations that they are agents of."""
         qs = super().get_queryset()
-        return qs.filter(users=self.request.user)
+        return qs.filter(agents=self.request.user)
 
 
 class DeleteOrganizationView(LoginRequiredMixin, DeleteView):
@@ -95,9 +94,9 @@ class DeleteOrganizationView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('org:dashboard')
 
     def get_queryset(self):
-        """A user may only delete Organizations that they are associated with."""
+        """A user may only delete Organizations that they are agents of."""
         qs = super().get_queryset()
-        return qs.filter(users=self.request.user)
+        return qs.filter(agents=self.request.user)
 
 
 class JoinOrganizationView(LoginRequiredMixin, BaseDetailView):
@@ -126,12 +125,11 @@ class OrgCreateMemberMixin:
     def get_organization(self, request, org_slug):
         """Get the Organization object that the org_slug refers to, or return a 404 response."""
         return get_object_or_404(
-            Organization.objects.filter(users=request.user), slug=org_slug
+            Organization.objects.filter(agents=request.user), slug=org_slug
         )
 
     def get_member(self, organization, username):
         """Get the Member object that the username refers to, or return a 404 response."""
-        print('username =', username)
         return get_object_or_404(
             get_user_model().objects.filter(member_organizations=organization),
             username=username,
@@ -515,7 +513,7 @@ class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
     def get_organization(self, request, org_slug):
         """Get the Organization object that the org_slug refers to, or return a 404 response."""
         return get_object_or_404(
-            Organization.objects.filter(users=request.user), slug=org_slug
+            Organization.objects.filter(agents=request.user), slug=org_slug
         )
 
     def get_member(self, organization, username):
@@ -669,8 +667,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         resource_request.save()
 
         # also ensure the association between the member and the organization
-        if self.organization not in self.member.organizations.all():
-            self.member.organizations.add(self.organization)
+        if self.organization not in self.member.member_organizations.all():
+            self.member.member_organizations.add(self.organization)
 
         # 3.) Create a ResourceGrant object for the ResourceRequest and the
         # Member
@@ -773,24 +771,21 @@ class SearchMembersAPI(LoginRequiredMixin, View):
     ''' Setting up a local endpoint for users here. '''
 
     def get(self, request, *args, **kwargs):
-        # get User objects that are members, not orgs (user_type_code='M', not 'O')
-        # along with related User and UserProfile objects
-        profiles = list(UserProfile.get_non_agent_profiles())
-
-        # Create list of data objects, one per member
+        # Get User objects that are not org agents
+        # along with related User and UserProfile objects,
+        # and create a list of data objects, one per member
         data = [
             {
                 'user': {
                     key: val
-                    for key, val in profile.user.__dict__.items()
+                    for key, val in user.__dict__.items()
                     if key not in ['password'] and key[0] != '_' and key[:3] != 'is_'
                 },
-                'profile': profile.as_dict(),
+                'profile': user.userprofile.as_dict(),
             }
-            for profile in profiles
+            for user in get_user_model().objects.filter(agent_organizations=None)
         ]
 
-        print('data =', data)
         return JsonResponse(data, safe=False)
 
 

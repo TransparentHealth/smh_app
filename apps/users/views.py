@@ -11,8 +11,6 @@ from social_django.models import UserSocialAuth
 
 from apps.users.utils import refresh_access_token
 
-from .models import UserProfile
-
 logger = logging.getLogger('smhapp_.%s' % __name__)
 
 
@@ -52,15 +50,12 @@ def mylogout(request):
 
 
 def authenticated_home(request):
-
     if request.user.is_authenticated:
-        up, g_o_c = UserProfile.objects.get_or_create(user=request.user)
-        if up.user_type_code == "O":
-            return HttpResponseRedirect(reverse('org:dashboard'))
-        return HttpResponseRedirect(reverse('member:dashboard'))
-    return render(
-        request, 'homepage.html', {'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME}
-    )
+        return user_router(request)
+    else:
+        return render(
+            request, 'homepage.html', {'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME}
+        )
 
 
 @login_required(login_url='home')

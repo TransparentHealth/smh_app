@@ -188,12 +188,11 @@ class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
         # The Organization has been deleted
         self.assertFalse(Organization.objects.filter(pk=organization.pk).exists())
 
-    def test_delete_organization_not_associated(self):
-        """A user may not delete an Organization that the user is not associated with."""
-        # An Organization not associated with the self.user
-        org_not_associated = OrganizationFactory()
+    def test_delete_organization_not_agent(self):
+        """A user may not delete an Organization that the user is not an agent of."""
+        org = OrganizationFactory()
 
-        url = reverse('org:organization-delete', kwargs={'pk': org_not_associated.pk})
+        url = reverse('org:organization-delete', kwargs={'pk': org.pk})
 
         with self.subTest('GET'):
             response_get = self.client.get(url)
@@ -204,20 +203,17 @@ class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
 
             self.assertEqual(response_post.status_code, 404)
             # The Organization has not been deleted
-            self.assertTrue(
-                Organization.objects.filter(pk=org_not_associated.pk).exists()
-            )
+            self.assertTrue(Organization.objects.filter(pk=org.pk).exists())
 
     def test_authenticated(self):
         """The user must be authenticated to delete an Organization."""
-        # An Organization associated with the self.user
-        organization = OrganizationFactory()
-        organization.agents.add(self.user)
+        org = OrganizationFactory()
+        org.agents.add(self.user)
 
         with self.subTest('Authenticated'):
             self.client.force_login(self.user)
 
-            url = reverse('org:organization-delete', kwargs={'pk': organization.pk})
+            url = reverse('org:organization-delete', kwargs={'pk': org.pk})
             response = self.client.post(url)
 
             self.assertRedirects(response, reverse('org:dashboard'))
@@ -225,7 +221,7 @@ class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('Not authenticated'):
             self.client.logout()
 
-            url = reverse('org:organization-delete', kwargs={'pk': organization.pk})
+            url = reverse('org:organization-delete', kwargs={'pk': org.pk})
             response = self.client.post(url)
 
             expected_redirect = '{}?next={}'.format(reverse('login'), url)
@@ -438,11 +434,11 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
                 UserSocialAuth.objects.count(), expected_num_user_social_auths
             )
             # The new Member is associated with the relevant Organization
-            new_member = get_user_model().objects.get(user__username=data['username'])
-            self.assertTrue(self.organization in new_member.organizations.all())
+            new_user = get_user_model().objects.get(username=data['username'])
+            self.assertTrue(self.organization in new_user.member_organizations.all())
             # The new Member's UserProfile has the picture_url from the VMI
             # response (from get_successful_response_data_from_vmi()).
-            self.assertEqual(new_member.userprofile.picture_url, None)
+            self.assertEqual(new_user.userprofile.picture_url, None)
             # A new ResourceRequest was created from the Organization to the new Member
             expected_num_resource_requests += 1
             self.assertEqual(
@@ -450,7 +446,7 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             )
             self.assertEqual(
                 ResourceRequest.objects.filter(
-                    organization=self.organization, member=new_member, user=self.user
+                    organization=self.organization, member=new_user, user=self.user
                 ).count(),
                 1,
             )
@@ -746,10 +742,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(self.member.email, data.get('email', ''))
             # The self.member's UserProfile object's picture_url was updated based
             # on the value of 'picture' from get_successful_response_data_from_vmi()
-            self.assertEqual(
-                self.member.userprofile.picture_url,
-                'http://localhost:8000/media/profile-picture/None/no-img.jpg',
-            )
+            self.assertIsNone(self.member.userprofile.picture_url)
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_basic_info view."""
@@ -2004,26 +1997,27 @@ class OrgSearchMembersAPITestCase(SMHAppTestMixin, TestCase):
 
     def test_get(self):
         """GET should return only data for members who are not org agents
-        * Users for whom UserProfile.user_type_code='M'
-        * Data is formatted as {'user': ..., 'profile': ..., 'member': ...}.
+        * Users for whom user_type = 'M'
+        * Data is formatted as {'user': ..., 'profile': ...}.
         * 'user' data should not include password (even hashed)
         """
+        org = OrganizationFactory()
 
-        # (there's already a self.user whose .userprofile.user_type_code should default to 'M')
+        # add an agent to each org
+        agent = UserFactory()
+        org.agents.add(agent)
+
+        # (there's already a self.user whose user_type should default to 'M')
         # add a 'regular' member
         member = UserFactory()
-        member.userprofile.user_type = 'M'
-        member.userprofile.save()
+        org.members.add(member)
 
-        # add an org agent
-        agent = UserFactory()
-        agent.userprofile.user_type = 'O'
-        agent.userprofile.save()
-
+        self.client.force_login(agent)
         response = self.client.get(reverse(self.url_name))
         data = response.json()
         usernames = [member['user']['username'] for member in data]
 
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(data), 2)  # self.user + the local member.
         self.assertIn(member.username, usernames)
         self.assertIn(self.user.username, usernames)
@@ -2031,5 +2025,4 @@ class OrgSearchMembersAPITestCase(SMHAppTestMixin, TestCase):
         for member in data:
             self.assertIn('user', member.keys())
             self.assertIn('profile', member.keys())
-            self.assertIn('member', member.keys())
             self.assertNotIn('password', member['user'].keys())

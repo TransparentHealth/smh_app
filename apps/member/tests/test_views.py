@@ -206,7 +206,7 @@ class RevokeResourceRequestTestCase(SMHAppTestMixin, TestCase):
         """Revoking a ResourceRequest that isn't for the request.user is not allowed."""
         resource_request_other_user = ResourceRequestFactory(status=REQUEST_APPROVED)
         ResourceGrantFactory(
-            member=resource_request_other_user,
+            member=resource_request_other_user.member,
             organization=resource_request_other_user.organization,
             resource_class_path=resource_request_other_user.resource_class_path,
         )

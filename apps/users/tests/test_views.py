@@ -229,48 +229,37 @@ class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
         """
 
         subtests = (
-            # has_org             | has_member  | member_has_org             | expected_redirect
-            # --------------------|-------------|----------------------------|------------------
-            # Does the            | Does the    | Does the request.user's    | The url_name that
-            # request.user have   | request.user| Member have an association | the user should
-            # an association with | have a      | with an Organization?      | be redirected to
-            # an Organization?    | Member?     |                            |
-            # --------------------|-------------|----------------------------|------------------
-            (True, False, False, 'org:dashboard'),
-            (True, True, False, 'org:dashboard'),
-            (True, True, True, 'org:dashboard'),
-            (False, True, False, 'member:dashboard'),
-            (False, True, True, 'member:dashboard'),
-            (False, False, False, 'org:dashboard'),
+            # is_agent            | is_member           | expected_redirect
+            # --------------------|---------------------|-------------------------
+            # Is the request.user | Is the request.user | url_name that the user
+            # an org agent?       | an org member?      | should be redirected to
+            # --------------------|---------------------|-------------------------
+            (True, False, 'org:dashboard'),
+            (True, True, 'org:dashboard'),
+            (False, True, 'member:dashboard'),
+            (False, False, 'org:dashboard'),
         )
-
-        for (has_org, has_member, member_has_org, expected_redirect) in subtests:
+        for (is_agent, is_member, expected_redirect) in subtests:
             for method_name in ['get', 'post']:
                 with self.subTest(
                     method_name=method_name,
-                    has_org=has_org,
-                    has_member=has_member,
-                    member_has_org=member_has_org,
+                    is_agent=is_agent,
+                    is_member=is_member,
                     expected_redirect=expected_redirect,
                 ):
                     self.user.refresh_from_db()
 
-                    if has_org:
+                    if is_agent:
                         organization = OrganizationFactory()
                         organization.agents.add(self.user)
                     else:
                         self.user.agent_organizations.clear()
 
-                    if has_member:
-                        if not hasattr(self.user, 'member'):
-                            self.user.member = MemberFactory(user=self.user)
-                        if member_has_org:
-                            organization = OrganizationFactory()
-                            organization.members.add(self.user.member)
-                        else:
-                            self.user.member.organizations.clear()
-                    elif not has_member and hasattr(self.user, 'member'):
-                        self.user.member.delete()
+                    if is_member:
+                        organization = OrganizationFactory()
+                        organization.members.add(self.user)
+                    else:
+                        self.user.member_organizations.clear()
 
                     # Use the relevant method (GET or POST).
                     method = getattr(self.client, method_name)
