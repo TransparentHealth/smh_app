@@ -4,8 +4,6 @@ from enum import Enum
 from importlib import import_module
 
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField
-from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -13,6 +11,8 @@ from django.urls import reverse
 from phonenumber_field.modelfields import PhoneNumberField
 
 from apps.data.util import parse_timestamp
+
+from .utils import get_id_token_payload
 
 
 class UserType(Enum):
@@ -48,8 +48,8 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
-    # Holds the payload value of the VMI socialauth id_token
-    id_token_payload = JSONField(default=dict, encoder=DjangoJSONEncoder)
+    # subject = VMI social_auth id_token['sub']
+    subject = models.CharField(max_length=64, null=True, blank=True, db_index=True)
 
     # Most of the UserProfile data is stored in the VMI socialauth id_token, but these are not
     emergency_contact_name = models.CharField(null=True, blank=True, max_length=128)
@@ -63,17 +63,13 @@ class UserProfile(models.Model):
         # self.__getattribute__(key) failed, so check self.id_token_payload
         return self.id_token_payload.get(key)
 
-    def as_dict(self):
-        """return the UserProfile object as a json-able dict"""
-        data = dict(**self.id_token_payload)
-        data.update(
-            **{
-                k: (str(v) if k in ['emergency_contact_number'] else v)
-                for k, v in self.__dict__.items()
-                if k[0] != '_'
-            }
-        )
-        return data
+    def __init__(self, *args, **kwargs):
+        super(UserProfile, self).__init__(*args, **kwargs)
+        self._id_token_payload = get_id_token_payload(self.user)
+
+    @property
+    def id_token_payload(self):
+        return self._id_token_payload
 
     @property
     def name(self):
@@ -92,9 +88,17 @@ class UserProfile(models.Model):
         except Exception:
             return "Unknown"
 
-    @property
-    def subject(self):
-        return self.id_token_payload.get('sub')
+    def as_dict(self):
+        """return the UserProfile object as a json-able dict"""
+        data = dict(**self.id_token_payload)
+        data.update(
+            **{
+                k: (str(v) if k in ['emergency_contact_number'] else v)
+                for k, v in self.__dict__.items()
+                if k[0] != '_'
+            }
+        )
+        return data
 
 
 @receiver(post_save, sender=User)

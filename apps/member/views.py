@@ -557,7 +557,7 @@ def redirect_subject_url_to_member(request, subject, rest=''):
     """If one of the above member views is given with subject_id (== 15 digits),
     interpret it as the UserProfile.subject and redirect to the corresponding pk URL
     """
-    user_profile = get_object_or_404(UserProfile, id_token_payload__sub=subject)
+    user_profile = get_object_or_404(UserProfile, subject=subject)
     return redirect(f"/member/{user_profile.user.id}/{rest}")
 
 
