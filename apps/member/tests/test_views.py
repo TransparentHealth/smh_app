@@ -728,7 +728,7 @@ class RedirectSubjectURLTestCase(SMHAppTestMixin, TestCase):
 
     def test_exists(self):
         user_profile = self.user.userprofile
-        user_profile.subject = '012345678901234'
+        user_profile.id_token_payload['sub'] = '012345678901234'
         user_profile.save()
 
         subject_url = reverse(self.url_name, kwargs={'subject': user_profile.subject})
