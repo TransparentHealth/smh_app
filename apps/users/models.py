@@ -16,16 +16,16 @@ from .utils import get_id_token_payload
 
 
 class UserType(Enum):
-    OTHER = ''
-    MEMBER = 'M'
-    ORG_AGENT = 'O'
+    OTHER = 'Other'
+    MEMBER = 'Member'
+    ORG_AGENT = 'Organization Agent'
 
 
 USER_TYPE_CHOICES = OrderedDict(
     (
-        (UserType.OTHER.value, 'Other'),
-        (UserType.MEMBER.value, 'Member'),
-        (UserType.ORG_AGENT.value, "Organization Agent"),
+        ('', UserType.OTHER.value),
+        ('M', UserType.MEMBER.value),
+        ('O', UserType.ORG_AGENT.value),
     )
 )
 
@@ -33,14 +33,15 @@ USER_TYPE_CHOICES = OrderedDict(
 # Make user_type a property of the User model, because that is where it is tested
 def user_type(self):
     if self.agent_organizations.exists():
-        return UserType.ORG_AGENT.value
-    elif self.member_organizations.exists():
-        return UserType.MEMBER.value
+        return UserType.ORG_AGENT
+    elif self.resource_grants.exists():
+        return UserType.MEMBER
     else:
-        return UserType.OTHER.value
+        return UserType.OTHER
 
 
 User.user_type = property(user_type)
+User.UserType = UserType
 
 
 class UserProfile(models.Model):
@@ -119,7 +120,7 @@ def create_user_profile_connect_to_hixny_notification(
     """
     Notification = import_module('apps.notifications.models').Notification
     user = instance.user
-    if user.user_type == 'O':  # Org agent
+    if user.user_type == user.UserType.ORG_AGENT:
         # Delete any Hixny connection notifications for this UserProfile
         Notification.objects.filter(
             notify_id=user.id, actor_id=user.id, message__contains='Hixny'

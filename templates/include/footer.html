@@ -19,7 +19,7 @@
 
         <div class="container-fluid row-container-fluid text-center" >
             {% if settings.DEBUG %}
-            User Type = {{ request.user.userprofile.user_type_display|default:"Anonymous" }}
+            User Type = {{ request.user.user_type.value|default:"Anonymous" }}
             {% endif %}
         </div>
  </div>
