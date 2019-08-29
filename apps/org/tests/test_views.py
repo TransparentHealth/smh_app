@@ -12,7 +12,7 @@ from social_django.models import UserSocialAuth
 
 from apps.common.tests.base import SMHAppTestMixin
 from apps.common.tests.factories import UserFactory
-from apps.org.tests.factories import UserSocialAuthFactory
+from apps.org.tests.factories import ResourceGrantFactory, UserSocialAuthFactory
 
 from ..models import (
     REQUEST_APPROVED,
@@ -492,6 +492,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory(email='test_{}@example.com'.format(random.random()))
         self.organization.members.add(self.member)
+        ResourceGrantFactory(organization=self.organization, member=self.member)
         # The URL for creating a Member associated with the self.organization
         self.url = reverse(
             self.url_name,
@@ -565,6 +566,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
+                ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
                 kwargs={'org_slug': organization.slug, 'username': member.username},
@@ -786,6 +788,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory()
         self.organization.members.add(self.member)
+        ResourceGrantFactory(organization=self.organization, member=self.member)
         # The URL for verifying the identity of a Member associated with the self.organization
         self.url = reverse(
             self.url_name,
@@ -874,6 +877,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
+                ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
                 kwargs={'org_slug': organization.slug, 'username': member.username},
@@ -1146,6 +1150,7 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory()
         self.organization.members.add(self.member)
+        ResourceGrantFactory(organization=self.organization, member=self.member)
         # The URL for verifying the identity of a Member associated with the self.organization
         self.url = reverse(
             self.url_name,
@@ -1174,6 +1179,7 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
             member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
+                ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
                 kwargs={'org_slug': organization.slug, 'username': member.username},
@@ -1248,6 +1254,7 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory()
         self.organization.members.add(self.member)
+        ResourceGrantFactory(organization=self.organization, member=self.member)
         # The URL for seeing that new Member creation at the self.organization is almost done
         self.url = reverse(
             self.url_name,
@@ -1276,6 +1283,7 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
             member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
+                ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
                 kwargs={'org_slug': organization.slug, 'username': member.username},
@@ -1353,6 +1361,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
         # The self.user in this test is a member who is trying to set their password
         self.member = self.user
         self.organization.members.add(self.member)
+        ResourceGrantFactory(organization=self.organization, member=self.member)
         # It's assumed that the self.user is not authenticated, because they are
         # setting their password for the first time.
         self.client.logout()
@@ -1429,6 +1438,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 self.organization.agents.clear()
             if member_at_org:
                 self.organization.members.add(self.member)
+                ResourceGrantFactory(organization=self.organization, member=self.member)
             else:
                 self.organization.members.clear()
 
@@ -1482,6 +1492,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
         ):
             self.organization.agents.add(self.user)
             self.organization.members.add(self.member)
+            ResourceGrantFactory(organization=self.organization, member=self.member)
 
             # Make the token expire
             self.user.set_password('anewpassword123!')
@@ -1833,6 +1844,8 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory()
         self.organization.members.add(self.member)
+        ResourceGrantFactory(organization=self.organization, member=self.member)
+
         # The URL for completing new Member creation at the self.organization
         self.url = reverse(
             self.url_name,
@@ -1861,6 +1874,7 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
             member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
+                ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
                 kwargs={'org_slug': organization.slug, 'username': member.username},
@@ -1918,6 +1932,7 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory()
         self.organization.members.add(self.member)
+        ResourceGrantFactory(organization=self.organization, member=self.member)
         # The URL for completing new Member creation at the self.organization
         self.url = reverse(
             self.url_name,
@@ -1946,6 +1961,7 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
             member = UserFactory()
             if member_at_org:
                 organization.members.add(member)
+                ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
                 kwargs={'org_slug': organization.slug, 'username': member.username},
@@ -1997,20 +2013,23 @@ class OrgSearchMembersAPITestCase(SMHAppTestMixin, TestCase):
 
     def test_get(self):
         """GET should return only data for members who are not org agents
-        * Users for whom user_type = 'M'
+        * Users for whom user_type = UserType.MEMBER
         * Data is formatted as {'user': ..., 'profile': ...}.
         * 'user' data should not include password (even hashed)
         """
-        org = OrganizationFactory()
 
-        # add an agent to each org
+        organization = OrganizationFactory()
         agent = UserFactory()
-        org.agents.add(agent)
+        organization.agents.add(agent)
 
-        # (there's already a self.user whose user_type should default to 'M')
         # add a 'regular' member
+        # (there's already a self.user whose user_type should be UserType.MEMBER)
         member = UserFactory()
-        org.members.add(member)
+
+        # organization.members.add(member)
+        ResourceGrant.objects.create(
+            organization=organization, member=member
+        )
 
         self.client.force_login(agent)
         response = self.client.get(reverse(self.url_name))

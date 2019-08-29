@@ -72,7 +72,7 @@ def user_router(request):
         return redirect(reverse('org:dashboard'))
 
     # If the request.user is a member of an organization, then redirect to the member dashboard
-    if request.user.member_organizations.exists():
+    if request.user.resource_grants.exists():
         return redirect(reverse('member:dashboard'))
 
     # The request.user is not associated with any Organizations, and is not a Member.

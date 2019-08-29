@@ -771,9 +771,10 @@ class SearchMembersAPI(LoginRequiredMixin, View):
     ''' Setting up a local endpoint for users here. '''
 
     def get(self, request, *args, **kwargs):
-        # Get User objects that are not org agents
-        # along with related User and UserProfile objects,
-        # and create a list of data objects, one per member
+        # Get User objects that are not Organization agents,
+        # along with related UserProfile objects,
+        # and return a list of data objects, one per member
+        users = get_user_model().objects.filter(agent_organizations__isnull=True)
         data = [
             {
                 'user': {
@@ -783,9 +784,8 @@ class SearchMembersAPI(LoginRequiredMixin, View):
                 },
                 'profile': user.userprofile.as_dict(),
             }
-            for user in get_user_model().objects.filter(agent_organizations=None)
+            for user in users
         ]
-
         return JsonResponse(data, safe=False)
 
 

@@ -8,7 +8,7 @@ from django.urls import reverse
 from apps.common.tests.base import SMHAppTestMixin
 
 # from apps.member.tests.factories import MemberFactory
-from apps.org.tests.factories import OrganizationFactory
+from apps.org.tests.factories import OrganizationFactory, ResourceGrantFactory
 
 # from httmock import HTTMock, remember_called, urlmatch
 # from social_django.models import UserSocialAuth
@@ -258,8 +258,12 @@ class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
                     if is_member:
                         organization = OrganizationFactory()
                         organization.members.add(self.user)
+                        ResourceGrantFactory(
+                            organization=organization, member=self.user
+                        )
                     else:
                         self.user.member_organizations.clear()
+                        self.user.resource_grants.all().delete()
 
                     # Use the relevant method (GET or POST).
                     method = getattr(self.client, method_name)
