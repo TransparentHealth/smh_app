@@ -1,27 +1,27 @@
 {% load static %}
     <div class="col-6 col-sm-4 col-md-3">
         <!-- The member, or an agent of this org, can disconnect the org. -->
-        {% if member.user == request.user or organization in request.user.organization_set.all %}
-        <a class="{{status}}-organization" 
-            data-toggle="modal" 
-            data-target="#organization-{{status}}-{{organization.id}}" 
+        {% if member == request.user or organization in request.user.agent_organizations.all %}
+        <a class="{{status}}-organization"
+            data-toggle="modal"
+            data-target="#organization-{{status}}-{{organization.id}}"
             href="#">
         {% endif %}
             <div class="organization__tile">
                 {% if status == 'current' %}
-                    {% if member.user == request.user or organization in request.user.organization_set.all %}
+                    {% if member == request.user or organization in request.user.agent_organizations.all %}
                     <div class="tile__action">&#x2715;</div>
                     {% endif %}
                 {% elif status == 'available' %}
-                    {% if member.user == request.user or organization in request.user.organization_set.all %}
+                    {% if member == request.user or organization in request.user.agent_organizations.all %}
                     <div class="tile__action"><img src="{% static '/images/icons/add.png' %}" alt=""></div>
                     {% endif %}
                 {% else %}
-                    {% if member.user == request.user %}
+                    {% if member == request.user %}
                     <div class="tile__action"><img src="{% static '/images/icons/add.png' %}" alt=""></div>
-                    {% elif organization in request.user.organization_set.all %}
+                    {% elif organization in request.user.agent_organizations.all %}
                     <div class="tile__action">&#x2715;</div>
-                    {% endif %}    
+                    {% endif %}
                 {% endif %}
 
                 {% if organization.picture_url %}
@@ -31,7 +31,7 @@
                 {% endif %}
                 <p class="tile__label">{{ organization.name }}</p>
             </div>
-            {% if member.user == request.user or organization in request.user.organization_set.all %}
+            {% if member == request.user or organization in request.user.agent_organizations.all %}
             </a>
             {% endif %}
     </div>

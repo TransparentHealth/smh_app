@@ -1,8 +1,8 @@
-from getenv import env
+import logging
+
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-
-import logging
+from getenv import env
 
 logger = logging.getLogger('smhapp.%s' % __name__)
 
@@ -12,8 +12,7 @@ def create_superuser(username, password, email):
         u = User.objects.get(username=username)
     except User.DoesNotExist:
         # Otherwise we instantiate the super user
-        u = User(username=username, first_name="Super", last_name="User",
-                 email=email)
+        u = User(username=username, first_name="Super", last_name="User", email=email)
     u.set_password(password)
     u.is_superuser = True
     u.is_staff = True
@@ -40,4 +39,5 @@ class Command(BaseCommand):
         else:
             logger.debug(
                 'Environment variables ROOT_USER, ROOT_PASSWORD,',
-                'ROOT_EMAIL must be set before using this command.')
+                'ROOT_EMAIL must be set before using this command.',
+            )

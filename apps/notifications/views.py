@@ -1,11 +1,11 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Notification
 from .forms import DismissNotificationForm
+from .models import Notification
 
 
 class DismissNotificationView(LoginRequiredMixin, View):
@@ -30,7 +30,7 @@ class DismissNotificationView(LoginRequiredMixin, View):
                 ) or (
                     'organization' in str(notification.notify_content_type)
                     and notification.notify_id
-                    not in [org.pk for org in request.user.organization_set.all()]
+                    not in [org.pk for org in request.user.agent_organizations.all()]
                 ):
                     raise Notification.DoesNotExist()
 

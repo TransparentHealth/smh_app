@@ -15,22 +15,30 @@ Including another URLconf
 """
 from django.conf import settings
 from django.contrib import admin
-from django.views.generic.base import TemplateView
 from django.urls import include, path
+from django.views.generic.base import TemplateView
 
 # from django.contrib.auth import views as auth_views
 from apps.users.views import authenticated_home, mylogout
 
-
 urlpatterns = [
-
     path('', authenticated_home, name='home'),
-    path('login/', TemplateView.as_view(template_name='homepage.html',
-                                        extra_context={'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME}),
-         name='login'),
-    path('accounts/login/', TemplateView.as_view(template_name='homepage.html',
-                                                 extra_context={'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME}),
-         name='login'),
+    path(
+        'login/',
+        TemplateView.as_view(
+            template_name='homepage.html',
+            extra_context={'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME},
+        ),
+        name='login',
+    ),
+    path(
+        'accounts/login/',
+        TemplateView.as_view(
+            template_name='homepage.html',
+            extra_context={'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME},
+        ),
+        name='login',
+    ),
     path('logout/', mylogout, name='logout'),
     # path('accounts/', include('django.contrib.auth.urls')),
     path(r'resources/', include('apps.resources.urls')),

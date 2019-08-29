@@ -1,18 +1,21 @@
 import json
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models.signals import pre_save, post_save, post_init
+from django.db.models.signals import post_init, post_save, pre_save
 from django.dispatch import receiver
 from django.utils.safestring import mark_safe
+
 from apps.common.models import CreatedModel
 
 # We can either notify a User or an Organization
 # -- we're building this dynamically because we have to refer to it by PK, which we don't know
 # (but which shouldn't change for a given installation unless this definition is changed.)
 
-NOTIFICATION_ENTITY_CONTENT_TYPE_CHOICES = (models.Q(app_label='org', model='organization')
-                                            | models.Q(app_label='auth', model='user'))
+NOTIFICATION_ENTITY_CONTENT_TYPE_CHOICES = models.Q(
+    app_label='org', model='organization'
+) | models.Q(app_label='auth', model='user')
 
 
 class Notification(CreatedModel, models.Model):
@@ -56,7 +59,8 @@ class Notification(CreatedModel, models.Model):
     target = GenericForeignKey('target_content_type', 'target_id')
 
     instance_content_type = models.ForeignKey(
-        ContentType, on_delete=models.CASCADE, related_name="+", null=True)
+        ContentType, on_delete=models.CASCADE, related_name="+", null=True
+    )
     instance_id = models.PositiveIntegerField(null=True)
     instance = GenericForeignKey('instance_content_type', 'instance_id')
 
@@ -73,7 +77,8 @@ class Notification(CreatedModel, models.Model):
                 instance=self.instance,
                 target=self.target,
                 **kwargs,
-            ))
+            )
+        )
 
 
 # Notification.actions should be a list, but we can't use the postgres JSONField, so we do it here.

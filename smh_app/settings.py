@@ -11,9 +11,11 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+
 import dj_database_url
 from django.contrib.messages import constants as messages
 from getenv import env
+
 from .utils import bool_env
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -33,7 +35,7 @@ DEBUG = bool_env(env('DEBUG', True))
 if DEBUG:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-ALLOWED_HOSTS = ['*', ]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -46,7 +48,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'localflavor',
     'phonenumber_field',
-
     'apps.common',
     'apps.resources',
     'apps.sharemyhealth',
@@ -56,7 +57,6 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.notifications',
     'apps.data',
-
     'social_django',
     'memoize',
 ]
@@ -77,7 +77,7 @@ ROOT_URLCONF = 'smh_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates', 'smh_app'), ],
+        'DIRS': [os.path.join(BASE_DIR, 'templates', 'smh_app')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,9 +87,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
-            ],
+            ]
         },
-    },
+    }
 ]
 
 
@@ -105,10 +105,10 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django_settings_export.settings_export',
-                'smh_app.context_processors.resource_requests'
-            ],
+                'smh_app.context_processors.resource_requests',
+            ]
         },
-    },
+    }
 ]
 
 
@@ -120,9 +120,8 @@ WSGI_APPLICATION = 'smh_app.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASES_CUSTOM',
-                    'sqlite:///{}/db.sqlite3'.format(BASE_DIR))
-    ),
+        default=env('DATABASES_CUSTOM', 'sqlite:///{}/db.sqlite3'.format(BASE_DIR))
+    )
 }
 
 MESSAGE_TAGS = {
@@ -139,17 +138,11 @@ MESSAGE_TAGS = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
@@ -180,8 +173,8 @@ AUTHENTICATION_BACKENDS = (
 )
 
 # When a user logs in, they are redirected to the appropriate page by the
-# user_member_router
-LOGIN_REDIRECT_URL = 'users:user_member_router'
+# user_router
+LOGIN_REDIRECT_URL = 'users:user_router'
 LOGIN_URL = '/social-auth/login/vmi'
 
 # Settings for social_django
@@ -199,9 +192,8 @@ SOCIAL_AUTH_VMI_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
     'apps.users.pipeline.oidc.save_profile',
-    'apps.vmi.pipeline.organizations.set_user_type',
     'apps.vmi.pipeline.organizations.create_or_update_org',
-    'social_core.pipeline.debug.debug'
+    'social_core.pipeline.debug.debug',
 )
 
 SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
@@ -214,7 +206,7 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
     'apps.member.pipeline.connection_notifications',
-    'social_core.pipeline.debug.debug'
+    'social_core.pipeline.debug.debug',
 )
 
 SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = (
@@ -247,9 +239,18 @@ RESOURCE_NAME_AND_CLASS_MAPPING = {
 
 # Valid record types for member data
 VALID_MEMBER_DATA_RECORD_TYPES = [
-    'prescriptions', 'diagnoses', 'allergies', 'procedures', 'ed_reports',
-    'family_history', 'demographics', 'discharge_summaries', 'immunizations',
-    'lab_results', 'progress_notes', 'vital_signs'
+    'prescriptions',
+    'diagnoses',
+    'allergies',
+    'procedures',
+    'ed_reports',
+    'family_history',
+    'demographics',
+    'discharge_summaries',
+    'immunizations',
+    'lab_results',
+    'progress_notes',
+    'vital_signs',
 ]
 
 # see http://www.hl7.org/fhir/resourcelist.html
@@ -267,9 +268,9 @@ MEMBER_DATA_RECORD_TYPE_MAPPING = {
     "MedicationRequest": "Prescriptions",
     "MedicationStatement": None,
     "Observation": "Lab Results",
-    "Organization": "Providers",    # Social Providers
+    "Organization": "Providers",  # Social Providers
     "Patient": None,
-    "Practitioner": "Providers",    # Physician Providers
+    "Practitioner": "Providers",  # Physician Providers
     "Procedure": "Procedures",
     "Provenance": None,
 }
@@ -290,24 +291,20 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 APPLICATION_TITLE = env('DJANGO_APPLICATION_TITLE', 'Share My Health')
 
 
-ORGANIZATION_TITLE = env(
-    'DJANGO_ORGANIZATION_TITLE',
-    'Alliance for Better Health')
+ORGANIZATION_TITLE = env('DJANGO_ORGANIZATION_TITLE', 'Alliance for Better Health')
 
 ORGANIZATION_URI = env('DJANGO_ORGANIZATION_URI', 'https://abhealth.us')
 
-POLICY_URI = env(
-    'DJANGO_POLICY_URI',
-    'http://sharemy.health/privacy-policy1.0.html')
+POLICY_URI = env('DJANGO_POLICY_URI', 'http://sharemy.health/privacy-policy1.0.html')
 POLICY_TITLE = env('DJANGO_POLICY_TITLE', 'Privacy Policy')
-TOS_TITLE = env('DJANGO_TOS_TITLE',
-                'Terms of Service')
-TOS_URI = env('DJANGO_TOS_URI',
-              'http://sharemy.health/terms-of-service1.0.html')
+TOS_TITLE = env('DJANGO_TOS_TITLE', 'Terms of Service')
+TOS_URI = env('DJANGO_TOS_URI', 'http://sharemy.health/terms-of-service1.0.html')
 
 CONTACT_EMAIL = env('DJANGO_CONTACT_EMAIL', 'sharemyhealth@abhealth.us')
-TAG_LINE = env('DJANGO_TAG_LINE',
-               'Share your health data with applications, organizations, and people you trust.')
+TAG_LINE = env(
+    'DJANGO_TAG_LINE',
+    'Share your health data with applications, organizations, and people you trust.',
+)
 
 EXPLAINATION_LINE = 'This service allows Medicare beneficiaries to connect their health data to applications of their choosing.'  # noqa
 EXPLAINATION_LINE = env('DJANGO_EXPLAINATION_LINE ', EXPLAINATION_LINE)
@@ -352,7 +349,8 @@ SETTINGS_EXPORT = [
     'CALL_MEMBER',
     'CALL_MEMBER_PLURAL',
     'CALL_ORGANIZATION',
-    'CALL_ORGANIZATION_PLURAL'
+    'CALL_ORGANIZATION_PLURAL',
+    'SESSION_COOKIE_AGE',
 ]
 
 # Django-phonenumber-field settings

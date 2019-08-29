@@ -10,7 +10,7 @@ const memberSearchForm = document.getElementById('header-search-form')
 function formatListResults (members) {
 	return members.map(member => {
 		return (
-			'<li class="user-link"><a href="/member/' + member.member.id + '">'
+			'<li class="user-link"><a href="/member/' + member.user.id + '">'
 			+ '<img src="' + (member.profile.picture_url || '/static/images/icons/avatar_default.png') + '" class="mr-3">' 
 			+ member.user.first_name + ' ' + member.user.last_name 
 			+'</a></li>'

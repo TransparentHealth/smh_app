@@ -14,6 +14,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='member',
             name='organizations',
-            field=models.ManyToManyField(blank=True, related_name='members', to='org.Organization'),
-        ),
+            field=models.ManyToManyField(
+                blank=True, related_name='members', to='org.Organization'
+            ),
+        )
     ]

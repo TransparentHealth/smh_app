@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List
-from .model import DataModel
-from .types import Reference, CodeableConcept, Annotation
+
 from ..util import parse_timestamp
+from .model import DataModel
+from .types import Annotation, CodeableConcept, Reference
 
 
 @dataclass
@@ -28,7 +29,8 @@ class AllergyReaction(DataModel):
 
     VALIDATORS = dict(
         severity=[
-            lambda instance, field, value: not value or value in ['mild', 'moderate', 'severe']
+            lambda instance, field, value: not value
+            or value in ['mild', 'moderate', 'severe']
         ]
     )
 
@@ -85,13 +87,22 @@ class AllergyIntolerance(DataModel):
             lambda instance, field, value: not value
             or value.text in ['unconfirmed', 'confirmed', 'refuted', 'entered-in-error']
         ],
-        type=[lambda instance, field, value: not value or value in ['allergy', 'intolerance']],
+        type=[
+            lambda instance, field, value: not value
+            or value in ['allergy', 'intolerance']
+        ],
         category=[
             lambda instance, field, value: not value
-            or all([val in ['food', 'medication', 'environment', 'biologic'] for val in value])
+            or all(
+                [
+                    val in ['food', 'medication', 'environment', 'biologic']
+                    for val in value
+                ]
+            )
         ],
         criticality=[
-            lambda instance, field, value: not value or value in ['low', 'high', 'unable-to-assess']
+            lambda instance, field, value: not value
+            or value in ['low', 'high', 'unable-to-assess']
         ],
         recorder=[
             lambda instance, field, value: not value

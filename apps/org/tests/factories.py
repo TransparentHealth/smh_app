@@ -4,6 +4,7 @@ from django.template.defaultfilters import slugify
 from factory import DjangoModelFactory, Faker, LazyAttribute, SubFactory
 
 from apps.common.tests.factories import UserFactory
+
 from ..models import Organization, ResourceGrant, ResourceRequest
 
 

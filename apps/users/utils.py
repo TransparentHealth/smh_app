@@ -1,9 +1,27 @@
-from time import time
 import logging
+from time import time
+
 import requests
 from django.conf import settings
+from jwkest.jwt import JWT
 
 log = logging.getLogger(__name__)
+
+
+def get_id_token_payload(user):
+    # Get the ID Token and parse it.
+    try:
+        vmi = user.social_auth.filter(provider='vmi').first()
+        if 'id_token' in vmi.extra_data.keys():
+            id_token = vmi.extra_data.get('id_token')
+            parsed_id_token = JWT().unpack(id_token).payload()
+        else:
+            parsed_id_token = {'sub': '', 'ial': '1'}
+
+    except Exception:
+        parsed_id_token = {'sub': '', 'ial': '1'}
+
+    return parsed_id_token
 
 
 def refresh_access_token(social_auth):
@@ -15,7 +33,9 @@ def refresh_access_token(social_auth):
         if host:
             refresh_url = f"{host}/o/token/"
             client_id = getattr(settings, f"SOCIAL_AUTH_{provider_upper}_KEY", "")
-            client_secret = getattr(settings, f"SOCIAL_AUTH_{provider_upper}_SECRET", "")
+            client_secret = getattr(
+                settings, f"SOCIAL_AUTH_{provider_upper}_SECRET", ""
+            )
             refresh_data = {
                 'grant_type': 'refresh_token',
                 'refresh_token': refresh_token,

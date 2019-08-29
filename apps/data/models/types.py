@@ -1,8 +1,9 @@
-from datetime import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import List
-from .model import DataModel
+
 from ..util import parse_timestamp
+from .model import DataModel
 
 
 @dataclass
@@ -23,8 +24,7 @@ class CodeableConcept(DataModel):
     coding: List[Coding] = field(default_factory=list)
     text: str = None
 
-    CONVERTERS = dict(
-        coding=[lambda value: [Coding.from_data(val) for val in value]])
+    CONVERTERS = dict(coding=[lambda value: [Coding.from_data(val) for val in value]])
 
     @classmethod
     def from_data(cls, value):
@@ -83,8 +83,9 @@ class Identifier(DataModel):
     assigner: Reference = field(default_factory=Reference)
 
     CONVERTERS = dict(
-        type=[CodeableConcept.from_data], period=[
-            Period.from_data], assigner=[Reference.from_data]
+        type=[CodeableConcept.from_data],
+        period=[Period.from_data],
+        assigner=[Reference.from_data],
     )
 
 
@@ -125,8 +126,7 @@ class HumanName(DataModel):
 
     def __post_init__(self):
         if not self.text:
-            tokens = self.prefix + self.given + \
-                [self.family or ''] + self.suffix
+            tokens = self.prefix + self.given + [self.family or ''] + self.suffix
             self.text = ' '.join([token for token in tokens if token])
 
 

@@ -15,7 +15,7 @@
 
             <div class="tile undefined">
                 <div class="alert-item">
-                    <img src="/images/avatars/sloan.png" alt="" class="alert-item__image">
+                    <img src="{% static '/images/icons/avatar_default.png' %}" alt="" class="alert-item__image">
                     <div>
                         <div class="alert-item__text">
                             <p><strong>Danielle Sloan</strong> accepted your share request.</p>
@@ -37,8 +37,8 @@
               <ul class="list--formatted">
                   {% for user in org_with_mems.members %}
                       <li class="user-link">
-                          <a href="{% url 'member:member-update' pk=user.member.pk %}">
-                              <img class="mr-3"  src="{{ user.userprofile.picture_url }}" >
+                          <a href="{% url 'member:member-profile' pk=user.pk %}">
+                              <img class="mr-3"  src="{% if user.userprofile.picture %}{{ user.userprofile.picture }}{% else %}{% static '/images/icons/avatar_default.png' %}{% endif %}" >
                               {{ user.first_name }} {{ user.last_name }}
                           </a>
                       </li>
