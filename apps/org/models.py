@@ -81,11 +81,14 @@ class Organization(CreatedUpdatedModel, models.Model):
 class ResourceGrant(CreatedUpdatedModel, models.Model):
     """A model to track which Organizations have access to which users' resources."""
 
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name='resource_grants'
+    )
     member = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         help_text='The member who has granted this Organization access to the resource',
+        related_name='resource_grants',
     )
     resource_class_path = models.CharField(
         max_length=255, choices=RESOURCE_CHOICES, default=RESOURCE_CHOICES[0][0]
@@ -118,7 +121,9 @@ class ResourceGrant(CreatedUpdatedModel, models.Model):
 class ResourceRequest(CreatedUpdatedModel, models.Model):
     """A request from an Organization for access to a member's access token."""
 
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name='resource_requests'
+    )
     member = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
