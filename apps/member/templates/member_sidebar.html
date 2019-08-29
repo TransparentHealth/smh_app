@@ -29,7 +29,7 @@
             <div>
                 {# TODO: Change this link to 'member:summary' after url/view is created #}
 
-                {% if request.user.user_type == "M" or request.user != member %}
+                {% if request.user.user_type == request.user.UserType.MEMBER or request.user != member %}
                 <a href="{% url 'member:records' member.id 'list' %}"
                     class="nav-link {% if url_name == 'data-sources' %}active{% endif %}"
                     role="button">Medical Data</a>
@@ -38,7 +38,7 @@
                 <a href="#" data-rb-event-key="memberNotes" class="nav-link" role="button">Notes</a>
                 <a href="#" data-rb-event-key="memberLockbox" class="nav-link" role="button">Lockbox</a>
                 -->
-                {% if member.user_type == "M" %}
+                {% if member.user_type == member.UserType.MEMBER %}
                     <a
                         href="{% url 'member:organizations' member.id %}"
                         data-rb-event-key="memberOrgs"

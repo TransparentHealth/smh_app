@@ -40,7 +40,10 @@ from .utils import (
 class SelfOrApprovedOrgMixin(UserPassesTestMixin):
     def get_login_url(self):
         """Org agents can request access, others go home (login or member:dashboard)."""
-        if not self.request.user.is_anonymous and self.request.user.user_type == 'O':
+        if (
+            not self.request.user.is_anonymous
+            and self.request.user.user_type == self.request.user.UserType.ORG_AGENT
+        ):
             return reverse('member:request-access', args=[self.kwargs['pk']])
         else:
             return reverse('login') + '?next=' + self.request.path
@@ -543,7 +546,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         ).order_by('-created')[:4]
         organizations = [
             resource_grant.organization
-            for resource_grant in self.request.user.resourcegrant_set.all()
+            for resource_grant in self.request.user.resource_grants.all()
         ][:4]
         kwargs.setdefault('notifications', notifications)
         kwargs.setdefault('organizations', organizations)
