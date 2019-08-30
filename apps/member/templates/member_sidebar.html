@@ -1,8 +1,8 @@
 {% load static %}
 <div class="member-sidebar col-lg-3 pl-0 pb-5 pr-0">
     <div class="member-sidebar__image">
-        {% if request.user.userprofile.picture_url %}
-        <img src="{{ member.userprofile.picture_url }}" alt="{{ member.first_name }} {{ member.last_name }}",  class="member-avatar">
+        {% if request.user.profile.picture_url %}
+        <img src="{{ member.profile.picture_url }}" alt="{{ member.first_name }} {{ member.last_name }}",  class="member-avatar">
         {% else %}
         <img src="{% static '/images/icons/avatar_default.png' %}" alt=">{{ member.first_name }} {{ member.last_name }}", c class="member-avatar">
         {% endif %}
@@ -11,7 +11,7 @@
     <div class="member-sidebar__nav">
         <div class="member-sidebar__heading">
             <h1>{{ member.first_name }} {{ member.last_name }}</h1>
-            <p>{{ member.parsed_id_token.gender|title  }}  <span class="mr-2 ml-2">·</span> Age  {{ member.userprofile.age }}</p>
+            <p>{{ member.parsed_id_token.gender|title  }}  <span class="mr-2 ml-2">·</span> Age  {{ member.profile.age }}</p>
         </div>
         {% with request.resolver_match.url_name as url_name %}
         <div class="flex-column nav">

@@ -246,8 +246,8 @@ def create_or_update_resource_request_notifications(
                     'text': 'View Health Records',
                 }
             ],
-            message="<b>{instance.member.userprofile.name}</b> accepted your request",
-            picture_url=instance.member.userprofile.picture_url,
+            message="<b>{instance.member.profile.name}</b> accepted your request",
+            picture_url=instance.member.profile.picture_url,
         )
         notification.created = instance.updated
         notification.save()

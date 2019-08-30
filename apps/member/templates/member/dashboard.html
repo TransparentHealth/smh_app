@@ -35,8 +35,8 @@
       <h2 class="mb-3 pb-3">Your Profile <a href="{% url 'member:member-profile' pk=request.user.pk %}">Edit</a></h2>
       <div class="profile">
          <a href="{% url 'member:member-profile' pk=request.user.pk %}">
-                          {% if request.user.userprofile.picture_url %}
-                      <img src="{{ request.user.userprofile.picture_url }}" alt="Account menu icon", class="alert-item__image">
+                          {% if request.user.profile.picture_url %}
+                      <img src="{{ request.user.profile.picture_url }}" alt="Account menu icon", class="alert-item__image">
                     {% else %}
                       <img src="{% static '/images/icons/avatar_default.png' %}" alt="Account menu icon", class="alert-item__image">
                     {% endif %}

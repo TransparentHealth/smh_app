@@ -30,6 +30,16 @@ USER_TYPE_CHOICES = OrderedDict(
 )
 
 
+# == User class and instance properties ==
+
+# User.profile checks for the existence of User.profile, creates if doesn't exist.
+# (because all Users should always have a UserProfile)
+def profile(self):
+    if not hasattr(self, 'userprofile'):
+        return UserProfile.objects.create(user=self)
+    return self.userprofile
+
+
 # Make user_type a property of the User model, because that is where it is tested
 def user_type(self):
     if self.agent_organizations.exists():
@@ -40,6 +50,7 @@ def user_type(self):
         return UserType.OTHER
 
 
+User.profile = property(profile)
 User.user_type = property(user_type)
 User.UserType = UserType
 
@@ -107,7 +118,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     """If the User is being created and does not have a UserProfile model, create one."""
     if created or not hasattr(instance, 'userprofile'):
         UserProfile.objects.create(user=instance)
-    instance.userprofile.save()
+    instance.profile.save()
 
 
 # This is still tied to UserProfile (rather than User) for historical migration reasons.

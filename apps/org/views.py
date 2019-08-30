@@ -707,7 +707,7 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             # Update the Member. Note: we set the password locally, in order to
             # invalidate the member's token (the one in kwargs['token']).
             self.member.email = response_data_dict['email']
-            self.member.userprofile.picture_url = response_data_dict.get('picture')
+            self.member.profile.picture_url = response_data_dict.get('picture')
             self.member.set_password(form.data['password1'])
             self.member.save()
 
@@ -782,7 +782,7 @@ class SearchMembersAPI(LoginRequiredMixin, View):
                     for key, val in user.__dict__.items()
                     if key not in ['password'] and key[0] != '_' and key[:3] != 'is_'
                 },
-                'profile': user.userprofile.as_dict(),
+                'profile': user.profile.as_dict(),
             }
             for user in users
         ]

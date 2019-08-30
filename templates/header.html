@@ -84,8 +84,8 @@
             </div>
             <div id="profile-dropdown" class="account-menu dropdown nav-item">
                 <a class="account-menu nav-item" aria-haspopup="true" aria-expanded="false" href="/member/{{ request.user.id }}" class="dropdown-toggle nav-link" role="button" data-toggle="dropdown">
-                    {% if request.user.userprofile.picture %}
-                      <img src="{{ request.user.userprofile.picture }}" >
+                    {% if request.user.profile.picture %}
+                      <img src="{{ request.user.profile.picture }}" >
                     {% else %}
                       <img src="{% static '/images/icons/avatar_default.png' %}" >
                     {% endif %}
