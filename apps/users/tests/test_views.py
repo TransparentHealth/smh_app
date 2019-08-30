@@ -92,8 +92,8 @@ from apps.org.tests.factories import OrganizationFactory, ResourceGrantFactory
 #                 {'picture': ['This field is required.']},
 #             )
 #             # The self.user's UserProfile was not updated
-#             self.user.userprofile.refresh_from_db()
-#             self.assertEqual(self.user.userprofile.picture_url, None)
+#             self.user.profile.refresh_from_db()
+#             self.assertEqual(self.user.profile.picture_url, None)
 #             # No requests were made to VMI
 #             self.assertEqual(self.response_content_success.call['count'], 0)
 
@@ -110,8 +110,8 @@ from apps.org.tests.factories import OrganizationFactory, ResourceGrantFactory
 #                 {'picture': ['This field is required.']},
 #             )
 #             # The self.user's UserProfile was not updated
-#             self.user.userprofile.refresh_from_db()
-#             self.assertEqual(self.user.userprofile.picture_url, None)
+#             self.user.profile.refresh_from_db()
+#             self.assertEqual(self.user.profile.picture_url, None)
 #             # No requests were made to VMI
 #             self.assertEqual(self.response_content_success.call['count'], 0)
 
@@ -144,8 +144,8 @@ from apps.org.tests.factories import OrganizationFactory, ResourceGrantFactory
 #             )
 
 #             # The self.user's UserProfile was not updated
-#             self.user.userprofile.refresh_from_db()
-#             self.assertEqual(self.user.userprofile.picture_url, None)
+#             self.user.profile.refresh_from_db()
+#             self.assertEqual(self.user.profile.picture_url, None)
 #             # No requests were made to VMI
 #             self.assertEqual(self.response_content_success.call['count'], 0)
 
@@ -179,8 +179,8 @@ from apps.org.tests.factories import OrganizationFactory, ResourceGrantFactory
 #             # A successful create redirects to the next page of the creation process.
 #             self.assertEqual(response.status_code, 200)
 #             # The self.user's UserProfile was updated
-#             self.user.userprofile.refresh_from_db()
-#             self.assertEqual(self.user.userprofile.picture_url, self.vmi_picture_url)
+#             self.user.profile.refresh_from_db()
+#             self.assertEqual(self.user.profile.picture_url, self.vmi_picture_url)
 #             # One request was made to VMI
 #             self.assertEqual(self.response_content_success.call['count'], 1)
 

@@ -727,7 +727,7 @@ class RedirectSubjectURLTestCase(SMHAppTestMixin, TestCase):
     url_name = 'member:subject_url'
 
     def test_exists(self):
-        user_profile = self.user.userprofile
+        user_profile = self.user.profile
         user_profile.subject = '012345678901234'
         user_profile.save()
 
