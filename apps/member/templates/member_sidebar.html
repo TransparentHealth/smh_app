@@ -29,7 +29,7 @@
             <div>
                 {# TODO: Change this link to 'member:summary' after url/view is created #}
 
-                {% if request.user.user_type == request.user.UserType.MEMBER or request.user != member %}
+                {% if request.user.user_type.value == 'Member' or request.user != member %}
                 <a href="{% url 'member:records' member.id 'list' %}"
                     class="nav-link {% if url_name == 'data-sources' %}active{% endif %}"
                     role="button">Medical Data</a>
