@@ -184,7 +184,10 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 diagnoses.append(diagnosis)
 
             # sort diagnoses in order of date descending
-            diagnoses.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
+            diagnoses.sort(
+                key=lambda d: d['Date'] or datetime(1, 1, 1, tzinfo=timezone.utc),
+                reverse=True,
+            )
 
             context.setdefault('title', 'Diagnoses')
             context.setdefault('headers', headers)
@@ -213,7 +216,10 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 lab_results.append(lab)
 
             # sort lab_results in order of date descending
-            lab_results.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
+            lab_results.sort(
+                key=lambda d: d['Date'] or datetime(1, 1, 1, tzinfo=timezone.utc),
+                reverse=True,
+            )
 
             context.setdefault('title', 'Lab Results')
             context.setdefault('headers', headers)
@@ -243,7 +249,10 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 procedures.append(procedure)
 
             # sort procedures in order of date descending
-            procedures.sort(key=lambda d: d['Date'] or datetime(1, 1, 1), reverse=True)
+            procedures.sort(
+                key=lambda d: d['Date'] or datetime(1, 1, 1, tzinfo=timezone.utc),
+                reverse=True,
+            )
 
             context.setdefault('title', 'Procedures')
             context.setdefault('headers', headers)
@@ -264,7 +273,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                     ],
                     key=lambda np: np[1]['statements']
                     and np[1]['statements'][0].effectivePeriod.start
-                    or datetime(1, 1, 1),
+                    or datetime(1, 1, 1, tzinfo=timezone.utc),
                     reverse=True,
                 )
             ]
@@ -284,7 +293,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                     ),
                 }
                 record['links'] = {
-                    'Medication': f"/member/{context['member'].id}/modal/prescription/{prescription['medication'].id}"
+                    'Medication': f"/member/{context['member'].id}"
+                    + "/modal/prescription/{prescription['medication'].id}"
                 }
                 all_records.append(record)
 

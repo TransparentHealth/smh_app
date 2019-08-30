@@ -2027,9 +2027,7 @@ class OrgSearchMembersAPITestCase(SMHAppTestMixin, TestCase):
         member = UserFactory()
 
         # organization.members.add(member)
-        ResourceGrant.objects.create(
-            organization=organization, member=member
-        )
+        ResourceGrant.objects.create(organization=organization, member=member)
 
         self.client.force_login(agent)
         response = self.client.get(reverse(self.url_name))
