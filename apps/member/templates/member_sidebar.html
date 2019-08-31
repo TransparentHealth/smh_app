@@ -1,8 +1,8 @@
 {% load static %}
 <div class="member-sidebar col-lg-3 pl-0 pb-5 pr-0">
     <div class="member-sidebar__image">
-        {% if request.user.profile.picture_url %}
-        <img src="{{ member.profile.picture_url }}" alt="{{ member.first_name }} {{ member.last_name }}",  class="member-avatar">
+        {% if request.user.profile.picture %}
+        <img src="{{ member.profile.picture }}" alt="{{ member.first_name }} {{ member.last_name }}",  class="member-avatar">
         {% else %}
         <img src="{% static '/images/icons/avatar_default.png' %}" alt=">{{ member.first_name }} {{ member.last_name }}", c class="member-avatar">
         {% endif %}
