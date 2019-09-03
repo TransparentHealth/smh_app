@@ -294,7 +294,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 }
                 record['links'] = {
                     'Medication': f"/member/{context['member'].id}"
-                    + "/modal/prescription/{prescription['medication'].id}"
+                    + f"/modal/prescription/{prescription['medication'].id}"
                 }
                 all_records.append(record)
 
