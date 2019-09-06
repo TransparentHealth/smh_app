@@ -26,9 +26,14 @@ class CodeableConcept(DataModel):
 
     CONVERTERS = dict(coding=[lambda value: [Coding.from_data(val) for val in value]])
 
+    def __str__(self):
+        return self.text or '–'
+
     @classmethod
     def from_data(cls, value):
-        """CodeableConcept are sometimes given as plain strings; interpret as the "text" value"""
+        """CodeableConcept are sometimes given as plain strings; 
+        interpret as the "text" value
+        """
         if isinstance(value, str):
             return cls(text=value)
         else:
@@ -108,6 +113,9 @@ class Quantity(DataModel):
     unit: str = None
     system: str = None
     code: str = None
+
+    def __str__(self):
+        return f"{self.value or '–'}{self.unit or ''}".strip()
 
 
 @dataclass
