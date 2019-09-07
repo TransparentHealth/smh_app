@@ -14,6 +14,7 @@ from django.views.generic.base import TemplateView, View
 from memoize import delete_memoized
 
 from apps.data.util import parse_timestamp
+from apps.data.models.observation import Observation
 from apps.notifications.models import Notification
 from apps.org.models import (
     REQUEST_APPROVED,
@@ -194,30 +195,26 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('content_list', diagnoses)
 
         elif resource_name == 'lab-results':
-            observation_data = get_resource_data(data, 'Observation')
-            headers = ['Date', 'Code', 'Lab Result', 'Value']
-            lab_results = []
-            for observation in observation_data:
-                lab = dict(
-                    Date=(
-                        observation.get('effectivePeriod', {}).get('start')
-                        and parse_timestamp(observation['effectivePeriod']['start'])
-                        or None
-                    ),
-                    Code=observation['code']['coding'][0].get('code', None),
-                    Display=observation['code']['coding'][0].get('display', None),
-                )
-                lab_value = observation.get('valueQuantity', None)
-                lab['Value'] = (
-                    str(list(lab_value.values())[0]) + list(lab_value.values())[1]
-                    if lab_value
-                    else None
-                )
-                lab_results.append(lab)
-
-            # sort lab_results in order of date descending
-            lab_results.sort(
-                key=lambda d: d['Date'] or datetime(1, 1, 1, tzinfo=timezone.utc),
+            observation_data = get_resource_data(
+                data, 'Observation', constructor=Observation.from_data
+            )
+            headers = ['Date', 'Code', 'Display', 'Lab Result']
+            lab_results = sorted(
+                [
+                    {
+                        'Date': observation.effectivePeriod.start,
+                        'Code': (
+                            observation.code.coding[0].code
+                            if len(observation.code.coding) > 0
+                            else None
+                        ),
+                        'Display': observation.code.text,
+                        'Lab Result': observation.valueQuantity,
+                    }
+                    for observation in observation_data
+                ],
+                key=lambda observation: observation['Date']
+                or datetime(1, 1, 1, tzinfo=timezone.utc),
                 reverse=True,
             )
 
