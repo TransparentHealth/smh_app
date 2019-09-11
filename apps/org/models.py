@@ -232,10 +232,12 @@ def create_or_update_resource_request_notifications(
     notification.save()
 
     if instance.status == REQUEST_APPROVED:
-        # notify the Org
+        # delete existing org notifications
         Notification.objects.filter(
             notify_id=instance.organization.id, instance_id=instance.id
         ).delete()
+
+        # notify the Org
         notification = Notification.objects.create(
             notify=instance.organization,
             actor=instance.member,
@@ -244,10 +246,29 @@ def create_or_update_resource_request_notifications(
                 {
                     'url': reverse('member:records', args=[instance.member.id]),
                     'text': 'View Health Records',
+                    'method': 'get',
                 }
             ],
-            message="<b>{instance.member.profile.name}</b> accepted your request",
+            message="<b>{instance.member.profile.name}</b> granted {instance.organization.name} access to their health records",
             picture_url=instance.member.profile.picture_url,
         )
         notification.created = instance.updated
         notification.save()
+
+    elif instance.status == REQUEST_DENIED:
+        # delete existing org notifications
+        Notification.objects.filter(
+            notify_id=instance.organization.id, instance_id=instance.id
+        ).delete()
+
+        # notify the Org
+        notification = Notification.objects.create(
+            notify=instance.organization,
+            actor=instance.member,
+            instance=instance,
+            message="<b>{instance.member.profile.name}</b> denied {instance.organization.name} access to their health records",
+            picture_url=instance.member.profile.picture_url,
+        )
+        notification.created = instance.updated
+        notification.save()
+

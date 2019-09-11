@@ -20,7 +20,7 @@
                             <button class="alert-item__action" type="submit">Dismiss</button>
                           </form>
                           {% for action in notification.actions %}
-                            <form action="{{ action.url }}?next={{ request.path }}" method="{% firstof action.method 'post' %}">
+                            <form action="{{ action.url }}" method="{% firstof action.method 'post' %}">
                               {% ifnotequal action.method 'get' %}{% csrf_token %}{% endifnotequal %}
                               <button class="alert-item__action" type="submit">{{ action.text }}</button>
                             </form>
