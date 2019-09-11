@@ -46,6 +46,7 @@
                         role="button">Service Providers</a>
                 {% else %}
                     <a
+                        href="{% url 'member:organizations' member.id %}"
                         data-rb-event-key="memberOrgs"
                         class="nav-link  {% if url_name == 'organizations' %}active{% endif %}"
                         role="button">Organizations</a>

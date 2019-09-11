@@ -19,6 +19,7 @@ from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
 from social_django.models import UserSocialAuth
 
+from apps.notifications.models import Notification
 from apps.users.utils import refresh_access_token
 from libs.qrcode import make_qr_code
 
@@ -47,17 +48,19 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         """Add the user's Organizations, to the context."""
         # All of the Organizations that the request.user is a part of -- i.e.,
         # is an agent in
-        orgs_with_members = [
+        context = super().get_context_data(**kwargs)
+        context['orgs_with_members'] = [
             {
                 'organization': org,
                 'members': [rg.member for rg in org.resource_grants.all()],
+                'notifications': Notification.objects.filter(
+                    notify_id=org.id, dismissed=False
+                ).order_by('-created')[:4],
             }
             for org in self.request.user.agent_organizations.all()
         ]
 
-        kwargs.setdefault('orgs_with_members', orgs_with_members)
-
-        return super().get_context_data(**kwargs)
+        return context
 
 
 class CreateOrganizationView(LoginRequiredMixin, CreateView):
