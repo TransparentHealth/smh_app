@@ -12,7 +12,7 @@ from .views import (
     ProvidersView,
     RecordsView,
     RequestAccessView,
-    SummaryView,
+    # SummaryView,
     approve_resource_request,
     redirect_subject_url_to_member,
     resource_request_response,
