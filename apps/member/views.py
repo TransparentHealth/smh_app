@@ -15,6 +15,7 @@ from memoize import delete_memoized
 
 from apps.data.util import parse_timestamp
 from apps.data.models.observation import Observation
+from apps.data.models.practitioner import Practitioner
 from apps.notifications.models import Notification
 from apps.org.models import (
     REQUEST_APPROVED,
@@ -399,19 +400,19 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['member'] = self.get_member()
-        data = fetch_member_data(context['member'], 'sharemyhealth')
+        member_data = fetch_member_data(context['member'], 'sharemyhealth')
         if settings.DEBUG:
-            context['data'] = data
-        if data is None or 'entry' not in data or not data['entry']:
+            context['data'] = member_data
+        if (
+            member_data is None
+            or 'entry' not in member_data
+            or not member_data['entry']
+        ):
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
-
-        # if in the future we need more info
-        # location_data = get_resource_data(data, 'Location')
-        # provider_data = get_resource_data(data, 'Practitioner')
 
         # encounter resourceType seems to hold enough info to show provider
         # name, location name and date of visit info
-        encounter_data = get_resource_data(data, 'Encounter')
+        encounter_data = get_resource_data(member_data, 'Encounter')
         providers_headers = ['Doctor’s Name', 'Clinic', 'Date Last Seen']
 
         providers = []
@@ -438,6 +439,23 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         context.setdefault('providers_headers', providers_headers)
         context.setdefault('providers', providers)
+
+        return context
+
+
+class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
+    template_name = "provider_details.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['member'] = self.get_member()
+        member_data = fetch_member_data(context['member'], 'sharemyhealth')
+        context['provider_data'] = get_resource_data(
+            member_data,
+            'Practitioner',
+            constructor=Practitioner.from_data,
+            id=self.kwargs['provider_id'],
+        )
 
         return context
 

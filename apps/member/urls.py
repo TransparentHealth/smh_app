@@ -10,6 +10,7 @@ from .views import (
     PrescriptionDetailModalView,
     ProfileView,
     ProvidersView,
+    ProviderDetailView,
     RecordsView,
     RequestAccessView,
     SummaryView,
@@ -49,6 +50,11 @@ urlpatterns = [
         name='prescription-modal',
     ),
     url(r'^(?P<pk>[0-9]+)/providers/$', ProvidersView.as_view(), name='providers'),
+    url(
+        r'^(?P<pk>[0-9]+)/providers/(?P<provider_id>[0-9]+)/$',
+        ProviderDetailView.as_view(),
+        name='provider_detail',
+    ),
     url(
         r'^(?P<pk>[0-9]+)/data-sources/$',
         DataSourcesView.as_view(),
