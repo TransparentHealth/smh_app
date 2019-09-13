@@ -21,7 +21,7 @@
             data-rb-event-key="addSource"
             tabindex="-1"
             aria-selected="false"
-            class="nav-item nav-link {% if url_name == 'providers' %}active{% endif %}">Providers</a>
+            class="nav-item nav-link {% if 'provider' in url_name %}active{% endif %}">Providers</a>
         <a
             href="{% url 'member:data-sources' member.id %}"
             role="tab"

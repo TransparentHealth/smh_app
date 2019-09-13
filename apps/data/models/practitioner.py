@@ -62,3 +62,21 @@ class Practitioner(DataModel):
         ],
         communication=[lambda value: [CodeableConcept.from_data(val) for val in value]],
     )
+
+    @property
+    def names_text(self):
+        return '; '.join(name.text for name in self.name)
+
+    def next_encounter(self, encounters):
+        return next(
+            iter(
+                encounter
+                for encounter in encounters
+                if self.id
+                in [
+                    participant.individual.reference.split('/')[-1]
+                    for participant in encounter.participant
+                ]
+            ),
+            None,
+        )

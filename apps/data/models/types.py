@@ -150,6 +150,9 @@ class ContactPoint(DataModel):
 
     CONVERTERS = dict(period=[Period.from_data])
 
+    def __str__(self):
+        return f"{self.system or ''}{':' if self.system else ''} {self.value}".strip()
+
 
 @dataclass
 class Address(DataModel):
@@ -167,6 +170,24 @@ class Address(DataModel):
     period: Period = None
 
     CONVERTERS = dict(period=[Period.from_data], line=[list])
+
+    @property
+    def lines(self):
+        return [
+            line
+            for line in self.line
+            + [
+                f"{self.city}{', ' if self.state else ''}{self.state or ''} {self.postalCode or ''}".strip(),
+                f"{self.district or ''} {self.country or ''}".strip(),
+            ]
+            if line
+        ]
+
+    def __str__(self):
+        return ', '.join(self.lines)
+
+    def html(self):
+        return '<br/>'.join(self.lines)
 
 
 @dataclass
