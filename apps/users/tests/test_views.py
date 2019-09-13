@@ -237,7 +237,7 @@ class UserMemberRouterTestCase(SMHAppTestMixin, TestCase):
             (True, False, 'org:dashboard'),
             (True, True, 'org:dashboard'),
             (False, True, 'member:dashboard'),
-            (False, False, 'org:dashboard'),
+            (False, False, 'member:dashboard'),
         )
         for (is_agent, is_member, expected_redirect) in subtests:
             for method_name in ['get', 'post']:

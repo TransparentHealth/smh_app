@@ -29,7 +29,7 @@ class Encounter(DataModel):
     resourceType = 'Encounter'
 
     id: str = field()
-    status: str = field()  # planned | arrived | triaged | in-progress | onleave | finished | cancelled | entered-in-error | unknown
+    status: str = field()
 
     identifier: List[Identifier] = field(default_factory=list)
     type: List[CodeableConcept] = field(default_factory=list)
@@ -48,9 +48,14 @@ class Encounter(DataModel):
         'period': [Period.from_data],
         'location': [lambda value: [EncounterLocation.from_data(val) for val in value]],
     }
-    VALIDATORS = {}
+    VALIDATORS = {
+        'status': [
+            lambda instance, field, value: value.text
+            in ['planned', 'arrived', 'triaged', 'in-progress', 'onleave']
+            + ['finished', 'cancelled', 'entered-in-error', 'unknown']
+        ]
+    }
 
     @property
     def locations_display(self):
         return '; '.join(l.location.display for l in self.location)
-    
