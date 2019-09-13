@@ -23,9 +23,9 @@
             <table class="table table--records mt-2 table-hover">
                 <thead>
                     <tr>
-                        <th>Provider’s Name</th>
-                        <th>Date Last Seen</th>
-                        <th>Location</th>
+                        <th width="34%">Provider’s Name</th>
+                        <th width="33%">Date Last Seen</th>
+                        <th width="33%">Location</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -34,11 +34,11 @@
                         <td>
                             <a class="modal-link"
                                 href="{% url 'member:provider_detail' pk=member.id provider_id=practitioner.id %}">
-                                {{ practitioner.names }}
+                                {{ practitioner.names_text }}
                             </a>
                         </td>
                         <td>{% firstof practitioner.last_encounter.period.start '—' %}</td>
-                        <td>{% firstof practitioner.last_encounter.locations '—' %}</td>
+                        <td>{% firstof practitioner.last_encounter.locations_display '—' %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

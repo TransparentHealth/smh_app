@@ -51,6 +51,6 @@ class Encounter(DataModel):
     VALIDATORS = {}
 
     @property
-    def locations(self):
+    def locations_display(self):
         return '; '.join(l.location.display for l in self.location)
     

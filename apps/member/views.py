@@ -225,27 +225,23 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('content_list', lab_results)
 
         elif resource_name == 'procedures':
-            encounter_data = get_resource_data(data, 'Encounter')
+            encounters = get_resource_data(
+                data, 'Encounter', constructor=Encounter.from_data
+            )
             headers = ['Date', 'Type', 'Practitioner', 'Location']
-            procedures = []
-            for encounter in encounter_data:
-                procedure = dict(
-                    Date=(
-                        encounter.get('period', {}).get('start')
-                        and parse_timestamp(encounter['period']['start'])
-                        or None
+            procedures = [
+                {
+                    'Date': encounter.period.start if encounter.period else None,
+                    'Type': ', '.join(t.text for t in encounter.type),
+                    'Practitioner': ', '.join(
+                        participant.individual.display
+                        for participant in encounter.participant
+                        if 'Practitioner' in participant.individual.reference
                     ),
-                    Type=encounter['type'][0]['text'],
-                    Practitioner=', '.join(
-                        [
-                            participant['individual']['display']
-                            for participant in encounter.get('participant', [])
-                            if 'Practitioner' in participant['individual']['reference']
-                        ]
-                    ),
-                    Location=encounter['location'][0]['location']['display'],
-                )
-                procedures.append(procedure)
+                    'Location': encounter.locations_display,
+                }
+                for encounter in encounters
+            ]
 
             # sort procedures in order of date descending
             procedures.sort(
@@ -421,7 +417,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         for index, practitioner in enumerate(practitioners):
             practitioner.last_encounter = practitioner.next_encounter(encounters)
             practitioners[index] = practitioner
-            
+
         practitioners.sort(
             key=lambda p: (
                 p.last_encounter.period.start
@@ -442,11 +438,65 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
         context = super().get_context_data(**kwargs)
         context['member'] = self.get_member()
         member_data = fetch_member_data(context['member'], 'sharemyhealth')
-        context['provider_data'] = get_resource_data(
-            member_data,
-            'Practitioner',
-            constructor=Practitioner.from_data,
-            id=self.kwargs['provider_id'],
+        context['practitioner'] = next(
+            iter(
+                get_resource_data(
+                    member_data,
+                    'Practitioner',
+                    constructor=Practitioner.from_data,
+                    id=self.kwargs['provider_id'],
+                )
+            ),
+            None,
+        )
+        if not context['practitioner']:
+            raise Http404()
+
+        prescriptions = [
+            {
+                'date': next(
+                    iter(
+                        sorted(
+                            [
+                                statement.period.start
+                                for statement in prescription['statements']
+                            ],
+                            reverse=True,
+                        )
+                    ),
+                    None,
+                ),
+                'type': 'Prescription',
+                'display': prescription['medication'].code.text,
+                'prescription': prescription,
+            }
+            for prescription in get_prescriptions(
+                member_data, incl_practitioners=True
+            ).values()
+            if context['practitioner'].id in prescription['practitioners'].keys()
+        ]
+        encounters = [
+            {
+                'date': encounter.period.start,
+                'type': 'Procedure',
+                'display': (
+                    ', '.join(t.text for t in encounter.type)
+                    + (
+                        ', ' + encounter.locations_display
+                        if encounter.locations_display
+                        else ''
+                    )
+                ),
+                'encounter': encounter,
+            }
+            for encounter in get_resource_data(
+                member_data, 'Encounter', constructor=Encounter.from_data
+            )
+        ]
+        context['records'] = sorted(
+            prescriptions + encounters,
+            key=lambda r: r['date'] or datetime(1, 1, 1, tzinfo=timezone.utc),
+            reverse=True,
         )
 
         return context

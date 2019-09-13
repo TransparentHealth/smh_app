@@ -20,5 +20,12 @@ $gray--medium: #e5e5e5; // medium should be titles lightest
 $black: #000;
 $table-border-color: $navy--border;
 
+// breadcrumb
+$breadcrumb-active-color: $black;
+$breadcrumb-bg: rgb(255,255,255);
+$breadcrumb-divider: ">";
+$breadcrumb-divider-color: $black;
+$breadcrumb-item-padding: 1em;
+
 // Other.
 $box-shadow--tile: transparentize($black, .84) 0 2px 10px;

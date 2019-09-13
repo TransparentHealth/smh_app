@@ -64,7 +64,7 @@ class Practitioner(DataModel):
     )
 
     @property
-    def names(self):
+    def names_text(self):
         return '; '.join(name.text for name in self.name)
 
     def next_encounter(self, encounters):

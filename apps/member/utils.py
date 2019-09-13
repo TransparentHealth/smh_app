@@ -42,11 +42,13 @@ def fetch_member_data(member, provider):
     return {'entry': []}
 
 
-def get_resource_data(data, resource_type, constructor=dict, id=None):
+def get_resource_data(data, resource_types, constructor=dict, id=None):
+    if isinstance(resource_types, str):
+        resource_types = [resource_types]
     return [
         constructor(item['resource'])
         for item in data.get('entry', [])
-        if item['resource']['resourceType'] == resource_type
+        if item['resource']['resourceType'] in resource_types
         if id is None or item['resource'].get('id') == id
     ]
 
