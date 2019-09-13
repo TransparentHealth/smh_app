@@ -13,7 +13,7 @@ from .views import (
     ProviderDetailView,
     RecordsView,
     RequestAccessView,
-    SummaryView,
+    # SummaryView,
     approve_resource_request,
     redirect_subject_url_to_member,
     resource_request_response,
@@ -31,7 +31,7 @@ urlpatterns = [
     ),
     url(r'^(?P<subject>[0-9]{15})/(?P<rest>.*)$', redirect_subject_url_to_member),
     # Member urls (using pk)
-    url(r'^(?P<pk>[0-9]+)/summary/$', SummaryView.as_view(), name='summary'),
+    # url(r'^(?P<pk>[0-9]+)/summary/$', SummaryView.as_view(), name='summary'),
     url(
         r'^(?P<pk>[0-9]+)/records/(?P<resource_name>[\w-]+)?/?$',
         RecordsView.as_view(),
