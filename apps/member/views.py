@@ -14,6 +14,7 @@ from django.views.generic.base import TemplateView, View
 from memoize import delete_memoized
 
 from apps.data.util import parse_timestamp
+from apps.data.models.encounter import Encounter
 from apps.data.models.observation import Observation
 from apps.data.models.practitioner import Practitioner
 from apps.notifications.models import Notification
@@ -410,36 +411,27 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         ):
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
-        # encounter resourceType seems to hold enough info to show provider
-        # name, location name and date of visit info
-        encounter_data = get_resource_data(member_data, 'Encounter')
-        providers_headers = ['Doctor’s Name', 'Clinic', 'Date Last Seen']
+        encounters = get_resource_data(
+            member_data, 'Encounter', constructor=Encounter.from_data
+        )
+        encounters.sort(key=lambda e: e.period.start, reverse=True)  # latest ones first
+        practitioners = get_resource_data(
+            member_data, 'Practitioner', constructor=Practitioner.from_data
+        )
+        for index, practitioner in enumerate(practitioners):
+            practitioner.last_encounter = practitioner.next_encounter(encounters)
+            practitioners[index] = practitioner
+            
+        practitioners.sort(
+            key=lambda p: (
+                p.last_encounter.period.start
+                if p.last_encounter
+                else datetime(1, 1, 1, tzinfo=timezone.utc)
+            ),
+            reverse=True,
+        )
 
-        providers = []
-        for encounter in encounter_data:
-            if 'participant' not in encounter:
-                continue
-            provider = {}
-            provider['doctor-name'] = encounter['participant'][0]['individual'][
-                'display'
-            ]
-            provider['clinic'] = encounter['location'][0]['location']['display']
-            provider['date-last-seen'] = parse_timestamp(encounter['period']['start'])
-            providers.append(provider)
-
-            # A way to get more provider info from provider_data
-            # provider_id = encounter['participant'][0]['individual']['reference'].split('/')[1]
-            # [provider for provider in provider_data if provider['id'] == provider_id][0]
-
-            # A way to get more location info from location_data
-            # location_id = encounter['location'][0]['location']['reference'].split('/')[1]
-            # [location for location in location_data if location['id'] == location_id][0]
-
-        providers.sort(key=lambda p: p['date-last-seen'], reverse=True)
-
-        context.setdefault('providers_headers', providers_headers)
-        context.setdefault('providers', providers)
-
+        context['practitioners'] = practitioners
         return context
 
 

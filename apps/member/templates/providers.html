@@ -19,24 +19,31 @@
                     </div>
                 </form>
             </div>
+            {% if practitioners %}
             <table class="table table--records mt-2 table-hover">
                 <thead>
                     <tr>
-                        {% for title in providers_headers %}
-                            <th> {{ title }}</th>
-                        {% endfor %}
+                        <th>Provider’s Name</th>
+                        <th>Date Last Seen</th>
+                        <th>Location</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for provider in providers %}
-                        <tr>
-                            {% for key, value in provider.items %}
-                                <td> {{ value }}</td>
-                            {% endfor %}
-                        </tr>
+                    {% for practitioner in practitioners %}
+                    <tr>
+                        <td>
+                            <a class="modal-link"
+                                href="{% url 'member:provider_detail' pk=member.id provider_id=practitioner.id %}">
+                                {{ practitioner.names }}
+                            </a>
+                        </td>
+                        <td>{% firstof practitioner.last_encounter.period.start '—' %}</td>
+                        <td>{% firstof practitioner.last_encounter.locations '—' %}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            {% endif %}
         </div>
     </div>
 </div>
