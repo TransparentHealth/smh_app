@@ -18,6 +18,7 @@
 
 // Import component styles.
 @import 'components/Alert/alert';
+@import 'components/dashboard_notifications';
 @import 'components/Header/header';
 @import 'components/Header/AccountMenu/account-menu';
 @import 'components/Header/AlertsMenu/alerts-menu';
@@ -31,6 +32,7 @@
 @import 'components/MemberTabs/MemberId/member-id';
 @import 'components/MemberTabs/MemberId/MedicalId/medical-id';
 @import 'components/MemberTabs/MemberOrgs/member-orgs';
+@import 'components/practitioner';
 @import 'components/Sidebar/sidebar';
 @import 'components/Tile/tile';
 @import 'components/UserLink/user-link';
@@ -45,8 +47,26 @@
 }
 
 .debug-panel {
-    margin: 2em 0;
-    border: 1px solid #EE0;
-    padding: 1em;
-    background-color: #FFE;
+  margin: 2em 0;
+  border: 1px solid #EE0;
+  padding: 1em;
+  background-color: #FFE;
+}
+
+.breadcrumb {
+  letter-spacing: 1pt;
+  padding: 0.75rem 0;
+}
+
+.breadcrumb-link {
+  color: $blue;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom-color: rgba(255,255,255,0.0);
+
+  &:hover {
+    color: $blue;
+    border-bottom-color: $blue;
+  }
 }

@@ -1,11 +1,13 @@
 {% with request.resolver_match.url_name as url_name %}
     <nav class="records-tabs nav nav-tabs" role="tablist">
+        {% comment %}
         <a
             href="{% url 'member:summary' member.id %}"
             role="tab"
             data-rb-event-key="summary"
             aria-selected="true"
             class="nav-item nav-link {% if url_name == 'summary' %}active{% endif %}">Summary</a>
+        {% endcomment %}
         <a
             href="{% url 'member:records' member.id %}"
             role="tab"
@@ -19,7 +21,7 @@
             data-rb-event-key="addSource"
             tabindex="-1"
             aria-selected="false"
-            class="nav-item nav-link {% if url_name == 'providers' %}active{% endif %}">Providers</a>
+            class="nav-item nav-link {% if 'provider' in url_name %}active{% endif %}">Providers</a>
         <a
             href="{% url 'member:data-sources' member.id %}"
             role="tab"

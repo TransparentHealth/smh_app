@@ -17,6 +17,7 @@ def set_unique_slug(instance, based_on_field='name'):
     slug = slugify(getattr(instance, based_on_field))
     # If this slug is already being used, create a more unique slug
     if instance.__class__.objects.filter(slug=slug).exists():
-        slug = '{}-{}'.format(slug, ''.join(
-            random.choices(string.ascii_letters + string.digits, k=20)))
+        slug = '{}-{}'.format(
+            slug, ''.join(random.choices(string.ascii_letters + string.digits, k=20))
+        )
     instance.slug = slug

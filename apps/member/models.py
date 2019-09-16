@@ -1,48 +1,29 @@
-from django.db import models
-from phonenumber_field.modelfields import PhoneNumberField
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from .utils import get_id_token_payload
+from django.db import models
+
 from apps.org.models import Organization
-from datetime import date, datetime
+from apps.users.utils import get_id_token_payload
+
+
+"""
+The Member model is DEPRECATED -- retained until we're sure all data successfully migrates.
+
+* User profile data is migrated to apps.users.models.UserProfile
+* Organization membership relationships are migrated to Organization.members
+  (which points to User, which has related_name User.member_organizations)
+"""
 
 
 class Member(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    birth_date = models.DateField(null=True, blank=True)
-    phone_number = PhoneNumberField(null=True, blank=True, unique=False)
-    address = models.TextField(null=True, blank=True)
-    emergency_contact_name = models.CharField(
-        null=True, blank=True, max_length=40)
-    emergency_contact_number = PhoneNumberField(
-        null=True, blank=True, unique=False)
+
+    # organizations field DEPRECATED: use Organization.members field instead
     organizations = models.ManyToManyField(
-        Organization, blank=True, related_name='members')
+        Organization, blank=True, related_name='members_organizations'
+    )
 
     def __str__(self):
         return self.user.username
 
     def parsed_id_token(self):
         return get_id_token_payload(self.user)
-
-    def age(self):
-        try:
-            idt = get_id_token_payload(self.user)
-            bd = idt['birthdate']
-            born = datetime.strptime(bd, '%Y-%m-%d').date()
-            today = date.today()
-            return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
-        except Exception:
-            return "Unknown"
-
-
-@receiver(post_save, sender=User)
-def create_or_update_user_profile(sender, instance, created, **kwargs):
-    """
-        If the User is being created or does not have a related Member model, create one.
-        Otherwise update existing member
-    """
-    if created or not hasattr(instance, 'member'):
-        Member.objects.create(user=instance)
-    instance.member.save()

@@ -20,4 +20,4 @@ class ResourceGrantAdmin(admin.ModelAdmin):
 class ResourceRequestAdmin(admin.ModelAdmin):
     search_fields = ('organization__name', 'member__username', 'user__username')
     list_display = ('id', 'organization', 'member', 'user', 'status')
-    list_filter = ('organization', 'status',)
+    list_filter = ('organization', 'status')

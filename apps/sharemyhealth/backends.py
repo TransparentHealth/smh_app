@@ -1,5 +1,4 @@
 from django.conf import settings
-
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 
@@ -10,6 +9,7 @@ class ShareMyHealthOAuth2Backend(OpenIdConnectAuth):
     For reference, the sharemyhealth use is: https://github.com/TransparentHealth/
     sharemyhealth/blob/master/apps/verifymyidentity/authentication.py.
     """
+
     name = "sharemyhealth"
 
     # differs from value in discovery document

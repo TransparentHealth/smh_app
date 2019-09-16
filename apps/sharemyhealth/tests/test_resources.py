@@ -1,9 +1,9 @@
-from httmock import all_requests, HTTMock
-
 from django.test import TestCase
+from httmock import HTTMock, all_requests
 
-from apps.org.tests.factories import UserSocialAuthFactory
 from apps.common.tests.factories import UserFactory
+from apps.org.tests.factories import UserSocialAuthFactory
+
 from ..resources import Resource
 
 
@@ -15,7 +15,7 @@ class ResourceTestCase(TestCase):
         # the expected mock response.
         self.expected_response_success = {
             'status_code': 200,
-            'content': {'test_key': 'Test content'}
+            'content': {'test_key': 'Test content'},
         }
 
     @all_requests
@@ -32,15 +32,17 @@ class ResourceTestCase(TestCase):
         with self.subTest('Initializing Resource sets member and db_object'):
             # A UserSocialAuth object for the self.member and the Resource
             user_social_auth = UserSocialAuthFactory(
-                user=self.member,
-                uid=self.member.id,
-                provider=Resource.name,
+                user=self.member, uid=self.member.id, provider=Resource.name
             )
             # A UserSocialAuth object for the self.member, but for a different Resource
-            UserSocialAuthFactory(user=self.member, uid=self.member.id, provider='other_resource')
+            UserSocialAuthFactory(
+                user=self.member, uid=self.member.id, provider='other_resource'
+            )
             # A UserSocialAuth object for the Resource, but for a different member
             other_member = UserFactory()
-            UserSocialAuthFactory(user=other_member, uid=other_member.id, provider=Resource.name)
+            UserSocialAuthFactory(
+                user=other_member, uid=other_member.id, provider=Resource.name
+            )
 
             # Initializing the Resource sets the user_social_auth (for the
             # self.member and the Resource) as the db_object.
@@ -52,18 +54,16 @@ class ResourceTestCase(TestCase):
         """The filter_by_user() method returns the first UserSocialAuth object for member."""
         # A UserSocialAuth object for the self.member and the Resource
         self_member_result = UserSocialAuthFactory(
-            user=self.member,
-            uid=self.member.id,
-            provider=Resource.name,
+            user=self.member, uid=self.member.id, provider=Resource.name
         )
         # A UserSocialAuth object for the self.member, but for a different Resource
-        UserSocialAuthFactory(user=self.member, uid=self.member.id, provider='other_resource')
+        UserSocialAuthFactory(
+            user=self.member, uid=self.member.id, provider='other_resource'
+        )
         # A UserSocialAuth object for the Resource, but for a different member
         other_member = UserFactory()
         other_member_result = UserSocialAuthFactory(
-            user=other_member,
-            uid=other_member.id,
-            provider=Resource.name
+            user=other_member, uid=other_member.id, provider=Resource.name
         )
 
         resource = Resource(self.member)
@@ -72,11 +72,11 @@ class ResourceTestCase(TestCase):
         # that the Resource was instantiated for.
         self.assertEqual(
             set(resource.filter_by_user(self.member).values_list('id', flat=True)),
-            set([self_member_result.id])
+            set([self_member_result.id]),
         )
         self.assertEqual(
             set(resource.filter_by_user(other_member).values_list('id', flat=True)),
-            set([other_member_result.id])
+            set([other_member_result.id]),
         )
 
     def test_get(self):
@@ -88,7 +88,7 @@ class ResourceTestCase(TestCase):
             user=self.member,
             uid=self.member.id,
             provider=Resource.name,
-            extra_data={'refresh_token': refresh_token, 'access_token': access_token}
+            extra_data={'refresh_token': refresh_token, 'access_token': access_token},
         )
         resource = Resource(self.member)
         requested_record_type = 'prescriptions'
@@ -100,7 +100,9 @@ class ResourceTestCase(TestCase):
             data = resource.get(requested_record_type)
 
         # The response matches the self.response_content_success
-        self.assertEqual(data.status_code, self.expected_response_success['status_code'])
+        self.assertEqual(
+            data.status_code, self.expected_response_success['status_code']
+        )
         self.assertEqual(data.json(), self.expected_response_success['content'])
         # The request was made to a URL built from the Resource's url_for_data,
         # and the requested_record_type.
@@ -109,6 +111,5 @@ class ResourceTestCase(TestCase):
         # The request was made with a 'Bearer' Authorization header that includes
         # the access_token.
         self.assertEqual(
-            data.request.headers['Authorization'],
-            'Bearer {}'.format(access_token)
+            data.request.headers['Authorization'], 'Bearer {}'.format(access_token)
         )

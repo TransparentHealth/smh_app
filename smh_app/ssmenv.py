@@ -1,8 +1,7 @@
-import os
 import logging
+import os
 
 import boto3
-
 
 logger = logging.getLogger(__name__)
 
@@ -17,10 +16,7 @@ class EC2ParameterStore:
         for k, v in parameter_dict.items():
             os.environ.setdefault(k, v)
 
-    def _get_paginated_parameters(self,
-                                  client_method,
-                                  strip_path=True,
-                                  **get_kwargs):
+    def _get_paginated_parameters(self, client_method, strip_path=True, **get_kwargs):
         next_token = None
         parameters = []
         while True:
@@ -30,8 +26,9 @@ class EC2ParameterStore:
             if next_token is None:
                 break
             get_kwargs.update({'NextToken': next_token})
-        return dict(self.extract_parameter(p, strip_path=strip_path)
-                    for p in parameters)
+        return dict(
+            self.extract_parameter(p, strip_path=strip_path) for p in parameters
+        )
 
     def extract_parameter(self, parameter, strip_path=True):
         key = parameter['Name']
@@ -54,14 +51,10 @@ class EC2ParameterStore:
             **get_kwargs
         )
 
-    def get_parameters_by_path(self,
-                               path,
-                               decrypt=True,
-                               recursive=True,
-                               strip_path=True):
-        get_kwargs = dict(Path=path,
-                          WithDecryption=decrypt,
-                          Recursive=recursive)
+    def get_parameters_by_path(
+        self, path, decrypt=True, recursive=True, strip_path=True
+    ):
+        get_kwargs = dict(Path=path, WithDecryption=decrypt, Recursive=recursive)
         return self._get_paginated_parameters(
             client_method=self.client.get_parameters_by_path,
             strip_path=strip_path,

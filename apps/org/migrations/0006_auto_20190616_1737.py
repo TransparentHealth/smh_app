@@ -6,20 +6,24 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('org', '0005_rename_resource_class_to_resource_class_path'),
-    ]
+    dependencies = [('org', '0005_rename_resource_class_to_resource_class_path')]
 
     operations = [
         migrations.AddField(
             model_name='organization',
             name='picture_url',
-            field=models.TextField(blank=True, help_text="The URL of Organization's logo (from VMI)", null=True),
+            field=models.TextField(
+                blank=True,
+                help_text="The URL of Organization's logo (from VMI)",
+                null=True,
+            ),
         ),
         migrations.AddField(
             model_name='organization',
             name='website',
-            field=models.TextField(blank=True, help_text='Populated from VMI.', null=True),
+            field=models.TextField(
+                blank=True, help_text='Populated from VMI.', null=True
+            ),
         ),
         migrations.AlterField(
             model_name='organization',
@@ -29,6 +33,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='organization',
             name='users',
-            field=models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL, verbose_name='Agents'),
+            field=models.ManyToManyField(
+                blank=True, to=settings.AUTH_USER_MODEL, verbose_name='Agents'
+            ),
         ),
     ]

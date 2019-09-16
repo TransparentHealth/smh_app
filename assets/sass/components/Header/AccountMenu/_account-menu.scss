@@ -29,12 +29,8 @@
   }
 
   .dropdown-menu::after {
-    display: none;
-
-    @include media-breakpoint-up(sm) {
-      display: block;
-      right: 1.625em;
-    }
+    display: block;
+    right: 1.625em;
 
     @include media-breakpoint-up(lg) {
       right: 1.1em;

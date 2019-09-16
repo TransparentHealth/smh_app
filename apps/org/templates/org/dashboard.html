@@ -2,43 +2,25 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5 mb-5"><div class="row">
+<div class="org-dashboard container mt-5 mb-5"><div class="row">
     {% if orgs_with_members %}
       {% for org_with_mems in orgs_with_members %}
-        <div class="recent-alerts col-md-12 pr-4 pl-4">
-
-          <span></span>
-        </div>
-
         <div class="recent-alerts col-md-6 pr-4 pl-4">
             <h2 class="text-center mb-3">Notifications</h2>
-
-            <div class="tile undefined">
-                <div class="alert-item">
-                    <img src="/images/avatars/sloan.png" alt="" class="alert-item__image">
-                    <div>
-                        <div class="alert-item__text">
-                            <p><strong>Danielle Sloan</strong> accepted your share request.</p>
-                        </div>
-                        <div class="alert-item__time">3 minutes ago</div>
-                    </div>
-                </div>
-            </div>
+            {% include 'member/notifications-list.html' with notifications=org_with_mems.notifications %}
 
             <div class="text-center">
                <!-- <button type="button" class="mt-4 btn btn-primary">View All Notifications</button> -->
             </div>
         </div>
 
-
-
         <div class="recent-members col-md-6 pr-4 pl-4">
             <h2 class="text-center mb-3 pb-3">{{ org_with_mems.organization }} Members</h2>
               <ul class="list--formatted">
                   {% for user in org_with_mems.members %}
                       <li class="user-link">
-                          <a href="{% url 'member:member-update' pk=user.member.pk %}">
-                              <img class="mr-3"  src="{{ user.userprofile.picture_url }}" >
+                          <a href="{% url 'member:member-profile' pk=user.pk %}">
+                              <img class="mr-3"  src="{% if user.profile.picture %}{{ user.profile.picture }}{% else %}{% static '/images/icons/avatar_default.png' %}{% endif %}" >
                               {{ user.first_name }} {{ user.last_name }}
                           </a>
                       </li>

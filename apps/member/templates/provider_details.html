@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row mr-0 ml-0">
+    {% include "member_sidebar.html" with member=member %}
+    <div class="col-lg-9 p-5">
+        {% include "member_tabbed_nav.html" with member=member %}
+         <div role="tabpanel" aria-hidden="true" class=" tab-pane">
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a class="breadcrumb-link" href="{% url 'member:providers' pk=member.id %}">Providers</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ practitioner.names_text }}</li>
+              </ol>
+            </nav>
+
+            <div class="row">
+                <div class="col practitioner">
+                    <h1 class="practitioner__name">{{ practitioner.names_text }}</h1>
+                    {% for address in practitioner.address %}
+                    <div class="practitioner__contact">{{ address }}</div>
+                    {% endfor %}
+                    {% for telecom in practitioner.telecom %}
+                    <div class="practitioner__contact">{{ telecom }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- showing the list of providers based on encounters here -->
+            <div class="heading-with-sort d-flex justify-content-between align-items-center mt-5 mb-3">
+                <h2>All Health Records</h2>
+                <form class="mb-2 form-inline">
+                    <div class="form-group">
+                        <label for="sortOption" class="mr-2 mb-0 form-label">Sort by</label>
+                        <select id="sortOption" class="form-control">
+                            <option>Most Recent</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <table class="table table--records mt-2 table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Record Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{% firstof record.date '—' %}</td>
+                        <td>{{ record.type }}</td>
+                        <td>{{ record.display }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

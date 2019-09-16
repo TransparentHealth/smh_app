@@ -1,8 +1,9 @@
-from datetime import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import List
-from .model import DataModel
+
 from ..util import parse_timestamp
+from .model import DataModel
 
 
 @dataclass
@@ -23,12 +24,16 @@ class CodeableConcept(DataModel):
     coding: List[Coding] = field(default_factory=list)
     text: str = None
 
-    CONVERTERS = dict(
-        coding=[lambda value: [Coding.from_data(val) for val in value]])
+    CONVERTERS = dict(coding=[lambda value: [Coding.from_data(val) for val in value]])
+
+    def __str__(self):
+        return self.text or '–'
 
     @classmethod
     def from_data(cls, value):
-        """CodeableConcept are sometimes given as plain strings; interpret as the "text" value"""
+        """CodeableConcept are sometimes given as plain strings; 
+        interpret as the "text" value
+        """
         if isinstance(value, str):
             return cls(text=value)
         else:
@@ -83,8 +88,9 @@ class Identifier(DataModel):
     assigner: Reference = field(default_factory=Reference)
 
     CONVERTERS = dict(
-        type=[CodeableConcept.from_data], period=[
-            Period.from_data], assigner=[Reference.from_data]
+        type=[CodeableConcept.from_data],
+        period=[Period.from_data],
+        assigner=[Reference.from_data],
     )
 
 
@@ -108,6 +114,9 @@ class Quantity(DataModel):
     system: str = None
     code: str = None
 
+    def __str__(self):
+        return f"{self.value or '–'}{self.unit or ''}".strip()
+
 
 @dataclass
 class HumanName(DataModel):
@@ -125,8 +134,7 @@ class HumanName(DataModel):
 
     def __post_init__(self):
         if not self.text:
-            tokens = self.prefix + self.given + \
-                [self.family or ''] + self.suffix
+            tokens = self.prefix + self.given + [self.family or ''] + self.suffix
             self.text = ' '.join([token for token in tokens if token])
 
 
@@ -141,6 +149,9 @@ class ContactPoint(DataModel):
     period: Period = None
 
     CONVERTERS = dict(period=[Period.from_data])
+
+    def __str__(self):
+        return f"{self.system or ''}{':' if self.system else ''} {self.value}".strip()
 
 
 @dataclass
@@ -159,6 +170,24 @@ class Address(DataModel):
     period: Period = None
 
     CONVERTERS = dict(period=[Period.from_data], line=[list])
+
+    @property
+    def lines(self):
+        return [
+            line
+            for line in self.line
+            + [
+                f"{self.city}{', ' if self.state else ''}{self.state or ''} {self.postalCode or ''}".strip(),
+                f"{self.district or ''} {self.country or ''}".strip(),
+            ]
+            if line
+        ]
+
+    def __str__(self):
+        return ', '.join(self.lines)
+
+    def html(self):
+        return '<br/>'.join(self.lines)
 
 
 @dataclass
