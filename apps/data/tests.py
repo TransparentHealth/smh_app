@@ -1,18 +1,21 @@
-import os, json, logging
+import json
+import logging
+import os
 from glob import glob
+
 from django.test import TestCase
 
-from apps.data.models.observation import Observation
-from apps.data.models.procedure import Procedure
+from apps.data.models.allergy import AllergyIntolerance
+from apps.data.models.condition import Condition
+from apps.data.models.encounter import Encounter
 from apps.data.models.medication import (
     Medication,
     MedicationRequest,
     MedicationStatement,
 )
+from apps.data.models.observation import Observation
 from apps.data.models.practitioner import Practitioner
-from apps.data.models.condition import Condition
-from apps.data.models.encounter import Encounter
-from apps.data.models.allergy import AllergyIntolerance
+from apps.data.models.procedure import Procedure
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_MODELS = {
