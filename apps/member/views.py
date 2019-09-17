@@ -95,7 +95,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         # put the current resources in the summary tab.  We will not show the
         # other options in this tab.
-        conditions_data = get_resource_data(data, 'Condition', Condition.from_data)
+        conditions_data = get_resource_data(data, 'Condition')
         prescription_data = get_prescriptions(data)
 
         all_records = RECORDS
@@ -173,26 +173,23 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('all_records', all_records)
 
         elif resource_name == 'diagnoses':
-            conditions_data = get_resource_data(data, 'Condition')
-            headers = ['Date', 'Code', 'Diagnosis', 'Provider']
-            diagnoses = []
-            for condition in conditions_data:
-                diagnosis = dict(
-                    Date=(
-                        condition.get('assertedDate')
-                        and parse_timestamp(condition['assertedDate'])
-                        or None
+            conditions_data = get_resource_data(data, 'Condition', Condition.from_data)
+            headers = ['Status', 'Verification', 'Description']
+            diagnoses = sorted(
+                [
+                    dict(
+                        Status=condition.clinicalStatus,
+                        Verification=condition.verificationStatus,
+                        Description=condition.code.text,
+                    )
+                    for condition in conditions_data
+                ],
+                key=lambda diagnosis: (
+                    ['active', 'recurrence', 'inactive', 'remission', 'resolved'].index(
+                        diagnosis['Status']
                     ),
-                    Code=condition['code']['coding'][0].get('code', None),
-                    Diagnosis=condition['code']['coding'][0].get('display', None),
-                    Provider=condition.get('provider', None),
-                )
-                diagnoses.append(diagnosis)
-
-            # sort diagnoses in order of date descending
-            diagnoses.sort(
-                key=lambda d: d['Date'] or datetime(1, 1, 1, tzinfo=timezone.utc),
-                reverse=True,
+                    diagnosis['Description'],
+                ),
             )
 
             context.setdefault('title', 'Diagnoses')
