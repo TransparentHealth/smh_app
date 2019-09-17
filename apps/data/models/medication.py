@@ -9,8 +9,6 @@ from .types import CodeableConcept, Identifier, Period, Quantity, Reference
 class Medication(DataModel):
     """http://hl7.org/fhir/STU3/medication.html"""
 
-    resourceType = "Medication"
-
     id: str = field()  # required
     code: CodeableConcept = None
 
@@ -43,8 +41,6 @@ class MedicationRequester(DataModel):
 class MedicationRequest(DataModel):
     """http://hl7.org/fhir/STU3/medicationrequest.html"""
 
-    resourceType = "MedicationRequest"
-
     # required
     id: str = field()
     subject: Reference = field()
@@ -74,8 +70,6 @@ class Dosage(DataModel):
 @dataclass
 class MedicationStatement(DataModel):
     """http://hl7.org/fhir/STU3/medicationstatement.html"""
-
-    resourceType = "MedicationStatement"
 
     # required
     id: str = field()

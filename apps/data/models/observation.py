@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
+
 from .model import DataModel
-from .types import CodeableConcept, Period, Reference, Quantity
+from .types import CodeableConcept, Period, Quantity, Reference
 
 
 @dataclass
 class Observation(DataModel):
-    resourceType = 'Observation'
 
     id: str = field()
     status: str = field()
