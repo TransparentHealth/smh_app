@@ -14,7 +14,6 @@ from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView, View
 from memoize import delete_memoized
 
-from apps.data.util import parse_timestamp
 from apps.data.models.condition import Condition
 from apps.data.models.encounter import Encounter
 from apps.data.models.procedure import Procedure
