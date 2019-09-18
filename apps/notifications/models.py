@@ -64,6 +64,8 @@ class Notification(CreatedModel, models.Model):
     instance_id = models.PositiveIntegerField(null=True)
     instance = GenericForeignKey('instance_content_type', 'instance_id')
 
+    type = models.TextField(null=True)
+
     message = models.TextField()
     picture_url = models.TextField(null=True)
     actions = models.TextField(default='[]')
