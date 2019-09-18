@@ -9,12 +9,14 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.http.response import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
+from django.utils.html import mark_safe
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView, View
 from memoize import delete_memoized
 
-from apps.data.util import parse_timestamp
+from apps.data.models.condition import Condition
 from apps.data.models.encounter import Encounter
+from apps.data.models.procedure import Procedure
 from apps.data.models.observation import Observation
 from apps.data.models.practitioner import Practitioner
 from apps.notifications.models import Notification
@@ -140,7 +142,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         if resource_name == 'list':
             conditions_data = get_resource_data(data, 'Condition')
             observation_data = get_resource_data(data, 'Observation')
-            encounter_data = get_resource_data(data, 'Encounter')
+            procedure_data = get_resource_data(data, 'Procedure')
             prescription_data = get_prescriptions(data)
             allergies = get_allergies(data, keys=['id'])
             all_records = RECORDS
@@ -160,8 +162,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                     record['data'] = prescription_data
 
                 if record['name'] == 'Procedures':
-                    record['count'] = len(encounter_data)
-                    record['data'] = encounter_data
+                    record['count'] = len(procedure_data)
+                    record['data'] = procedure_data
 
                 if record['name'] == 'Allergies':
                     record['count'] = len(allergies)
@@ -170,26 +172,23 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('all_records', all_records)
 
         elif resource_name == 'diagnoses':
-            conditions_data = get_resource_data(data, 'Condition')
-            headers = ['Date', 'Code', 'Diagnosis', 'Provider']
-            diagnoses = []
-            for condition in conditions_data:
-                diagnosis = dict(
-                    Date=(
-                        condition.get('assertedDate')
-                        and parse_timestamp(condition['assertedDate'])
-                        or None
+            conditions_data = get_resource_data(data, 'Condition', Condition.from_data)
+            headers = ['Status', 'Verification', 'Description']
+            diagnoses = sorted(
+                [
+                    dict(
+                        Status=condition.clinicalStatus,
+                        Verification=condition.verificationStatus,
+                        Description=condition.code.text,
+                    )
+                    for condition in conditions_data
+                ],
+                key=lambda diagnosis: (
+                    ['active', 'recurrence', 'inactive', 'remission', 'resolved'].index(
+                        diagnosis['Status']
                     ),
-                    Code=condition['code']['coding'][0].get('code', None),
-                    Diagnosis=condition['code']['coding'][0].get('display', None),
-                    Provider=condition.get('provider', None),
-                )
-                diagnoses.append(diagnosis)
-
-            # sort diagnoses in order of date descending
-            diagnoses.sort(
-                key=lambda d: d['Date'] or datetime(1, 1, 1, tzinfo=timezone.utc),
-                reverse=True,
+                    diagnosis['Description'],
+                ),
             )
 
             context.setdefault('title', 'Diagnoses')
@@ -225,29 +224,41 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('content_list', lab_results)
 
         elif resource_name == 'procedures':
-            encounters = get_resource_data(
-                data, 'Encounter', constructor=Encounter.from_data
-            )
-            headers = ['Date', 'Type', 'Practitioner', 'Location']
-            procedures = [
-                {
-                    'Date': encounter.period.start if encounter.period else None,
-                    'Type': ', '.join(t.text for t in encounter.type),
-                    'Practitioner': ', '.join(
-                        participant.individual.display
-                        for participant in encounter.participant
-                        if 'Practitioner' in participant.individual.reference
-                    ),
-                    'Location': encounter.locations_display,
-                }
-                for encounter in encounters
-            ]
-
-            # sort procedures in order of date descending
-            procedures.sort(
-                key=lambda d: d['Date'] or datetime(1, 1, 1, tzinfo=timezone.utc),
+            procedures_data = sorted(
+                get_resource_data(data, 'Procedure', constructor=Procedure.from_data),
+                key=lambda procedure: (
+                    procedure.performedPeriod.start
+                    or datetime(1, 1, 1, tzinfo=timezone.utc)
+                ),
                 reverse=True,
             )
+            headers = ['Date', 'Status', 'Description', 'Provider']
+            procedures = [
+                {
+                    'Date': procedure.performedPeriod.start,
+                    'Status': procedure.status,
+                    'Description': procedure.code.text,
+                    'Provider': mark_safe(
+                        '; '.join(
+                            [
+                                '<a class="modal-link" href="{url}">{name}</a>'.format(
+                                    name=performer.actor.display,
+                                    url=reverse_lazy(
+                                        'member:provider_detail',
+                                        kwargs={
+                                            'pk': context['member'].id,
+                                            'provider_id': performer.actor.id,
+                                        },
+                                    ),
+                                )
+                                for performer in procedure.performer
+                                if 'Practitioner' in performer.actor.reference
+                            ]
+                        )
+                    ),
+                }
+                for procedure in procedures_data
+            ]
 
             context.setdefault('title', 'Procedures')
             context.setdefault('headers', headers)
@@ -475,26 +486,19 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
             ).values()
             if context['practitioner'].id in prescription['practitioners'].keys()
         ]
-        encounters = [
+        procedures = [
             {
-                'date': encounter.period.start,
+                'date': procedure.performedPeriod.start,
                 'type': 'Procedure',
-                'display': (
-                    ', '.join(t.text for t in encounter.type)
-                    + (
-                        ', ' + encounter.locations_display
-                        if encounter.locations_display
-                        else ''
-                    )
-                ),
-                'encounter': encounter,
+                'display': procedure.code.text,
+                'procedure': procedure,
             }
-            for encounter in get_resource_data(
-                member_data, 'Encounter', constructor=Encounter.from_data
+            for procedure in get_resource_data(
+                member_data, 'Procedure', constructor=Procedure.from_data
             )
         ]
         context['records'] = sorted(
-            prescriptions + encounters,
+            prescriptions + procedures,
             key=lambda r: r['date'] or datetime(1, 1, 1, tzinfo=timezone.utc),
             reverse=True,
         )

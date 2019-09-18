@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List
+
 from .medication import Medication, MedicationRequest, MedicationStatement
 from .model import DataModel
 

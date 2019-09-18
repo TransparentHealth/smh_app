@@ -35,8 +35,6 @@ class PractitionerQualification(DataModel):
 class Practitioner(DataModel):
     """http://hl7.org/fhir/STU3/practitioner.html"""
 
-    resourceType = 'Practitioner'
-
     id: str
 
     identifier: List[Identifier] = field(default_factory=list)
