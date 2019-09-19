@@ -16,8 +16,13 @@
 {% endif %}
 
 <form method="POST">
-  {% csrf_token %}
-  {{ form }}
-<button type="submit">Submit</button>
-
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit">Submit</button>
+</form>
+<script>
+    $(document).ready(function () {
+        $('#id_birthdate').datepicker();
+    });
+</script>
 {% endblock content %}
