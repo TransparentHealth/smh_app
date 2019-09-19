@@ -40,7 +40,7 @@
                     <dt>Birthdate:</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">{{ form.birth_date }}</dd>
                     <dd class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.birth_date.errors }}</dd>
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.profile.birthdate }}</dd>
+                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.profile.birthdate|date:"F j, Y" }}</dd>
 
                     <dt>Email:</dt>
                     <dd>{{ member.email }}</dd>
@@ -74,7 +74,7 @@
                     <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.profile.emergency_contact_name|default:"" }}&#x2003;<a href="tel:{{ member.profile.emergency_contact_number|default:'' }}">{{ member.profile.emergency_contact_number|default:"" }}</a></dd>
 
                     <dt>Member since:</dt>
-                    <dd>{{ member.date_joined|date:"d/m/Y" }}</dd>
+                    <dd>{{ member.date_joined|date:"F j, Y" }}</dd>
                                         <dt>Identification:</dt>
                     <dd>Identity Assurance Level (IAL): {{ member.profile.id_token_payload.ial }}</dd>
                     <dd>Authenticator Assurance Level(AAL): {{ member.profile.id_token_payload.aal }}</dd>
