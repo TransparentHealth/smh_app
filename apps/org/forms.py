@@ -77,7 +77,11 @@ class VerifyMemberIdentityForm(Form):
 
     classification = ChoiceField(choices=IAL_EVIDENCE_CLASSIFICATIONS, required=False)
     description = CharField(required=False)
-    exp = DateField(required=False, label="Expiration Date (yyyy-mm-dd)")
+    exp = DateField(
+        required=False,
+        label="Expiration Date (mm/dd/yyyy)",
+        input_formats=['%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d'],
+    )
 
     def clean(self):
         super().clean()
