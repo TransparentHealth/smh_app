@@ -3,6 +3,7 @@ from datetime import date
 from enum import Enum
 from importlib import import_module
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
@@ -160,6 +161,41 @@ def create_user_profile_connect_to_hixny_notification(
                     'url': reverse('social:begin', args=['sharemyhealth']),
                     'method': 'get',
                     'text': "Connect Now",
+                }
+            ],
+        )
+
+
+@receiver(post_save, sender=User)
+def create_user_set_recovery_passphrase_notification(
+    sender, instance, created, **kwargs
+):
+    """
+    Create a notification prompting the newly-created user to set a recovery passphrase.
+    """
+    user = instance
+    if created:
+        if 'Notification' in kwargs:
+            Notification = kwargs['Notification']
+        else:
+            Notification = import_module('apps.notifications.models').Notification
+
+        if 'db_alias' in kwargs:
+            Notification_objects = Notification.objects.using(kwargs['db_alias'])
+        else:
+            Notification_objects = Notification.objects
+
+        Notification_objects.create(
+            type="user_set_recovery_passphrase",
+            notify=user,
+            actor=user,
+            instance=user,
+            message="Set a <b>recovery passphrase</b> for your account.",
+            actions=[
+                {
+                    'url': settings.REMOTE_PASSWORD_SET_PASSPHRASE_ENDPOINT,
+                    'method': 'get',
+                    'text': "Set Passphrase",
                 }
             ],
         )

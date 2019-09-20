@@ -233,7 +233,8 @@ SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SMH_OAUTH_SECRET', '')
 
 
 REMOTE_LOGOUT_ENDPOINT = "%s/api/v1/remote-logout" % (SOCIAL_AUTH_VMI_HOST)
-REMOTE_PASSWORD_RECOVERY_ENDPOINT = "%s/accounts/password-recovery-passphrase/" % (SOCIAL_AUTH_VMI_HOST)
+REMOTE_PASSWORD_SET_PASSPHRASE_ENDPOINT = f"{SOCIAL_AUTH_VMI_HOST}/accounts/password-recovery-passphrase/"
+REMOTE_PASSWORD_RECOVERY_ENDPOINT = f"{REMOTE_PASSWORD_SET_PASSPHRASE_ENDPOINT}/reset-password"
 
 # A mapping of resource names to the path for their class
 RESOURCE_NAME_AND_CLASS_MAPPING = {
