@@ -10,6 +10,7 @@
     {% block content %}
     {% endblock content %}
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // close the modal
@@ -23,5 +24,6 @@
         }
     });
 </script>
+{% include 'session_security/all.html' %}
 </body>
 </html>
