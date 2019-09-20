@@ -51,7 +51,11 @@ class UpdateNewMemberAtOrgBasicInfoForm(Form):
     to help a person become a Member at that Organization.
     """
 
-    birthdate = DateField(required=True, label="Birth Date (yyyy-mm-dd)")
+    birthdate = DateField(
+        required=True,
+        label="Birth Date (mm/dd/yyyy)",
+        input_formats=['%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d'],
+    )
     gender = ChoiceField(choices=GENDER_CHOICES, required=False)
     email = EmailField(required=False, label="Email (Not required but recommended)")
     nickname = CharField(required=False, label="Nickname (not required)")
@@ -73,7 +77,11 @@ class VerifyMemberIdentityForm(Form):
 
     classification = ChoiceField(choices=IAL_EVIDENCE_CLASSIFICATIONS, required=False)
     description = CharField(required=False)
-    exp = DateField(required=False, label="Expiration Date (yyyy-mm-dd)")
+    exp = DateField(
+        required=False,
+        label="Expiration Date (mm/dd/yyyy)",
+        input_formats=['%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d'],
+    )
 
     def clean(self):
         super().clean()

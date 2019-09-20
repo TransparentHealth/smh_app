@@ -90,7 +90,9 @@ class UserProfile(models.Model):
     @property
     def age(self):
         try:
-            born = parse_timestamp(self.birthdate).date()
+            born = self.birthdate
+            if born is None:
+                return "Unknown"
             today = date.today()
             age = today.year - born.year
             if age < 0:
@@ -99,6 +101,13 @@ class UserProfile(models.Model):
                 return age
         except Exception:
             return "Unknown"
+
+    @property
+    def birthdate(self):
+        date = self.id_token_payload.get('birthdate')
+        if date is not None:
+            date = parse_timestamp(date).date()
+        return date
 
     def as_dict(self):
         """return the UserProfile object as a json-able dict"""
