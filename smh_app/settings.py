@@ -238,7 +238,7 @@ SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_KEY = env('SOCIAL_AUTH_VERIFYMYIDENTI
 SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_SECRET = env('SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_SECRET',
                                                         '')
 SOCIAL_AUTH_NAME = env('SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_NAME',
-                                                      'verifymyidentity-openidconnect')
+                       'verifymyidentity-openidconnect')
 
 # For fetching a FHIR Resources
 SOCIAL_AUTH_SHAREMYHEALTH_HOST = env(
