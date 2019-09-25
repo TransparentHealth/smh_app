@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'apps.common',
     'apps.resources',
     'apps.sharemyhealth',
-    'apps.vmi',
+    'apps.verifymyidentity',
     'apps.org',
     'apps.member',
     'apps.users',
@@ -122,7 +122,8 @@ WSGI_APPLICATION = 'smh_app.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASES_CUSTOM', 'sqlite:///{}/db.sqlite3'.format(BASE_DIR))
+        default=env('DATABASES_CUSTOM',
+                    'sqlite:///{}/db.sqlite3'.format(BASE_DIR))
     )
 }
 
@@ -169,8 +170,8 @@ STATIC_URL = '/static/'
 
 
 AUTHENTICATION_BACKENDS = (
-    'apps.vmi.backends.VMIOAuth2Backend',
-    'apps.sharemyhealth.backends.ShareMyHealthOAuth2Backend',
+    'apps.verifymyidentity.backends.verifymyidentity.VerifyMyIdentityOpenIdConnect',
+    'apps.sharemyhealth.backends.sharemyhealth.ShareMyHealthOAuth2Backend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -181,7 +182,7 @@ LOGIN_URL = '/social-auth/login/vmi'
 
 # Settings for social_django
 SOCIAL_AUTH_URL_NAMESPACE = "social"
-SOCIAL_AUTH_VMI_PIPELINE = (
+SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.auth_allowed',
@@ -194,7 +195,7 @@ SOCIAL_AUTH_VMI_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
     'apps.users.pipeline.oidc.save_profile',
-    'apps.vmi.pipeline.organizations.create_or_update_org',
+    'apps.verifymyidentity.pipeline.organizations.create_or_update_org',
     'social_core.pipeline.debug.debug',
 )
 
@@ -219,22 +220,38 @@ SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = (
     'apps.member.pipeline.disconnection_notifications',
 )
 
-# Settings for our custom OAuth backends. Note: The name of the social auth
+# Settings for our custom OIDC and OAuth backends. Note: The name of the social auth
 # backend must come after 'SOCIAL_AUTH_' in these settings, in order for
-# social-auth-app-django to recognize it. For example, for VMI, we define
-# settings that begin with 'SOCIAL_AUTH_VMI_'.
-SOCIAL_AUTH_NAME = env('VMI_OAUTH_NAME', 'vmi')
-SOCIAL_AUTH_VMI_HOST = env('VMI_OAUTH_HOST', 'http://verifymyidentity:8000')
-SOCIAL_AUTH_VMI_KEY = env('VMI_OAUTH_KEY', '')
-SOCIAL_AUTH_VMI_SECRET = env('VMI_OAUTH_SECRET', '')
-SOCIAL_AUTH_SHAREMYHEALTH_HOST = env('SMH_OAUTH_HOST', 'http://hixny:8001')
-SOCIAL_AUTH_SHAREMYHEALTH_KEY = env('SMH_OAUTH_KEY', '')
-SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SMH_OAUTH_SECRET', '')
+# social-auth-app-django to recognize it.
+# For example, for , we define `verifymyidentity-openidconnect' then settings are prefixed with
+# SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_.
+
+# OIDC VMI (For single sign on.)
+SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_NAME = env('SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_NAME',
+                                                      'verifymyidentity-openidconnect')
+SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST = env('SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST',
+                                                      'http://verifymyidentity:8000')
+SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_OIDC_ENDPOINT = env('SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_OIDC_ENDPOINT',
+                                                               'http://verifymyidentity:8000')
+SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_KEY = env('SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_KEY',
+                                                     'smhapp@verifymyidentity')
+SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_SECRET = env('SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_SECRET',
+                                                        '')
+
+# For fetching a FHIR Resources
+SOCIAL_AUTH_SHAREMYHEALTH_HOST = env(
+    'SOCIAL_AUTH_SHAREMYHEALTH_HOST', 'http://sharemyhealth:8001')
+SOCIAL_AUTH_SHAREMYHEALTH_KEY = env(
+    'SOCIAL_AUTH_SHAREMYHEALTH_KEY', 'smhapp@sharemyhealth')
+SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SOCIAL_AUTH_SHAREMYHEALTH_SECRET', '')
 
 
-REMOTE_LOGOUT_ENDPOINT = "%s/api/v1/remote-logout" % (SOCIAL_AUTH_VMI_HOST)
-REMOTE_PASSWORD_SET_PASSPHRASE_ENDPOINT = f"{SOCIAL_AUTH_VMI_HOST}/accounts/password-recovery-passphrase/"
-REMOTE_PASSWORD_RECOVERY_ENDPOINT = f"{REMOTE_PASSWORD_SET_PASSPHRASE_ENDPOINT}/reset-password"
+REMOTE_LOGOUT_ENDPOINT = "%s/api/v1/remote-logout" % (
+    SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
+REMOTE_PASSWORD_SET_PASSPHRASE_ENDPOINT = "%s/accounts/password-recovery-passphrase/" \
+    % (SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
+REMOTE_PASSWORD_RECOVERY_ENDPOINT = "%s/reset-password" % (
+    REMOTE_PASSWORD_SET_PASSPHRASE_ENDPOINT)
 
 # A mapping of resource names to the path for their class
 RESOURCE_NAME_AND_CLASS_MAPPING = {
@@ -295,14 +312,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 APPLICATION_TITLE = env('DJANGO_APPLICATION_TITLE', 'Share My Health')
 
 
-ORGANIZATION_TITLE = env('DJANGO_ORGANIZATION_TITLE', 'Alliance for Better Health')
+ORGANIZATION_TITLE = env('DJANGO_ORGANIZATION_TITLE',
+                         'Alliance for Better Health')
 
 ORGANIZATION_URI = env('DJANGO_ORGANIZATION_URI', 'https://abhealth.us')
 
-POLICY_URI = env('DJANGO_POLICY_URI', 'http://sharemy.health/privacy-policy1.0.html')
+POLICY_URI = env('DJANGO_POLICY_URI',
+                 'http://sharemy.health/privacy-policy1.0.html')
 POLICY_TITLE = env('DJANGO_POLICY_TITLE', 'Privacy Policy')
 TOS_TITLE = env('DJANGO_TOS_TITLE', 'Terms of Service')
-TOS_URI = env('DJANGO_TOS_URI', 'http://sharemy.health/terms-of-service1.0.html')
+TOS_URI = env('DJANGO_TOS_URI',
+              'http://sharemy.health/terms-of-service1.0.html')
 
 CONTACT_EMAIL = env('DJANGO_CONTACT_EMAIL', 'sharemyhealth@abhealth.us')
 TAG_LINE = env(
@@ -313,7 +333,8 @@ TAG_LINE = env(
 EXPLAINATION_LINE = 'This service allows Medicare beneficiaries to connect their health data to applications of their choosing.'  # noqa
 EXPLAINATION_LINE = env('DJANGO_EXPLAINATION_LINE ', EXPLAINATION_LINE)
 
-USER_DOCS_URI = "https://abhealth.us"
+USER_DOCS_URI = env(
+    'USER_DOCS_URI', "https://github.com/TransparentHealth/smh_app")
 USER_DOCS_TITLE = "User Documentation"
 USER_DOCS = "User Docs"
 

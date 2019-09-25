@@ -17,4 +17,5 @@ class VMIOAuth2Backend(OpenIdConnectAuth):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.OIDC_ENDPOINT = getattr(settings, 'SOCIAL_AUTH_VMI_HOST')
+        self.OIDC_ENDPOINT = getattr(settings,
+                                     'SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST')

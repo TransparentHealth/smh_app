@@ -54,7 +54,7 @@ def authenticated_home(request):
         return user_router(request)
     else:
         return render(
-            request, 'homepage.html', {'SOCIAL_AUTH_NAME': settings.SOCIAL_AUTH_NAME}
+            request, 'homepage.html', {}
         )
 
 
