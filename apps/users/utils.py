@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 def get_id_token_payload(user):
     # Get the ID Token and parse it.
     try:
-        vmi = user.social_auth.filter(provider='vmi').first()
+        vmi = user.social_auth.filter(provider=settings.SOCIAL_AUTH_NAME).first()
         if 'id_token' in vmi.extra_data.keys():
             id_token = vmi.extra_data.get('id_token')
             parsed_id_token = JWT().unpack(id_token).payload()
