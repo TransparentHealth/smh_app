@@ -2,15 +2,13 @@
 import os
 import sys
 
-from smh_app import load_env
 from smh_app.ssmenv import EC2ParameterStore
-
-
-load_env.load_env()
-
+import dotenv
 
 if __name__ == '__main__':
-
+    # Get this from .env file (controlled by Ansible)
+    dotenv.load_dotenv()
+    # EC2 Parameter Store TODO Better parameterization here.
     try:
         parameter_store = EC2ParameterStore(region_name="us-east-1")
         # Automate env (dev)

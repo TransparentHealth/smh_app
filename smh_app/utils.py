@@ -30,7 +30,7 @@ def int_env(env_val):
 
 def get_vmi_user_data(request):
     """ Makes a call to the VMI user_profile endpoint and returns a response """
-    user_endpoint = settings.SOCIAL_AUTH_VMI_HOST + '/api/v1/user/'
+    user_endpoint = settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST + '/api/v1/user/'
     social_auth_extra_data = request.user.social_auth.values().first()['extra_data']
     token = social_auth_extra_data['access_token'] if social_auth_extra_data else None
     response = requests.get(
