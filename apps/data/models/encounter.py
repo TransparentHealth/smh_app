@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List
+
 from .model import DataModel
 from .types import CodeableConcept, Identifier, Period, Reference
 
@@ -26,7 +27,6 @@ class EncounterLocation(DataModel):
 
 @dataclass
 class Encounter(DataModel):
-    resourceType = 'Encounter'
 
     id: str = field()
     status: str = field()

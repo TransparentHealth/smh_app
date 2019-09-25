@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'session_security',
     'localflavor',
     'phonenumber_field',
     'apps.common',
@@ -67,6 +68,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'session_security.middleware.SessionSecurityMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
@@ -231,7 +233,8 @@ SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SMH_OAUTH_SECRET', '')
 
 
 REMOTE_LOGOUT_ENDPOINT = "%s/api/v1/remote-logout" % (SOCIAL_AUTH_VMI_HOST)
-REMOTE_PASSWORD_RECOVERY_ENDPOINT = "%s/accounts/password-recovery-passphrase/" % (SOCIAL_AUTH_VMI_HOST)
+REMOTE_PASSWORD_SET_PASSPHRASE_ENDPOINT = f"{SOCIAL_AUTH_VMI_HOST}/accounts/password-recovery-passphrase/"
+REMOTE_PASSWORD_RECOVERY_ENDPOINT = f"{REMOTE_PASSWORD_SET_PASSPHRASE_ENDPOINT}/reset-password"
 
 # A mapping of resource names to the path for their class
 RESOURCE_NAME_AND_CLASS_MAPPING = {
@@ -360,7 +363,9 @@ PHONENUMBER_DB_FORMAT = 'E164'
 PHONENUMBER_DEFAULT_FORMAT = 'NATIONAL'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_AGE = int(env('SESSION_COOKIE_AGE', int(10 * 60)))
 
 # This setting fixes a bug with OAuth on Safari
 SESSION_COOKIE_SAMESITE = None
+
+# Using django-session-security to manage session timeout
+SESSION_SECURITY_EXPIRE_AFTER = 30 * 60  # 30 min inactivity

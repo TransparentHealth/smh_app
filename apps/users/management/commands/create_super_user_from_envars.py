@@ -1,18 +1,21 @@
-import logging
-
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from getenv import env
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-from getenv import env
 
-logger = logging.getLogger('smhapp.%s' % __name__)
+import logging
+
+logger = logging.getLogger('verifymyidentity_.%s' % __name__)
 
 
-def create_superuser(username, password, email):
+def create_superuser(username, password, email, first_name, last_name):
     try:
         u = User.objects.get(username=username)
     except User.DoesNotExist:
         # Otherwise we instantiate the super user
-        u = User(username=username, first_name="Super", last_name="User", email=email)
+        u = User(username=username, first_name=first_name, last_name=last_name,
+                 email=email)
     u.set_password(password)
     u.is_superuser = True
     u.is_staff = True
@@ -21,23 +24,27 @@ def create_superuser(username, password, email):
 
 
 class Command(BaseCommand):
-    help = 'Create a super user from environment variables ROOT_USER ROOT_PASSWORD and ROOT_EMAIL'
+    help = 'Create a super user'
 
     def handle(self, *args, **options):
 
         # get variables
-        super_username = env("ROOT_USER", "")
-        super_password = env("ROOT_PASSWORD", "")
-        super_email = env("ROOT_EMAIL", "%s@locahost.com" % (super_username))
+        super_username = env("DJANGO_SUPERUSER_USERNAME", "superuser")
+        super_password = env("DJANGO_SUPERUSER_PASSWORD", "")
+        super_email = env("DJANGO_SUPERUSER_EMAIL", "superuser@example.com")
+        super_first_name = env("DJANGO_SUPERUSER_FIRSTNAME", "Super")
+        super_last_name = env("DJANGO_SUPERUSER_LASTNAME", "User")
         if super_username and super_password and super_email:
             # create a super user
-            r = create_superuser(super_username, super_password, super_email)
+            r = create_superuser(super_username, super_password, super_email,
+                                 super_first_name, super_last_name)
             if r:
                 logger.info('Superuser created/updated.')
             else:
                 logger.info('Something went wrong creating/updating superuser')
         else:
             logger.debug(
-                'Environment variables ROOT_USER, ROOT_PASSWORD,',
-                'ROOT_EMAIL must be set before using this command.',
-            )
+                'Environment variables DJANGO_SUPERUSER_USERNAME,'
+                'DJANGO_SUPERUSER_PASSWORD,',
+                'DJANGO_SUPERUSER_EMAIL must be set '
+                'before using this command.')

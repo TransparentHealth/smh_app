@@ -39,8 +39,6 @@ class AllergyReaction(DataModel):
 class AllergyIntolerance(DataModel):
     """http://hl7.org/fhir/STU3/allergyintolerance.html"""
 
-    resourceType = 'AllergyIntolerance'
-
     # required
     id: int = field()
 
