@@ -267,7 +267,7 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             'email': 'test_{}_{}@example.com'.format(first_name, last_name),
             'exp': 1555518026.550254,
             'iat': 1555514426.5502696,
-            'iss': settings.SOCIAL_AUTH_VMI_HOST,
+            'iss': settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST,
             'sub': random.randint(100000000000000, 999999999999999),
             'aal': '1',
             'birthdate': '2000-01-01',
@@ -402,7 +402,7 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             }
 
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(self.response_content_success):
                 response = self.client.post(self.url, data=data)
@@ -527,7 +527,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             'email': email,
             'exp': 1555518026.550254,
             'iat': 1555514426.5502696,
-            'iss': settings.SOCIAL_AUTH_VMI_HOST,
+            'iss': settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST,
             'sub': random.randint(100000000000000, 999999999999999),
             'aal': '1',
             'birthdate': birthdate,
@@ -725,7 +725,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             }
 
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(self.response_content_success):
                 response = self.client.post(self.url, data=data)
@@ -901,7 +901,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('no data'):
             data = {}
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(
                 self.response_id_assurance_list, self.response_id_assurance_detail
@@ -917,7 +917,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('incomplete data'):
             data = {'description': 'description here', 'exp': '2020-01-01'}
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(
                 self.response_id_assurance_list, self.response_id_assurance_detail
@@ -942,7 +942,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
                 'classification': 'invalid classification',
             }
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(
                 self.response_id_assurance_list, self.response_id_assurance_detail
@@ -972,7 +972,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
                 'classification': 'ONE-SUPERIOR-OR-STRONG+',
             }
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(
                 self.response_id_assurance_list, self.response_id_assurance_detail
@@ -1015,7 +1015,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             )
 
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(
                 self.response_id_assurance_list, self.response_id_assurance_detail
@@ -1057,7 +1057,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             }
 
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(
                 self.response_id_assurance_list, self.response_id_assurance_detail
@@ -1092,7 +1092,7 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             }
 
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(
                 self.response_id_assurance_list_fail, self.response_id_assurance_detail
@@ -1395,7 +1395,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             'email': 'test_firstname_lastname@example.com',
             'exp': 1555518026.550254,
             'iat': 1555514426.5502696,
-            'iss': settings.SOCIAL_AUTH_VMI_HOST,
+            'iss': settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST,
             'sub': random.randint(100000000000000, 999999999999999),
             'aal': '1',
             'birthdate': '2000-01-01',
@@ -1525,7 +1525,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
         with self.subTest('no data'):
             data = {}
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(self.response_user_detail):
                 response = self.client.post(self.url, data=data)
@@ -1559,7 +1559,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password2': 'password1',
             }
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(self.response_user_detail):
                 response = self.client.post(self.url, data=data)
@@ -1589,7 +1589,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password2': 'password1',
             }
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(self.response_user_detail):
                 response = self.client.post(self.url, data=data)
@@ -1622,7 +1622,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 'password2': 'password2',
             }
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(self.response_user_detail):
                 response = self.client.post(self.url, data=data)
@@ -1659,7 +1659,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             }
 
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(self.response_user_detail):
                 response = self.client.post(self.url, data=data)
@@ -1740,7 +1740,7 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             }
 
             # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VMI_HOST URL, mock uses of the requests
+            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
             # library here.
             with HTTMock(self.response_user_detail):
                 response = self.client.post(self.url, data=data)

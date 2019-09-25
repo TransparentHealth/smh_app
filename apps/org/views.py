@@ -226,7 +226,7 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
             ),
         }
         # POST the data to VMI
-        url = settings.SOCIAL_AUTH_VMI_HOST + '/api/v1/user/'
+        url = settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST + '/api/v1/user/'
         headers = {
             'Authorization': "Bearer {}".format(request_user_social_auth.access_token)
         }
@@ -346,7 +346,7 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
 
         # PUT the data to VMI
         url = '{}/api/v1/user/{}/'.format(
-            settings.SOCIAL_AUTH_VMI_HOST, member_social_auth.uid
+            settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST, member_social_auth.uid
         )
         headers = {
             'Authorization': "Bearer {}".format(request_user_social_auth.access_token)
@@ -452,7 +452,7 @@ class OrgCreateMemberVerifyIdentityView(
             }
             # 4.) Make a request to VMI to update the user's identity assurance
             url = '{}/api/v1/user/{}/id-assurance/'.format(
-                settings.SOCIAL_AUTH_VMI_HOST, member_social_auth.uid
+                settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST, member_social_auth.uid
             )
 
             data = {'subject_user': member_social_auth.uid, **form_data}
@@ -688,7 +688,7 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         ).first()
         data = {'password': form.data['password1']}
         url = '{}/api/v1/user/{}/'.format(
-            settings.SOCIAL_AUTH_VMI_HOST, request_user_social_auth.uid
+            settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST, request_user_social_auth.uid
         )
         headers = {
             'Authorization': "Bearer {}".format(org_user_social_auth.access_token)
