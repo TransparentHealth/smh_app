@@ -27,7 +27,7 @@ HOSTNAME_URL = env('HOSTNAME_URL', 'http://sharemyhealthapp:8002').rstrip('/')
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '-bnmd8**&!68$lk(2@!_c^2=6m-v)$7no55+%@x8sjxp1e^s9!'
+SECRET_KEY = env('SECRET_KEY', '-cnme8**&!68$lk(2@!_c^2=6m-v)$7no55+%@x8sjxp1e^s0!')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool_env(env('DEBUG', True))
