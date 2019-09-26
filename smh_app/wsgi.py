@@ -20,11 +20,11 @@ PARAMETER_STORE_PATH = "/%s/%s/" % (VPC_ENV, VPC_APP_NAME)
 
 
 try:
+    dotenv.load_dotenv()
     ENVIRONMENT_VARIABLE_STRATEGY = env('ENVIRONMENT_VARIABLE_STRATEGY', '.ENV')
     # Get this from .env file (controlled by Ansible)
     if ENVIRONMENT_VARIABLE_STRATEGY == '.ENV':
         print('EVS is', ENVIRONMENT_VARIABLE_STRATEGY)
-        dotenv.load_dotenv()
     # Get via EC2 Parameter store
     if ENVIRONMENT_VARIABLE_STRATEGY == 'EC2_PARAMSTORE':
         print('EVS is', ENVIRONMENT_VARIABLE_STRATEGY)
