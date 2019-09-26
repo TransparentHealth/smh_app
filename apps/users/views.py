@@ -18,7 +18,8 @@ def mylogout(request):
     if request.user.is_authenticated:
         try:
             # Attempt a remote logout.
-            social = request.user.social_auth.get(provider='vmi')
+            social = request.user.social_auth.get(
+                provider='verifymyidentity-openidconnect')
             token = social.extra_data['access_token']
             oas = OAuth2Session(token=token)
             oas.access_token = token
