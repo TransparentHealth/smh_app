@@ -179,7 +179,7 @@ AUTHENTICATION_BACKENDS = (
 # When a user logs in, they are redirected to the appropriate page by the
 # user_router
 LOGIN_REDIRECT_URL = 'users:user_router'
-LOGIN_URL = '/social-auth/login/vmi'
+LOGIN_URL = '/social-auth/login/verifymyidentity-openidconnect'
 
 # Settings for social_django
 SOCIAL_AUTH_URL_NAMESPACE = "social"
@@ -399,4 +399,4 @@ AWS_DEFAULT_REGION = env('AWS_DEFAULT_REGION', 'us-east-1')
 
 # ENVIRONMENT_VARIABLE_STRATEGIES = ['.ENV', 'EC2_PARAMSTORE', ]
 ENVIRONMENT_VARIABLE_STRATEGY = env(
-    'ENVIRONMENT_VARIABLE_STRATEGY', 'EC2_PARAMSTORE')
+    'ENVIRONMENT_VARIABLE_STRATEGY', '.ENV')
