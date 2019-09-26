@@ -14,7 +14,7 @@ PARAMETER_STORE_PATH = "/%s/%s/" % (VPC_ENV, VPC_APP_NAME)
 if __name__ == '__main__':
     dotenv.load_dotenv()
     ENVIRONMENT_VARIABLE_STRATEGY = env(
-        'ENVIRONMENT_VARIABLE_STRATEGY', '.ENV')
+        'ENVIRONMENT_VARIABLE_STRATEGY', 'EC2_PARAMSTORE')
     # Get this from .env file (controlled by Ansible)
     if ENVIRONMENT_VARIABLE_STRATEGY == '.ENV':
         print('EVS is', ENVIRONMENT_VARIABLE_STRATEGY)
