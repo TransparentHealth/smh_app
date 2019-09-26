@@ -27,7 +27,8 @@ HOSTNAME_URL = env('HOSTNAME_URL', 'http://sharemyhealthapp:8002').rstrip('/')
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY', '-cnme8**&!68$lk(2@!_c^2=6m-v)$7no55+%@x8sjxp1e^s0!')
+SECRET_KEY = env(
+    'SECRET_KEY', '-cnme8**&!68$lk(2@!_c^2=6m-v)$7no55+%@x8sjxp1e^s0!')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool_env(env('DEBUG', True))
@@ -392,3 +393,10 @@ SESSION_COOKIE_SAMESITE = None
 
 # Using django-session-security to manage session timeout
 SESSION_SECURITY_EXPIRE_AFTER = 30 * 60  # 30 min inactivity
+
+# AWS Settings -------------------------------------------
+AWS_DEFAULT_REGION = env('AWS_DEFAULT_REGION', 'us-east-1')
+
+# ENVIRONMENT_VARIABLE_STRATEGIES = ['.ENV', 'EC2_PARAMSTORE', ]
+ENVIRONMENT_VARIABLE_STRATEGY = env(
+    'ENVIRONMENT_VARIABLE_STRATEGY', 'EC2_PARAMSTORE')
