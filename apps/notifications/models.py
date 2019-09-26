@@ -71,13 +71,36 @@ class Notification(CreatedModel, models.Model):
     actions = models.TextField(default='[]')
     dismissed = models.BooleanField(default=False)
 
+    # The GenericForeignKey fields should enable, e.g., notication.instance to return
+    # the instance object. But they're not working, and that is throwing errors when
+    # calling render_message (below). So we use the *_content_type object directly in 
+    # each of the get_* methods.
+
+    def get_notify(self):
+        if self.notify_id is not None and self.notify_content_type is not None:
+            return self.notify_content_type.get_object_for_this_type(id=self.notify_id)
+
+    def get_actor(self):
+        if self.actor_id is not None and self.actor_content_type is not None:
+            return self.actor_content_type.get_object_for_this_type(id=self.actor_id)
+
+    def get_instance(self):
+        if self.instance_id is not None and self.instance_content_type is not None:
+            return self.instance_content_type.get_object_for_this_type(
+                id=self.instance_id
+            )
+
+    def get_target(self):
+        if self.target_id is not None and self.target_content_type is not None:
+            return self.target_content_type.get_object_for_this_type(id=self.target_id)
+
     def render_message(self, **kwargs):
         return mark_safe(
             self.message.format(
-                notify=self.notify,
-                actor=self.actor,
-                instance=self.instance,
-                target=self.target,
+                notify=self.get_notify(),
+                actor=self.get_actor(),
+                instance=self.get_instance(),
+                target=self.get_target(),
                 **kwargs,
             )
         )
