@@ -12,6 +12,7 @@ from django.urls import reverse_lazy
 from django.utils.html import mark_safe
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView, View
+from django.views.generic.edit import DeleteView
 from memoize import delete_memoized
 
 from apps.data.models.condition import Condition
@@ -598,14 +599,22 @@ class ProfileView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         return context
 
 
-# class DeleteMemberView(LoginRequiredMixin, DeleteView):
-#     model = Member
-#     template_name = 'member_confirm_delete.html'
-#     success_url = reverse_lazy('org:dashboard')
-#         context = super().get_context_data(**kwargs)
-#         context['member'] = get_object_or_404(get_user_model().objects.filter(pk=self.kwargs['pk']))
-#         context['id_token_payload'] = get_id_token_payload(self.request.user)
-#         return context
+class DeleteMemberView(LoginRequiredMixin, SelfOrApprovedOrgMixin, DeleteView):
+    model = get_user_model()
+    template_name = 'member_confirm_delete.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['member'] = self.get_member()
+
+        # only open this method to the request.user on their own account
+        if context['member'] != self.request.user:
+            raise Http404('Account not found.')
+
+        return context
+
+    def get_success_url(self):
+        return reverse('logout') + '?next=' + settings.REMOTE_ACCOUNT_DELETE_ENDPOINT
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):

@@ -13,6 +13,7 @@ from .views import (
     ProviderDetailView,
     RecordsView,
     RequestAccessView,
+    DeleteMemberView,
     # SummaryView,
     approve_resource_request,
     redirect_subject_url_to_member,
@@ -81,9 +82,7 @@ urlpatterns = [
         name='request-access',
     ),
     url(r'^(?P<pk>[0-9]+)/$', ProfileView.as_view(), name='member-profile'),
-    # url(r'^(?P<pk>[0-9]+)/delete/$',
-    #     DeleteMemberView.as_view(),
-    #     name='member-delete'),
+    url(r'^(?P<pk>[0-9]+)/delete/$', DeleteMemberView.as_view(), name='delete'),
     url(r'^notifications/$', NotificationsView.as_view(), name='notifications'),
     url(r'^$', DashboardView.as_view(), name='dashboard'),
     # Member/Org ResourceRequests
