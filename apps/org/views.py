@@ -256,7 +256,8 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
 
             # Create a UserSocialAuth for the new Member
             UserSocialAuth.objects.create(
-                user_id=new_user.id, provider='vmi', uid=response_data_dict['sub']
+                user_id=new_user.id, provider=settings.SOCIAL_AUTH_NAME, 
+                uid=response_data_dict['sub']
             )
 
             # 4.) Associate the member with this organization
