@@ -10,7 +10,7 @@ class VMIOAuth2Backend(OpenIdConnectAuth):
     sharemyhealth/blob/master/apps/verifymyidentity/authentication.py.
     """
 
-    name = "vmi"
+    name = settings.SOCIAL_AUTH_NAME
 
     # differs from value in discovery document
     # http://openid.net/specs/openid-connect-core-1_0.html#rfc.section.15.6.2

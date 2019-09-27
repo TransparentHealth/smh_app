@@ -9,13 +9,13 @@
             <h2 class="member-tabs__title d-flex justify-content-between">
                 <span>Basic Information</span>
                 <span>
-                    {% if member.id %}
+                    {% if member.id == request.user.id %}
                         <!-- <a id="delete_member" href="/member/{{ member.id }}/delete/">
                             <img src="{% static '/images/icons/trash_can.jpg' %}" />
                         </a> -->
-                        <!-- <a id="edit_member">
+                        <a id="edit_member" class="edit-icon" href="{{ settings.REMOTE_ACCOUNT_SETTINGS_ENDPOINT }}" target="_blank" rel="noopener">
                             <img src="{% static '/images/icons/edit_icon.jpg' %}" />
-                        </a> -->
+                        </a>
                     {% endif %}
                 </span>
             </h2>

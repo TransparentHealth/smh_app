@@ -193,7 +193,7 @@ def create_user_set_recovery_passphrase_notification(
             message="Set a <b>recovery passphrase</b> for your account.",
             actions=[
                 {
-                    'url': settings.REMOTE_PASSWORD_SET_PASSPHRASE_ENDPOINT,
+                    'url': settings.REMOTE_SET_PASSPHRASE_ENDPOINT,
                     'method': 'get',
                     'text': "Set Passphrase",
                 }

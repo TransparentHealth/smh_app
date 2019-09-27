@@ -1,6 +1,11 @@
 {% load static %}
 <div class="member-sidebar col-lg-3 pl-0 pb-5 pr-0">
     <div class="member-sidebar__image">
+        {% if request.user.id == member.id %}
+        <a id="edit_picture" class="edit-icon" href="{{ settings.REMOTE_ACCOUNT_SET_PICTURE_ENDPOINT }}" target="_blank" rel="noopener">
+            <img src="{% static '/images/icons/edit_icon.jpg' %}" />
+        </a>
+        {% endif %}
         {% if request.user.profile.picture %}
         <img src="{{ member.profile.picture }}" alt="{{ member.first_name }} {{ member.last_name }}",  class="member-avatar">
         {% else %}
