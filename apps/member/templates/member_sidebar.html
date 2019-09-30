@@ -65,6 +65,16 @@
                 {% endif %}
             </div>
             {% endif %}
+
+            {% if request.user.id == member.id %}
+            <div>
+                <a
+                    href="{% url 'member:delete' member.id %}"
+                    data-rb-event-key="delete_account"
+                    class="nav-link"
+                    role="button">Delete Account</a>
+            </div>
+            {% endif %}
         </div>
         {% endwith %}
     </div>
