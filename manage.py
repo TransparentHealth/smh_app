@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
-from smh_apph.ssmenv import EC2ParameterStore
+from smh_app.ssmenv import EC2ParameterStore
 import dotenv
 from getenv import env
 from smh_app.settings import EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES
