@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import os
 import sys
-from sharemyhealth.ssmenv import EC2ParameterStore
+from smh_apph.ssmenv import EC2ParameterStore
 import dotenv
 from getenv import env
-from sharemyhealth.settings import EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES
+from smh_app.settings import EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES
 
 
 AWS_DEFAULT_REGION = env('AWS_DEFAULT_REGION', 'us-east-1')
