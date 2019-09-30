@@ -71,6 +71,8 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+    __html__ = __str__
+
     def __getattr__(self, key):
         """Provide direct read access to attributes of the id_token."""
         # self.__getattribute__(key) failed, so check self.id_token_payload
