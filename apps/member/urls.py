@@ -19,6 +19,7 @@ from .views import (
     redirect_subject_url_to_member,
     resource_request_response,
     revoke_resource_request,
+    refresh_member_data,
 )
 
 # Copyright Videntity Systems Inc.
@@ -83,6 +84,7 @@ urlpatterns = [
     ),
     url(r'^(?P<pk>[0-9]+)/$', ProfileView.as_view(), name='member-profile'),
     url(r'^(?P<pk>[0-9]+)/delete/$', DeleteMemberView.as_view(), name='delete'),
+    url(r'^(?P<pk>[0-9]+)/refresh_data/$', refresh_member_data, name='refresh-data'),
     url(r'^notifications/$', NotificationsView.as_view(), name='notifications'),
     url(r'^$', DashboardView.as_view(), name='dashboard'),
     # Member/Org ResourceRequests
