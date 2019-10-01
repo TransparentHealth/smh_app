@@ -419,7 +419,7 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
         fhir_data = data.get('fhir_data')
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
-            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+            delete_memoized(fetch_member_data, member, 'sharemyhealth')
 
         if resource_type == 'prescriptions':
             response_data = get_prescriptions(
@@ -833,7 +833,6 @@ def resource_request_response(request):
         return redirect(request.GET['next'])
     else:
         return redirect(reverse('home'))
-
 
 
 @require_POST

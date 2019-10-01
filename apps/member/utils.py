@@ -55,7 +55,7 @@ def get_resource_data(data, resource_types, constructor=dict, id=None):
         resource_types = [resource_types]
     return [
         constructor(item['resource'])
-        for item in data.get('entry', [])
+        for item in (data or {}).get('entry', [])
         if item['resource']['resourceType'] in resource_types
         if id is None or item['resource'].get('id') == id
     ]
@@ -153,6 +153,6 @@ def get_prescriptions(data, id=None, incl_practitioners=False, json=False):
 def get_allergies(data, keys=None):
     return [
         AllergyIntolerance.from_data(entry['resource'], keys=keys)
-        for entry in data.get('entry', [])
+        for entry in (data or {}).get('entry', [])
         if entry['resource']['resourceType'] == 'AllergyIntolerance'
     ]
