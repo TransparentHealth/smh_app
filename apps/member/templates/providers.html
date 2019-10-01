@@ -4,9 +4,10 @@
 {% block content %}
 <div class="row mr-0 ml-0">
     {% include "member_sidebar.html" with member=member %}
-    <div class="member-tabs col-lg-9 p-5">
+    <div class="member-tabs col-lg-9 px-5">
+        {% include "time_since_update.html" %}
         {% include "member_tabbed_nav.html" with member=member %}
-         <div role="tabpanel" aria-hidden="true" class=" tab-pane">
+        <div role="tabpanel" aria-hidden="true" class=" tab-pane">
             <!-- showing the list of providers based on encounters here -->
             <div class="heading-with-sort d-flex justify-content-between align-items-center mt-5 mb-3">
                 <h2>Physician Providers</h2>
