@@ -32,7 +32,7 @@
       </div>
   </div><!-- end of first column -->
   <div class="member-data col-md-6 pr-4 pl-4">
-      <h2 class="mb-3 pb-3">Your Profile <a href="{% url 'member:member-profile' pk=request.user.pk %}">Edit</a></h2>
+      <h2 class="mb-3 pb-3">Your Profile <a href="{{ settings.REMOTE_ACCOUNT_SETTINGS_ENDPOINT }}" target="_blank" rel="noopener">Edit</a></h2>
       <div class="profile">
          <a href="{% url 'member:member-profile' pk=request.user.pk %}">
                     {% if request.user.profile.picture %}
