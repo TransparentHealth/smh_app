@@ -73,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
+    'smh_app.middleware.AuthCanceledMiddleware',
 ]
 
 ROOT_URLCONF = 'smh_app.urls'
