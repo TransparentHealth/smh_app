@@ -198,13 +198,13 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             conditions_data = get_resource_data(
                 fhir_data, 'Condition', Condition.from_data
             )
-            headers = ['Status', 'Verification', 'Description']
+            headers = ['Diagnosis', 'Status', 'Verification']
             diagnoses = sorted(
                 [
                     dict(
+                        Diagnosis=condition.code.text,
                         Status=condition.clinicalStatus,
                         Verification=condition.verificationStatus,
-                        Description=condition.code.text,
                     )
                     for condition in conditions_data
                 ],
@@ -212,7 +212,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                     ['active', 'recurrence', 'inactive', 'remission', 'resolved'].index(
                         diagnosis['Status']
                     ),
-                    diagnosis['Description'],
+                    diagnosis['Diagnosis'],
                 ),
             )
 
