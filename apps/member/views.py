@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
@@ -42,6 +43,8 @@ from .utils import (
     get_prescriptions,
     get_resource_data,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SelfOrApprovedOrgMixin(UserPassesTestMixin):
@@ -134,7 +137,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
     default_resource_name = 'sharemyhealth'
     default_record_type = 'Condition'
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs): 
         """Add records data into the context."""
         context = super().get_context_data(**kwargs)
         context['member'] = self.get_member()
@@ -150,6 +153,11 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
+
+        logging.debug(
+            "fhir_data records: %r",
+            fhir_data and fhir_data.get('entry') and len(fhir_data.get('entry')),
+        )
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
