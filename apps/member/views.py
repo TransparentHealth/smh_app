@@ -20,6 +20,7 @@ from apps.data.models.encounter import Encounter
 from apps.data.models.procedure import Procedure
 from apps.data.models.observation import Observation
 from apps.data.models.practitioner import Practitioner
+from apps.data.util import parse_timestamp
 from apps.notifications.models import Notification
 from apps.org.models import (
     REQUEST_APPROVED,
@@ -88,14 +89,21 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context['member'] = self.get_member()
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
+        context['updated_at'] = parse_timestamp(data.get('updated_at'))
+        if context['updated_at']:
+            context['time_since_update'] = (
+                datetime.now(timezone.utc) - context['updated_at']
+            )
+        fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
-        if data is None or 'entry' not in data or not data['entry']:
+
+        if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
         # put the current resources in the summary tab.  We will not show the
         # other options in this tab.
-        conditions_data = get_resource_data(data, 'Condition')
+        conditions_data = get_resource_data(fhir_data, 'Condition')
         prescription_data = get_prescriptions(data)
 
         all_records = RECORDS
@@ -134,18 +142,24 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
-
+        context['updated_at'] = parse_timestamp(data.get('updated_at'))
+        if context['updated_at']:
+            context['time_since_update'] = (
+                datetime.now(timezone.utc) - context['updated_at']
+            )
+        fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
-        if data is None or 'entry' not in data or not data['entry']:
+
+        if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
         if resource_name == 'list':
-            conditions_data = get_resource_data(data, 'Condition')
-            observation_data = get_resource_data(data, 'Observation')
-            procedure_data = get_resource_data(data, 'Procedure')
-            prescription_data = get_prescriptions(data)
-            allergies = get_allergies(data, keys=['id'])
+            conditions_data = get_resource_data(fhir_data, 'Condition')
+            observation_data = get_resource_data(fhir_data, 'Observation')
+            procedure_data = get_resource_data(fhir_data, 'Procedure')
+            prescription_data = get_prescriptions(fhir_data)
+            allergies = get_allergies(fhir_data, keys=['id'])
             all_records = RECORDS
             for record in all_records:
                 # adding data for each resoureType in response from
@@ -173,7 +187,9 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('all_records', all_records)
 
         elif resource_name == 'diagnoses':
-            conditions_data = get_resource_data(data, 'Condition', Condition.from_data)
+            conditions_data = get_resource_data(
+                fhir_data, 'Condition', Condition.from_data
+            )
             headers = ['Status', 'Verification', 'Description']
             diagnoses = sorted(
                 [
@@ -198,7 +214,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         elif resource_name == 'lab-results':
             observation_data = get_resource_data(
-                data, 'Observation', constructor=Observation.from_data
+                fhir_data, 'Observation', constructor=Observation.from_data
             )
             headers = ['Date', 'Code', 'Display', 'Lab Result']
             lab_results = sorted(
@@ -226,7 +242,9 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         elif resource_name == 'procedures':
             procedures_data = sorted(
-                get_resource_data(data, 'Procedure', constructor=Procedure.from_data),
+                get_resource_data(
+                    fhir_data, 'Procedure', constructor=Procedure.from_data
+                ),
                 key=lambda procedure: (
                     procedure.performedPeriod.start
                     or datetime(1, 1, 1, tzinfo=timezone.utc)
@@ -266,7 +284,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('content_list', procedures)
 
         elif resource_name == 'prescriptions':
-            prescription_data = get_prescriptions(data)
+            prescription_data = get_prescriptions(fhir_data)
             headers = ['Date', 'Medication', 'Provider(s)']
             all_records = []
 
@@ -311,7 +329,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         elif resource_name == 'allergies':
             allergies = get_allergies(
-                data,
+                fhir_data,
                 keys=['id', 'assertedDate', 'code']
                 + ['clinicalStatus', 'verificationStatus', 'reaction'],
             )
@@ -367,11 +385,21 @@ class PrescriptionDetailModalView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['member'] = self.get_member()
-        member_data = fetch_member_data(context['member'], 'sharemyhealth')
+        data = fetch_member_data(context['member'], 'sharemyhealth')
+        context['updated_at'] = parse_timestamp(data.get('updated_at'))
+        if context['updated_at']:
+            context['time_since_update'] = (
+                datetime.now(timezone.utc) - context['updated_at']
+            )
+        fhir_data = data.get('fhir_data')
         if settings.DEBUG:
-            context['data'] = member_data
+            context['data'] = fhir_data
+
+        if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
+            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+
         prescriptions = get_prescriptions(
-            member_data, id=context['resource_id'], incl_practitioners=True, json=True
+            fhir_data, id=context['resource_id'], incl_practitioners=True, json=True
         )
         if not prescriptions:
             return Http404()
@@ -387,20 +415,25 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
         member = self.get_member()
         resource_type = kwargs['resource_type']
         resource_id = kwargs['resource_id']
-        member_data = fetch_member_data(member, 'sharemyhealth')
+        data = fetch_member_data(member, 'sharemyhealth')
+        fhir_data = data.get('fhir_data')
+
+        if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
+            delete_memoized(fetch_member_data, member, 'sharemyhealth')
+
         if resource_type == 'prescriptions':
-            data = get_prescriptions(
-                member_data, id=resource_id, incl_practitioners=True, json=True
+            response_data = get_prescriptions(
+                fhir_data, id=resource_id, incl_practitioners=True, json=True
             )
         else:
             # fallback
-            data = {
+            response_data = {
                 resource['id']: resource
                 for resource in get_resource_data(
-                    member_data, kwargs['resource_type'], id=resource_id
+                    fhir_data, kwargs['resource_type'], id=resource_id
                 )
             }
-        return JsonResponse(data)
+        return JsonResponse(response_data)
 
 
 class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
@@ -409,22 +442,25 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['member'] = self.get_member()
-        member_data = fetch_member_data(context['member'], 'sharemyhealth')
+        data = fetch_member_data(context['member'], 'sharemyhealth')
+        context['updated_at'] = parse_timestamp(data.get('updated_at'))
+        if context['updated_at']:
+            context['time_since_update'] = (
+                datetime.now(timezone.utc) - context['updated_at']
+            )
+        fhir_data = data.get('fhir_data')
         if settings.DEBUG:
-            context['data'] = member_data
-        if (
-            member_data is None
-            or 'entry' not in member_data
-            or not member_data['entry']
-        ):
+            context['data'] = fhir_data
+
+        if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
 
         encounters = get_resource_data(
-            member_data, 'Encounter', constructor=Encounter.from_data
+            fhir_data, 'Encounter', constructor=Encounter.from_data
         )
         encounters.sort(key=lambda e: e.period.start, reverse=True)  # latest ones first
         practitioners = get_resource_data(
-            member_data, 'Practitioner', constructor=Practitioner.from_data
+            fhir_data, 'Practitioner', constructor=Practitioner.from_data
         )
         for index, practitioner in enumerate(practitioners):
             practitioner.last_encounter = practitioner.next_encounter(encounters)
@@ -449,11 +485,21 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['member'] = self.get_member()
-        member_data = fetch_member_data(context['member'], 'sharemyhealth')
+        data = fetch_member_data(context['member'], 'sharemyhealth')
+        context['updated_at'] = parse_timestamp(data.get('updated_at'))
+        if context['updated_at']:
+            context['time_since_update'] = (
+                datetime.now(timezone.utc) - context['updated_at']
+            )
+        fhir_data = data.get('fhir_data')
+
+        if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
+            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+
         context['practitioner'] = next(
             iter(
                 get_resource_data(
-                    member_data,
+                    fhir_data,
                     'Practitioner',
                     constructor=Practitioner.from_data,
                     id=self.kwargs['provider_id'],
@@ -483,7 +529,7 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
                 'prescription': prescription,
             }
             for prescription in get_prescriptions(
-                member_data, incl_practitioners=True
+                fhir_data, incl_practitioners=True
             ).values()
             if context['practitioner'].id in prescription['practitioners'].keys()
         ]
@@ -495,7 +541,7 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
                 'procedure': procedure,
             }
             for procedure in get_resource_data(
-                member_data, 'Procedure', constructor=Procedure.from_data
+                fhir_data, 'Procedure', constructor=Procedure.from_data
             )
         ]
         context['records'] = sorted(
@@ -787,3 +833,22 @@ def resource_request_response(request):
         return redirect(request.GET['next'])
     else:
         return redirect(reverse('home'))
+
+
+@require_POST
+@login_required(login_url='home')
+def refresh_member_data(request, pk):
+    """Only allow members to refresh their own data"""
+    member = get_object_or_404(get_user_model().objects.filter(pk=pk))
+    if member == request.user:
+        delete_memoized(fetch_member_data, member, 'sharemyhealth')
+        fetch_member_data(member, 'sharemyhealth', refresh=True)
+    else:
+        print(
+            "refresh not allowed: request.user %r != member %r" % (request.user, member)
+        )
+
+    if request.POST.get('next', None):
+        return redirect(request.POST['next'])
+    else:
+        return redirect(reverse('member:records', member.id))

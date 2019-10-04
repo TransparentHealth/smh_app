@@ -13,16 +13,22 @@ from apps.users.utils import refresh_access_token
 
 
 @memoize(timeout=300)
-def fetch_member_data(member, provider):
+def fetch_member_data(member, provider, refresh=False):
     '''Fetch FHIR data from HIXNY data provider (sharemyhealth)
-    If data not available, returns None
+    
+    If refresh=True, it will instruct the api to refresh the patient data.
     '''
     url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything"
+    params = {'refresh': refresh}
     social_auth = member.social_auth.filter(provider=provider).first()
     if social_auth is not None:
         access_token = social_auth.extra_data.get('access_token')
         if access_token is not None:
-            r = requests.get(url, headers={'Authorization': 'Bearer %s' % access_token})
+            r = requests.get(
+                url,
+                headers={'Authorization': 'Bearer %s' % access_token},
+                params=params,
+            )
             if r.status_code == 403:
                 refreshed = refresh_access_token(social_auth)
                 if refreshed:  # repeat the previous request
@@ -30,16 +36,18 @@ def fetch_member_data(member, provider):
                     r = requests.get(
                         url, headers={'Authorization': 'Bearer %s' % access_token}
                     )
+
             if r.status_code == 200:
                 return r.json()
             else:
                 return {
-                    'error': 'Could not access member data: Status = %d'
-                    % r.status_code,
-                    'responses': [r.text],
+                    'error': 'Could not access member data',
+                    'status': r.status_code,
+                    'content': r.text,
                 }
-    # fallback: empty member data
-    return {'entry': []}
+
+    # fallback
+    return {}
 
 
 def get_resource_data(data, resource_types, constructor=dict, id=None):
@@ -47,7 +55,7 @@ def get_resource_data(data, resource_types, constructor=dict, id=None):
         resource_types = [resource_types]
     return [
         constructor(item['resource'])
-        for item in data.get('entry', [])
+        for item in (data or {}).get('entry', [])
         if item['resource']['resourceType'] in resource_types
         if id is None or item['resource'].get('id') == id
     ]
@@ -145,6 +153,6 @@ def get_prescriptions(data, id=None, incl_practitioners=False, json=False):
 def get_allergies(data, keys=None):
     return [
         AllergyIntolerance.from_data(entry['resource'], keys=keys)
-        for entry in data.get('entry', [])
+        for entry in (data or {}).get('entry', [])
         if entry['resource']['resourceType'] == 'AllergyIntolerance'
     ]

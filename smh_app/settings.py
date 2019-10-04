@@ -73,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
+    'smh_app.middleware.AuthCanceledMiddleware',
 ]
 
 ROOT_URLCONF = 'smh_app.urls'
@@ -248,7 +249,7 @@ SOCIAL_AUTH_SHAREMYHEALTH_KEY = env(
 SOCIAL_AUTH_SHAREMYHEALTH_SECRET = env('SOCIAL_AUTH_SHAREMYHEALTH_SECRET', '')
 
 REMOTE_LOGOUT_ENDPOINT = "%s/api/v1/remote-logout" % (
-    SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST) 
+    SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
 REMOTE_SET_PASSPHRASE_ENDPOINT = "%s/accounts/password-recovery-passphrase/" % (
     SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
 REMOTE_PASSWORD_RECOVERY_ENDPOINT = f"%s/accounts/reset-password" % (
@@ -403,6 +404,5 @@ SESSION_SECURITY_EXPIRE_AFTER = 30 * 60  # 30 min inactivity
 # AWS Settings -------------------------------------------
 AWS_DEFAULT_REGION = env('AWS_DEFAULT_REGION', 'us-east-1')
 
-# ENVIRONMENT_VARIABLE_STRATEGIES = ['.ENV', 'EC2_PARAMSTORE', ]
-ENVIRONMENT_VARIABLE_STRATEGY = env(
-    'ENVIRONMENT_VARIABLE_STRATEGY', 'EC2_PARAMSTORE')
+EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES = env(
+    'EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES', "EC2_PARAMSTORE")

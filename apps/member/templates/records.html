@@ -11,7 +11,8 @@
 {% block content %}
 <div class="row mr-0 ml-0">
     {% include "member_sidebar.html" with member=member %}
-    <div class="member-tabs col-lg-9 p-5">
+    <div class="member-tabs col-lg-9 px-5">
+        {% include "time_since_update.html" %}
         {% include "member_tabbed_nav.html" with member=member %}
         <div role="tabpanel" aria-hidden="true" class=" tab-pane">
 
@@ -106,7 +107,6 @@
     </div>
 </div>
 {% include 'member/record_detail_modal.html' %}
-
 {% endblock content %}
 
 {% block ExtraJSFoot %}
