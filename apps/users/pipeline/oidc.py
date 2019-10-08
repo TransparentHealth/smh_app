@@ -3,7 +3,6 @@
 # vim: ai ts=4 sts=4 et sw=4
 
 from jwkest.jwt import JWT
-from django.conf import settings
 from ..models import UserProfile
 
 __author__ = "Alan Viars"
