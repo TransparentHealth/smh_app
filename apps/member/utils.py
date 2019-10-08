@@ -1,3 +1,5 @@
+import logging
+import json
 import requests
 from django.conf import settings
 from memoize import memoize
@@ -11,6 +13,8 @@ from apps.data.models.medication import (
 from apps.data.models.practitioner import Practitioner
 from apps.users.utils import refresh_access_token
 
+logger = logging.getLogger(__name__)
+
 
 @memoize(timeout=300)
 def fetch_member_data(member, provider, refresh=False):
@@ -21,6 +25,10 @@ def fetch_member_data(member, provider, refresh=False):
     url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything"
     params = {'refresh': refresh}
     social_auth = member.social_auth.filter(provider=provider).first()
+
+    # fallback
+    result_data = {}
+
     if social_auth is not None:
         access_token = social_auth.extra_data.get('access_token')
         if access_token is not None:
@@ -38,16 +46,19 @@ def fetch_member_data(member, provider, refresh=False):
                     )
 
             if r.status_code == 200:
-                return r.json()
+                result_data = r.json()
             else:
-                return {
+                result_data = {
                     'error': 'Could not access member data',
                     'status': r.status_code,
                     'content': r.text,
                 }
 
-    # fallback
-    return {}
+    logging.debug(
+        "fetch_member_data(%r, %r, refresh=%r) = %s"
+        % (member, provider, refresh, json.dumps(result_data))
+    )
+    return result_data
 
 
 def get_resource_data(data, resource_types, constructor=dict, id=None):
