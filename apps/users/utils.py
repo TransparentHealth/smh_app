@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 def get_id_token_payload(user):
     # Get the ID Token and parse it.
     try:
-        provider = user.social_auth.filter(provider=settings.SOCIAL_AUTH_NAME).first()
+        provider = user.social_auth.filter(provider='verifymyidentity-openidconnect').first()
         if 'id_token' in provider.extra_data.keys():
             id_token = provider.extra_data.get('id_token')
             parsed_id_token = JWT().unpack(id_token).payload()
