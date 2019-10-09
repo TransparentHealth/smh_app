@@ -3,7 +3,6 @@
 # vim: ai ts=4 sts=4 et sw=4
 
 from jwkest.jwt import JWT
-from django.conf import settings
 from ..models import UserProfile
 
 __author__ = "Alan Viars"
@@ -12,7 +11,7 @@ __author__ = "Alan Viars"
 def save_profile(backend, user, response, *args, **kwargs):
     # make sure there is a UserProfile object for the given User
     profile, created = UserProfile.objects.get_or_create(user=user)
-    if backend.name == settings.SOCIAL_AUTH_NAME:
+    if backend.name == 'verifymyidentity-openidconnect':
 
         # Save the id_token 'sub' to the UserProfile.subject
         if 'id_token' in response.keys():
