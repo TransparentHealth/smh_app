@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from apps.common.tests.factories import UserFactory
 
+
 class UserProfileTestCase(TestCase):
     def test_str(self):
         """Test for string representation."""
