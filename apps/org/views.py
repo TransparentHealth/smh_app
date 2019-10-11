@@ -219,11 +219,7 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
             'password': str(uuid.uuid4()),
             'birthdate': '2000-01-01',
             'nickname': form.cleaned_data['first_name'],
-            'email': '{}_{}_{}@example.com'.format(
-                "".join(re.findall("[a-zA-Z]+", form.cleaned_data['username'])),
-                "".join(re.findall("[a-zA-Z]+", form.cleaned_data['first_name'])),
-                "".join(re.findall("[a-zA-Z]+", form.cleaned_data['last_name'])),
-            ),
+            'email': form.cleaned_data.get('email', ''),
         }
         # POST the data to VMI
         url = settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST + '/api/v1/user/'
