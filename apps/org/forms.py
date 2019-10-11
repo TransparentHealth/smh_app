@@ -34,10 +34,10 @@ class CreateNewMemberAtOrgForm(Form):
     This form is used in the first step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
-
+    username = CharField(required=True)
     first_name = CharField(required=True)
     last_name = CharField(required=True)
-    username = CharField(required=True)
+    email = EmailField(required=False, label="Email (Not required but recommended)")
     phone_number = CharField(
         required=False, label="Mobile Phone Number (Not required but recommended)"
     )
@@ -57,7 +57,6 @@ class UpdateNewMemberAtOrgBasicInfoForm(Form):
         input_formats=['%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d'],
     )
     gender = ChoiceField(choices=GENDER_CHOICES, required=False)
-    email = EmailField(required=False, label="Email (Not required but recommended)")
     nickname = CharField(required=False, label="Nickname (not required)")
 
     def clean(self):

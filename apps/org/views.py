@@ -190,14 +190,14 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
         """
         # 1.) Verify that the request.user has a UserSocialAuth object for VMI
         request_user_social_auth = self.request.user.social_auth.filter(
-            provider=settings.SOCIAL_AUTH_NAME
+            provider='verifymyidentity-openidconnect'
         ).first()
         # If the request.user does not have a UserSocialAuth for VMI, then
         # return the error to the user.
         if not request_user_social_auth:
             self.errors = {
                 'user': 'User has no association with {}'.format(
-                    settings.SOCIAL_AUTH_NAME
+                    'verifymyidentity-openidconnect'
                 )
             }
             return self.render_to_response(self.get_context_data())
@@ -248,15 +248,17 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
         if response.status_code == 201:
             response_data_dict = json.loads(response.content)
             # Create the Member, and associate with this Organization
+            print("RESPONSE", response_data_dict)
             new_user = get_user_model().objects.create(
                 first_name=response_data_dict['given_name'],
                 last_name=response_data_dict['family_name'],
-                username=response_data_dict['preferred_username'],
+                email=response_data_dict['email'],
+                username=response_data_dict['sub'],
             )
 
             # Create a UserSocialAuth for the new Member
             UserSocialAuth.objects.create(
-                user_id=new_user.id, provider=settings.SOCIAL_AUTH_NAME, 
+                user_id=new_user.id, provider='verifymyidentity-openidconnect', 
                 uid=response_data_dict['sub']
             )
 
