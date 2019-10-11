@@ -69,7 +69,7 @@ class UserProfile(models.Model):
     emergency_contact_number = PhoneNumberField(null=True, blank=True)
 
     def __str__(self):
-        return self.user.username
+        return "%s %s (%s)" % (self.user.first_name, self.user.last_name, self.subject) 
 
     __html__ = __str__
 

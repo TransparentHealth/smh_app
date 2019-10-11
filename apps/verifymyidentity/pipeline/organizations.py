@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4
 from jwkest.jwt import JWT
-from django.conf import settings
-
 from ...org.models import Organization
 
 __author__ = "Alan Viars"
 
 
 def create_or_update_org(backend, user, response, *args, **kwargs):
-    if backend.name == settings.SOCIAL_AUTH_NAME:
+    if backend.name == 'verifymyidentity-openidconnect':
         if 'id_token' in response.keys():
             id_token = response.get('id_token')
             parsed_id_token = JWT().unpack(id_token)
