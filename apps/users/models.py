@@ -45,10 +45,8 @@ def profile(self):
 def user_type(self):
     if self.agent_organizations.exists():
         return UserType.ORG_AGENT
-    elif self.resource_grants.exists():
-        return UserType.MEMBER
     else:
-        return UserType.OTHER
+        return UserType.MEMBER
 
 
 User.profile = property(profile)
