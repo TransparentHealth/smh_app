@@ -110,7 +110,8 @@ class JoinOrganizationView(LoginRequiredMixin, BaseDetailView):
     def get_success_url(self):
         """Return the URL to redirect to after processing a valid form."""
         if not self.success_url:
-            raise ImproperlyConfigured("No URL to redirect to. Provide a success_url.")
+            raise ImproperlyConfigured(
+                "No URL to redirect to. Provide a success_url.")
         return str(self.success_url)  # success_url may be lazy
 
     def render_to_response(self, context):
@@ -146,14 +147,18 @@ class OrgCreateMemberMixin:
 
     def get(self, request, *args, **kwargs):
         """Set the self.organization and self.member."""
-        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        self.organization = self.get_organization(
+            request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(
+            self.organization, self.kwargs.get('username'))
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         """Set the self.organization and self.member."""
-        self.organization = self.get_organization(request, self.kwargs.get('org_slug'))
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        self.organization = self.get_organization(
+            request, self.kwargs.get('org_slug'))
+        self.member = self.get_member(
+            self.organization, self.kwargs.get('username'))
         return super().post(request, *args, **kwargs)
 
 
@@ -253,7 +258,7 @@ class OrgCreateMemberView(LoginRequiredMixin, OrgCreateMemberMixin, FormView):
 
             # Create a UserSocialAuth for the new Member
             UserSocialAuth.objects.create(
-                user_id=new_user.id, provider='verifymyidentity-openidconnect', 
+                user_id=new_user.id, provider='verifymyidentity-openidconnect',
                 uid=response_data_dict['sub']
             )
 
@@ -311,34 +316,34 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
         """
         # 1.) Verify that the request.user has a UserSocialAuth object for VMI
         request_user_social_auth = self.request.user.social_auth.filter(
-            provider=settings.SOCIAL_AUTH_NAME
+            provider='verifymyidentity-openidconnect'
         ).first()
         # If the request.user does not have a UserSocialAuth for VMI, then
         # return the error to the user.
         if not request_user_social_auth:
             self.errors = {
                 'user': 'User has no association with {}'.format(
-                    settings.SOCIAL_AUTH_NAME
+                    'verifymyidentity-openidconnect'
                 )
             }
             return self.render_to_response(self.get_context_data())
 
         # 2.) Verify that the Member has a UserSocialAuth object for VMI
         member_social_auth = self.member.social_auth.filter(
-            provider=settings.SOCIAL_AUTH_NAME
+            provider='verifymyidentity-openidconnect'
         ).first()
         # If the Member does not have a UserSocialAuth for VMI, return an error
         # to the user.
         if not member_social_auth:
             self.errors = {
                 'member': 'Member has no association with {}'.format(
-                    settings.SOCIAL_AUTH_NAME
+                    'verifymyidentity-openidconnect'
                 )
             }
             return self.render_to_response(self.get_context_data())
 
         # 3.) Make a request to VMI to update the new user
-        # The data to be PUT to VMI
+        # The data to be PUT to VMI.
         # (at this point we know the form itself is valid; only put fields that are non-empty)
         data = {k: v for k, v in form.cleaned_data.items() if bool(v) is True}
 
@@ -373,7 +378,8 @@ class OrgCreateMemberBasicInfoView(LoginRequiredMixin, OrgCreateMemberMixin, For
 
             # Redirect the user to the next step in the Member-creation process
             return HttpResponseRedirect(
-                self.get_success_url(self.organization.slug, self.member.username)
+                self.get_success_url(
+                    self.organization.slug, self.member.username)
             )
         else:
             # The request to update a user in VMI did not succeed, so show
@@ -413,32 +419,34 @@ class OrgCreateMemberVerifyIdentityView(
         """
         # Only post the form_data if it's non-empty -- otherwise, we can skip
         # this step
-        form_data = {k: v for k, v in form.cleaned_data.items() if bool(v) is True}
+        form_data = {k: v for k, v in form.cleaned_data.items()
+                     if bool(v) is True}
         if bool(form_data) is True:
-            # 1.) Verify that the request.user has a UserSocialAuth object for VMI
+            # 1.) Verify that the request.user has a UserSocialAuth object for
+            # VMI
             request_user_social_auth = self.request.user.social_auth.filter(
-                provider=settings.SOCIAL_AUTH_NAME
+                provider='verifymyidentity-openidconnect'
             ).first()
             # If the request.user does not have a UserSocialAuth for VMI, then
             # return the error to the user.
             if not request_user_social_auth:
                 self.errors = {
                     'user': 'User has no association with {}'.format(
-                        settings.SOCIAL_AUTH_NAME
+                        'verifymyidentity-openidconnect'
                     )
                 }
                 return self.render_to_response(self.get_context_data())
 
             # 2.) Verify that the Member has a UserSocialAuth object for VMI
             member_social_auth = self.member.social_auth.filter(
-                provider=settings.SOCIAL_AUTH_NAME
+                provider='verifymyidentity-openidconnect'
             ).first()
             # If the Member does not have a UserSocialAuth for VMI, return an
             # error to the user.
             if not member_social_auth:
                 self.errors = {
                     'member': 'Member has no association with {}'.format(
-                        settings.SOCIAL_AUTH_NAME
+                        'verifymyidentity-openidconnect'
                     )
                 }
                 return self.render_to_response(self.get_context_data())
@@ -466,7 +474,8 @@ class OrgCreateMemberVerifyIdentityView(
                             request_user_social_auth.access_token
                         )
                     }
-                    response = requests.post(url=url, json=data, headers=headers)
+                    response = requests.post(
+                        url=url, json=data, headers=headers)
 
             if response.status_code != 201:
                 # The request to update a user in VMI did not succeed, so show
@@ -526,7 +535,8 @@ class OrgCreateMemberAlmostDoneView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         """Add the organization and member to the context."""
-        organization = self.get_organization(self.request, self.kwargs.get('org_slug'))
+        organization = self.get_organization(
+            self.request, self.kwargs.get('org_slug'))
         kwargs.setdefault('organization', organization)
         member = self.get_member(organization, self.kwargs.get('username'))
         kwargs.setdefault('member', member)
@@ -588,7 +598,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         self.organization = self.get_organization(
             self.request, self.kwargs.get('org_slug')
         )
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        self.member = self.get_member(
+            self.organization, self.kwargs.get('username'))
 
         if self.token_is_valid(uidb64=kwargs['uidb64'], token=kwargs['token']):
             # The token is valid, so render the page to the user
@@ -598,7 +609,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             # org_create_member_invalid_token page
             redirect_url = reverse(
                 'org:org_create_member_invalid_token',
-                kwargs={'org_slug': kwargs['org_slug'], 'username': kwargs['username']},
+                kwargs={'org_slug': kwargs['org_slug'],
+                        'username': kwargs['username']},
             )
             return HttpResponseRedirect(redirect_url)
 
@@ -607,7 +619,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         self.organization = self.get_organization(
             self.request, self.kwargs.get('org_slug')
         )
-        self.member = self.get_member(self.organization, self.kwargs.get('username'))
+        self.member = self.get_member(
+            self.organization, self.kwargs.get('username'))
 
         if self.token_is_valid(uidb64=kwargs['uidb64'], token=kwargs['token']):
             # The token is valid, so call the super().post() method
@@ -617,7 +630,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
             # org_create_member_invalid_token page
             redirect_url = reverse(
                 'org:org_create_member_invalid_token',
-                kwargs={'org_slug': kwargs['org_slug'], 'username': kwargs['username']},
+                kwargs={'org_slug': kwargs['org_slug'],
+                        'username': kwargs['username']},
             )
             return HttpResponseRedirect(redirect_url)
 
@@ -639,7 +653,7 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         # request_user = Member.objects.get(pk=request_user_id)
 
         request_user_social_auth = self.member.social_auth.filter(
-            provider=settings.SOCIAL_AUTH_NAME
+            provider='verifymyidentity-openidconnect'
         ).first()
 
         # If the request.user does not have a UserSocialAuth for VMI, then
@@ -647,7 +661,7 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
         if not request_user_social_auth:
             self.errors = {
                 'user': 'User has no association with {}'.format(
-                    settings.SOCIAL_AUTH_NAME
+                    'verifymyidentity-openidconnect'
                 )
             }
             return self.render_to_response(self.get_context_data())
@@ -682,7 +696,7 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
 
         # 4.) Make a request to VMI to update the member's password in VMI
         org_user_social_auth = resource_request.user.social_auth.filter(
-            provider=settings.SOCIAL_AUTH_NAME
+            provider='verifymyidentity-openidconnect'
         ).first()
         data = {'password': form.data['password1']}
         url = '{}/api/v1/user/{}/'.format(
@@ -714,7 +728,8 @@ class OrgCreateMemberCompleteView(OrgCreateMemberMixin, FormView):
 
             # 6.) Redirect the user to authenticate in VMI, and to accept this
             # application's access (and get an access token as a result).
-            url_vmi_auth = reverse('social:begin', args=(settings.SOCIAL_AUTH_NAME,))
+            url_vmi_auth = reverse('social:begin', args=(
+                'verifymyidentity-openidconnect',))
             url_success = self.get_success_url(
                 self.organization.slug, self.member.username
             )

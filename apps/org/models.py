@@ -54,7 +54,8 @@ class Organization(CreatedUpdatedModel, models.Model):
     city = models.CharField(max_length=80, blank=True)
     state = USStateField(blank=True)
     zipcode = USZipCodeField(blank=True)
-    website = models.TextField(null=True, blank=True, help_text="Populated from VMI.")
+    website = models.TextField(
+        null=True, blank=True, help_text="Populated from VMI.")
     picture_url = models.TextField(
         null=True, blank=True, help_text="The URL of Organization's logo (from VMI)"
     )
@@ -164,11 +165,13 @@ class ResourceRequest(CreatedUpdatedModel, models.Model):
     def member_notification_message(self):
         if self.status == REQUEST_REQUESTED:
             return mark_safe(
-                "<b>{}</b> requested access to your data".format(self.organization)
+                "<b>{}</b> requested access to your data".format(
+                    self.organization)
             )
         elif self.status == REQUEST_APPROVED:
             return mark_safe(
-                "You allowed <b>{}</b> to access your data".format(self.organization)
+                "You allowed <b>{}</b> to access your data".format(
+                    self.organization)
             )
         elif self.status == REQUEST_DENIED:
             return mark_safe(
@@ -271,4 +274,3 @@ def create_or_update_resource_request_notifications(
         )
         notification.created = instance.updated
         notification.save()
-
