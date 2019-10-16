@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+
+.DS_Store
+*.komodoproject
+
 # Distribution / packaging
 .Python
 build/
