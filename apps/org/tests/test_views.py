@@ -1866,16 +1866,6 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
 
     def test_authenticated(self):
         """The user does not need to be authenticated to use the org_create_member_complete view."""
-        with self.subTest('Authenticated GET'):
-            self.client.force_login(self.user)
-            response = self.client.get(self.url)
-            self.assertEqual(response.status_code, 200)
-
-        with self.subTest('Authenticated POST'):
-            self.client.force_login(self.user)
-            response = self.client.post(self.url, data={}, follow=True)
-            self.assertEqual(response.status_code, 200)
-
         with self.subTest('Not authenticated GET'):
             self.client.logout()
 
