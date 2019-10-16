@@ -82,7 +82,8 @@ class CreateOrganizationTestCase(SMHAppTestMixin, TestCase):
         new_organization = Organization.objects.first()
         self.assertEqual(new_organization.name, data['name'])
         # The Organization's creator is automatically associated with the new
-        # Organization, even though the user didn't add themselves in the form data.
+        # Organization, even though the user didn't add themselves in the form
+        # data.
         self.assertEqual(
             set(new_organization.agents.values_list('id', flat=True)),
             set([self.user.id]),
@@ -110,6 +111,7 @@ class CreateOrganizationTestCase(SMHAppTestMixin, TestCase):
 
 @override_settings(LOGIN_URL='/accounts/login/')
 class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
+
     def test_update_organizations(self):
         """The user may update an Organization."""
         # An Organization associated with the self.user
@@ -117,7 +119,8 @@ class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
         organization.agents.add(self.user)
 
         data = {'name': 'New Name'}
-        url = reverse('org:organization-update', kwargs={'pk': organization.pk})
+        url = reverse('org:organization-update',
+                      kwargs={'pk': organization.pk})
 
         response = self.client.post(url, data=data)
 
@@ -132,7 +135,8 @@ class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
         org_not_associated = OrganizationFactory()
 
         data = {'name': 'New Name'}
-        url = reverse('org:organization-update', kwargs={'pk': org_not_associated.pk})
+        url = reverse('org:organization-update',
+                      kwargs={'pk': org_not_associated.pk})
 
         with self.subTest('GET'):
             response_get = self.client.get(url, data=data)
@@ -156,7 +160,8 @@ class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
             self.client.force_login(self.user)
 
             data = {'name': 'New Name 1'}
-            url = reverse('org:organization-update', kwargs={'pk': organization.pk})
+            url = reverse('org:organization-update',
+                          kwargs={'pk': organization.pk})
             response = self.client.post(url, data=data)
 
             self.assertRedirects(response, reverse('org:dashboard'))
@@ -165,7 +170,8 @@ class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
             self.client.logout()
 
             data = {'name': 'New Name 2'}
-            url = reverse('org:organization-update', kwargs={'pk': organization.pk})
+            url = reverse('org:organization-update',
+                          kwargs={'pk': organization.pk})
             response = self.client.post(url, data=data)
 
             expected_redirect = '{}?next={}'.format(reverse('login'), url)
@@ -174,19 +180,22 @@ class UpdateOrganizationTestCase(SMHAppTestMixin, TestCase):
 
 @override_settings(LOGIN_URL='/accounts/login/')
 class DeleteOrganizationTestCase(SMHAppTestMixin, TestCase):
+
     def test_delete_organization(self):
         """The user may delete an Organization."""
         # An Organization associated with the self.user
         organization = OrganizationFactory()
         organization.agents.add(self.user)
 
-        url = reverse('org:organization-delete', kwargs={'pk': organization.pk})
+        url = reverse('org:organization-delete',
+                      kwargs={'pk': organization.pk})
 
         response = self.client.post(url)
 
         self.assertRedirects(response, reverse('org:dashboard'))
         # The Organization has been deleted
-        self.assertFalse(Organization.objects.filter(pk=organization.pk).exists())
+        self.assertFalse(Organization.objects.filter(
+            pk=organization.pk).exists())
 
     def test_delete_organization_not_agent(self):
         """A user may not delete an Organization that the user is not an agent of."""
@@ -238,7 +247,8 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
         self.organization = OrganizationFactory()
         self.organization.agents.add(self.user)
         # The URL for creating a Member associated with the self.organization
-        self.url = reverse(self.url_name, kwargs={'org_slug': self.organization.slug})
+        self.url = reverse(self.url_name, kwargs={
+                           'org_slug': self.organization.slug})
 
     @all_requests
     def response_content_success(self, url, request):
@@ -293,7 +303,8 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
             response = self.client.get(self.url)
 
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.context['organization'], self.organization)
+            self.assertEqual(response.context[
+                             'organization'], self.organization)
 
         with self.subTest('An Organization that request.user is not associated with'):
             # An Organization not associated with the self.user
@@ -325,8 +336,10 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
                     'username': ['This field is required.'],
                 },
             )
-            # No Member was created, and no UserSocialAuth or ResourceRequest was created
-            self.assertEqual(get_user_model().objects.count(), expected_num_members)
+            # No Member was created, and no UserSocialAuth or ResourceRequest
+            # was created
+            self.assertEqual(get_user_model().objects.count(),
+                             expected_num_members)
             self.assertEqual(
                 UserSocialAuth.objects.count(), expected_num_user_social_auths
             )
@@ -343,8 +356,10 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
                 response.context['form'].errors,
                 {'username': ['This field is required.']},
             )
-            # No Member was created, and no UserSocialAuth or ResourceRequest was created
-            self.assertEqual(get_user_model().objects.count(), expected_num_members)
+            # No Member was created, and no UserSocialAuth or ResourceRequest
+            # was created
+            self.assertEqual(get_user_model().objects.count(),
+                             expected_num_members)
             self.assertEqual(
                 UserSocialAuth.objects.count(), expected_num_user_social_auths
             )
@@ -373,8 +388,10 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
                 },
             )
 
-            # No Member was created, and no UserSocialAuth or ResourceRequest was created
-            self.assertEqual(get_user_model().objects.count(), expected_num_members)
+            # No Member was created, and no UserSocialAuth or ResourceRequest
+            # was created
+            self.assertEqual(get_user_model().objects.count(),
+                             expected_num_members)
             self.assertEqual(
                 UserSocialAuth.objects.count(), expected_num_user_social_auths
             )
@@ -393,20 +410,20 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
         #         },
         #     )
         #     expected_num_user_social_auths += 1
-        # 
+        #
         #     # The data POSTed to the org_create_member view
         #     data = {
         #         'first_name': 'New',
         #         'last_name': 'Member',
         #         'username': 'new_member',
         #     }
-        # 
+        #
         #     # Since POSTs with valid data use the requests library to make a request
         #     # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
         #     # library here.
         #     with HTTMock(self.response_content_success):
         #         response = self.client.post(self.url, data=data)
-        # 
+        #
         #     # A successful create redirects to the next page of the creation process.
         #     expected_url_next_page = reverse(
         #         'org:org_create_member_basic_info',
@@ -490,9 +507,11 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
         self.organization = OrganizationFactory()
         self.organization.agents.add(self.user)
         # A Member at the Organization
-        self.member = UserFactory(email='test_{}@example.com'.format(random.random()))
+        self.member = UserFactory(
+            email='test_{}@example.com'.format(random.random()))
         self.organization.members.add(self.member)
-        ResourceGrantFactory(organization=self.organization, member=self.member)
+        ResourceGrantFactory(
+            organization=self.organization, member=self.member)
         # The URL for creating a Member associated with the self.organization
         self.url = reverse(
             self.url_name,
@@ -569,7 +588,8 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
                 ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.username},
+                kwargs={'org_slug': organization.slug,
+                        'username': member.username},
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -580,7 +600,8 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
 
                 if expected_success:
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.context['organization'], organization)
+                    self.assertEqual(response.context[
+                                     'organization'], organization)
                     self.assertEqual(response.context['member'], member)
                 else:
                     self.assertEqual(response.status_code, 404)
@@ -631,7 +652,8 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
-                response.context['form'].errors, {'birthdate': ['Enter a valid date.']}
+                response.context['form'].errors, {
+                    'birthdate': ['Enter a valid date.']}
             )
             # The self.member was not updated
             self.member.refresh_from_db()
@@ -668,7 +690,8 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             # then the response is an error. In reality, this shouldn't happen,
             # since the UserSocialAuth object should get created for the new Member
             # during step 1 of the member creation process (the org_create_member_view),
-            # but we handle the case that the UserSocialAuth object no longer exists.
+            # but we handle the case that the UserSocialAuth object no longer
+            # exists.
             data = {
                 'birthdate': '2000-01-01',
                 'nickname': 'Nickname',
@@ -715,7 +738,7 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
         #         },
         #         uid=random.randint(100000000000000, 999999999999999),
         #     )
-        # 
+        #
         #     # The data POSTed to the org_create_member_basic_info view
         #     data = {
         #         'birthdate': '2000-01-01',
@@ -723,13 +746,13 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
         #         'gender': '',
         #         'email': 'new_email@example.com',
         #     }
-        # 
+        #
         #     # Since POSTs with valid data use the requests library to make a request
         #     # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
         #     # library here.
         #     with HTTMock(self.response_content_success):
         #         response = self.client.post(self.url, data=data)
-        # 
+        #
         #     # A successful create redirects to the next page of the creation process.
         #     expected_url_next_page = reverse(
         #         'org:org_create_member_verify_identity',
@@ -788,8 +811,10 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory()
         self.organization.members.add(self.member)
-        ResourceGrantFactory(organization=self.organization, member=self.member)
-        # The URL for verifying the identity of a Member associated with the self.organization
+        ResourceGrantFactory(
+            organization=self.organization, member=self.member)
+        # The URL for verifying the identity of a Member associated with the
+        # self.organization
         self.url = reverse(
             self.url_name,
             kwargs={
@@ -880,7 +905,8 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
                 ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.username},
+                kwargs={'org_slug': organization.slug,
+                        'username': member.username},
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -891,7 +917,8 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
 
                 if expected_success:
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.context['organization'], organization)
+                    self.assertEqual(response.context[
+                                     'organization'], organization)
                     self.assertEqual(response.context['member'], member)
                 else:
                     self.assertEqual(response.status_code, 404)
@@ -912,7 +939,8 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
 
             # No requests were made to VMI
             self.assertEqual(self.response_id_assurance_list.call['count'], 0)
-            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+            self.assertEqual(
+                self.response_id_assurance_detail.call['count'], 0)
 
         with self.subTest('incomplete data'):
             data = {'description': 'description here', 'exp': '2020-01-01'}
@@ -933,7 +961,8 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             )
             # No requests were made to VMI
             self.assertEqual(self.response_id_assurance_list.call['count'], 0)
-            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+            self.assertEqual(
+                self.response_id_assurance_detail.call['count'], 0)
 
         with self.subTest('invalid data'):
             data = {
@@ -961,7 +990,8 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             self.assertEqual(response.context['form'].errors, expected_errors)
             # No requests were made to VMI
             self.assertEqual(self.response_id_assurance_list.call['count'], 0)
-            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+            self.assertEqual(
+                self.response_id_assurance_detail.call['count'], 0)
 
         with self.subTest('valid data, no request.user UserSocialAuth object'):
             # If the request.user does not have a UserSocialAuth object for VMI,
@@ -990,14 +1020,16 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             )
             # No requests were made to VMI
             self.assertEqual(self.response_id_assurance_list.call['count'], 0)
-            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+            self.assertEqual(
+                self.response_id_assurance_detail.call['count'], 0)
 
         with self.subTest('valid data, no UserSocialAuth object for Member'):
             # If the Member does not have a UserSocialAuth object for VMI,
             # then the response is an error. In reality, this shouldn't happen,
             # since the UserSocialAuth object should get created for the new Member
             # during step 1 of the member creation process (the org_create_member_view),
-            # but we handle the case that the UserSocialAuth object no longer exists.
+            # but we handle the case that the UserSocialAuth object no longer
+            # exists.
             data = {
                 'description': 'description',
                 'exp': '2099-01-01',
@@ -1033,7 +1065,8 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             )
             # No requests were made to VMI
             self.assertEqual(self.response_id_assurance_list.call['count'], 0)
-            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+            self.assertEqual(
+                self.response_id_assurance_detail.call['count'], 0)
 
         with self.subTest(
             'valid data, request.user & member have a UserSocialAuth object'
@@ -1064,7 +1097,8 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             ):
                 response = self.client.post(self.url, data=data)
 
-            # A successful create redirects to the next page of the creation process.
+            # A successful create redirects to the next page of the creation
+            # process.
             expected_url_next_page = reverse(
                 # skip org:org_create_member_additional_info for now
                 'org:org_create_member_almost_done',
@@ -1075,9 +1109,11 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             )
             self.assertRedirects(response, expected_url_next_page)
             # Several requests were made to VMI: 1 to get the member's identity
-            # assurance uuid, and another to update the member's identity assurance.
+            # assurance uuid, and another to update the member's identity
+            # assurance.
             self.assertEqual(self.response_id_assurance_list.call['count'], 1)
-            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+            self.assertEqual(
+                self.response_id_assurance_detail.call['count'], 0)
 
         with self.subTest('valid data, but request to VMI is not successful'):
             # The view makes a request to VMI to get the member's identity assurance
@@ -1102,12 +1138,15 @@ class OrgCreateMemberVerifyIdentityTestCase(SMHAppTestMixin, TestCase):
             # Since the GET to VMI returned as a non-successful response, the
             # error is shown to the user.
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.context['errors'], {'test_key': 'Error here'})
+            self.assertEqual(response.context['errors'], {
+                             'test_key': 'Error here'})
             # Only 1 request was made to VMI: to get the member's identity assurance
             # uuid. Since this request was not successful, no more requests to
             # VMI were made.
-            self.assertEqual(self.response_id_assurance_list_fail.call['count'], 1)
-            self.assertEqual(self.response_id_assurance_detail.call['count'], 0)
+            self.assertEqual(
+                self.response_id_assurance_list_fail.call['count'], 1)
+            self.assertEqual(
+                self.response_id_assurance_detail.call['count'], 0)
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_verify_identity view."""
@@ -1150,8 +1189,10 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory()
         self.organization.members.add(self.member)
-        ResourceGrantFactory(organization=self.organization, member=self.member)
-        # The URL for verifying the identity of a Member associated with the self.organization
+        ResourceGrantFactory(
+            organization=self.organization, member=self.member)
+        # The URL for verifying the identity of a Member associated with the
+        # self.organization
         self.url = reverse(
             self.url_name,
             kwargs={
@@ -1182,7 +1223,8 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
                 ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.username},
+                kwargs={'org_slug': organization.slug,
+                        'username': member.username},
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -1193,7 +1235,8 @@ class OrgCreateMemberAdditionalInfoTestCase(SMHAppTestMixin, TestCase):
 
                 if expected_success:
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.context['organization'], organization)
+                    self.assertEqual(response.context[
+                                     'organization'], organization)
                     self.assertEqual(response.context['member'], member)
                 else:
                     self.assertEqual(response.status_code, 404)
@@ -1254,8 +1297,10 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory()
         self.organization.members.add(self.member)
-        ResourceGrantFactory(organization=self.organization, member=self.member)
-        # The URL for seeing that new Member creation at the self.organization is almost done
+        ResourceGrantFactory(
+            organization=self.organization, member=self.member)
+        # The URL for seeing that new Member creation at the self.organization
+        # is almost done
         self.url = reverse(
             self.url_name,
             kwargs={
@@ -1286,7 +1331,8 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
                 ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.username},
+                kwargs={'org_slug': organization.slug,
+                        'username': member.username},
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -1297,7 +1343,8 @@ class OrgCreateMemberAlmostDoneTestCase(SMHAppTestMixin, TestCase):
 
                 if expected_success:
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.context['organization'], organization)
+                    self.assertEqual(response.context[
+                                     'organization'], organization)
                     self.assertEqual(response.context['member'], member)
                     # Verify the url_to_set_password in the context
                     member_uid = urlsafe_base64_encode(force_bytes(member.pk)).decode(
@@ -1358,10 +1405,12 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
     def setUp(self):
         super().setUp()
         self.organization = OrganizationFactory()
-        # The self.user in this test is a member who is trying to set their password
+        # The self.user in this test is a member who is trying to set their
+        # password
         self.member = self.user
         self.organization.members.add(self.member)
-        ResourceGrantFactory(organization=self.organization, member=self.member)
+        ResourceGrantFactory(
+            organization=self.organization, member=self.member)
         # It's assumed that the self.user is not authenticated, because they are
         # setting their password for the first time.
         self.client.logout()
@@ -1421,7 +1470,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # user_at_org:         |  member_at_org:    | valid token: | expected_status_code:
             # Is the request.user  | Is the Member      | is the token |  The expected
             # associated with the  | associated with    | valid?       |  status code of the
-            # Organization?        | the Organization?  |              |  response?
+            # Organization?        | the Organization?  |              |
+            # response?
             (True, True, True, 200),
             (True, True, False, 302),
             (False, True, True, 200),
@@ -1438,7 +1488,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 self.organization.agents.clear()
             if member_at_org:
                 self.organization.members.add(self.member)
-                ResourceGrantFactory(organization=self.organization, member=self.member)
+                ResourceGrantFactory(
+                    organization=self.organization, member=self.member)
             else:
                 self.organization.members.clear()
 
@@ -1451,9 +1502,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
                 token = self.member_token if valid_token else 'not_a_valid_token'
                 # Assert that the token is valid or invalid
                 if valid_token:
-                    self.assertTrue(token_generator.check_token(self.user, token))
+                    self.assertTrue(
+                        token_generator.check_token(self.user, token))
                 else:
-                    self.assertFalse(token_generator.check_token(self.user, token))
+                    self.assertFalse(
+                        token_generator.check_token(self.user, token))
 
                 url = reverse(
                     self.url_name,
@@ -1492,12 +1545,14 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
         ):
             self.organization.agents.add(self.user)
             self.organization.members.add(self.member)
-            ResourceGrantFactory(organization=self.organization, member=self.member)
+            ResourceGrantFactory(
+                organization=self.organization, member=self.member)
 
             # Make the token expire
             self.user.set_password('anewpassword123!')
             self.user.save()
-            self.assertFalse(token_generator.check_token(self.user, self.member_token))
+            self.assertFalse(token_generator.check_token(
+                self.user, self.member_token))
 
             response = self.client.get(url)
 
@@ -1745,9 +1800,11 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             with HTTMock(self.response_user_detail):
                 response = self.client.post(self.url, data=data)
 
-            url_vmi_auth = reverse('social:begin', args=(settings.SOCIAL_AUTH_NAME,))
+            url_vmi_auth = reverse(
+                'social:begin', args=(settings.SOCIAL_AUTH_NAME,))
             url_next_page = reverse('home')
-            expected_redirect_url = '{}?next={}'.format(url_vmi_auth, url_next_page)
+            expected_redirect_url = '{}?next={}'.format(
+                url_vmi_auth, url_next_page)
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, expected_redirect_url)
             # No ResourceRequest has been created
@@ -1791,7 +1848,8 @@ class OrgCreateMemberCompleteTestCase(SMHAppTestMixin, TestCase):
             # Make the token expire
             self.user.set_password('anewpassword12345!')
             self.user.save()
-            self.assertFalse(token_generator.check_token(self.user, self.member_token))
+            self.assertFalse(token_generator.check_token(
+                self.user, self.member_token))
 
             response = self.client.post(self.url, data=data)
 
@@ -1844,7 +1902,8 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory()
         self.organization.members.add(self.member)
-        ResourceGrantFactory(organization=self.organization, member=self.member)
+        ResourceGrantFactory(
+            organization=self.organization, member=self.member)
 
         # The URL for completing new Member creation at the self.organization
         self.url = reverse(
@@ -1877,7 +1936,8 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
                 ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.username},
+                kwargs={'org_slug': organization.slug,
+                        'username': member.username},
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -1888,7 +1948,8 @@ class OrgCreateMemberInvalidTokenTestCase(SMHAppTestMixin, TestCase):
 
                 if expected_success:
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.context['organization'], organization)
+                    self.assertEqual(response.context[
+                                     'organization'], organization)
                     self.assertEqual(response.context['member'], member)
                 else:
                     self.assertEqual(response.status_code, 404)
@@ -1932,7 +1993,8 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
         # A Member at the Organization
         self.member = UserFactory()
         self.organization.members.add(self.member)
-        ResourceGrantFactory(organization=self.organization, member=self.member)
+        ResourceGrantFactory(
+            organization=self.organization, member=self.member)
         # The URL for completing new Member creation at the self.organization
         self.url = reverse(
             self.url_name,
@@ -1964,7 +2026,8 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
                 ResourceGrantFactory(organization=organization, member=member)
             url = reverse(
                 self.url_name,
-                kwargs={'org_slug': organization.slug, 'username': member.username},
+                kwargs={'org_slug': organization.slug,
+                        'username': member.username},
             )
             with self.subTest(
                 user_at_org=user_at_org,
@@ -1975,7 +2038,8 @@ class OrgCreateMemberSuccessTestCase(SMHAppTestMixin, TestCase):
 
                 if expected_success:
                     self.assertEqual(response.status_code, 200)
-                    self.assertEqual(response.context['organization'], organization)
+                    self.assertEqual(response.context[
+                                     'organization'], organization)
                     self.assertEqual(response.context['member'], member)
                 else:
                     self.assertEqual(response.status_code, 404)

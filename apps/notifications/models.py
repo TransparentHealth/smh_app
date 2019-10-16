@@ -73,7 +73,7 @@ class Notification(CreatedModel, models.Model):
 
     # The GenericForeignKey fields should enable, e.g., notication.instance to return
     # the instance object. But they're not working, and that is throwing errors when
-    # calling render_message (below). So we use the *_content_type object directly in 
+    # calling render_message (below). So we use the *_content_type object directly in
     # each of the get_* methods.
 
     def get_notify(self):
@@ -106,7 +106,8 @@ class Notification(CreatedModel, models.Model):
         )
 
 
-# Notification.actions should be a list, but we can't use the postgres JSONField, so we do it here.
+# Notification.actions should be a list, but we can't use the postgres
+# JSONField, so we do it here.
 
 
 @receiver(pre_save, sender=Notification)
