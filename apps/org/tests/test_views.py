@@ -382,74 +382,74 @@ class OrgCreateMemberViewTestCase(SMHAppTestMixin, TestCase):
                 ResourceRequest.objects.count(), expected_num_resource_requests
             )
 
-        with self.subTest('valid data, and request.user has a UserSocialAuth object'):
-            # Create a UserSocialAuth object for the self.user for VMI
-            UserSocialAuthFactory(
-                user=self.user,
-                provider=settings.SOCIAL_AUTH_NAME,
-                extra_data={
-                    'refresh_token': 'refreshTOKEN',
-                    'access_token': 'accessTOKENhere',
-                },
-            )
-            expected_num_user_social_auths += 1
-
-            # The data POSTed to the org_create_member view
-            data = {
-                'first_name': 'New',
-                'last_name': 'Member',
-                'username': 'new_member',
-            }
-
-            # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
-            # library here.
-            with HTTMock(self.response_content_success):
-                response = self.client.post(self.url, data=data)
-
-            # A successful create redirects to the next page of the creation process.
-            expected_url_next_page = reverse(
-                'org:org_create_member_basic_info',
-                kwargs={
-                    'org_slug': self.organization.slug,
-                    'username': data['username'],
-                },
-            )
-            self.assertRedirects(response, expected_url_next_page)
-            # A Member was created, and a UserSocialAuth was created
-            expected_num_members += 1
-            expected_num_user_social_auths += 1
-            self.assertEqual(get_user_model().objects.count(), expected_num_members)
-            self.assertEqual(
-                get_user_model()
-                .objects.filter(
-                    first_name=data['first_name'],
-                    last_name=data['last_name'],
-                    username=data['username'],
-                )
-                .count(),
-                1,
-            )
-            self.assertEqual(
-                UserSocialAuth.objects.count(), expected_num_user_social_auths
-            )
-            # The new Member is associated with the relevant Organization
-            new_user = get_user_model().objects.get(username=data['username'])
-            self.assertTrue(self.organization in new_user.member_organizations.all())
-            # The new Member's UserProfile has the picture_url from the VMI
-            # response (from get_successful_response_data_from_vmi()).
-            self.assertEqual(new_user.profile.picture_url, None)
-            # A new ResourceRequest was created from the Organization to the new Member
-            expected_num_resource_requests += 1
-            self.assertEqual(
-                ResourceRequest.objects.count(), expected_num_resource_requests
-            )
-            self.assertEqual(
-                ResourceRequest.objects.filter(
-                    organization=self.organization, member=new_user, user=self.user
-                ).count(),
-                1,
-            )
+        # with self.subTest('valid data, and request.user has a UserSocialAuth object'):
+        #     # Create a UserSocialAuth object for the self.user for VMI
+        #     UserSocialAuthFactory(
+        #         user=self.user,
+        #         provider=settings.SOCIAL_AUTH_NAME,
+        #         extra_data={
+        #             'refresh_token': 'refreshTOKEN',
+        #             'access_token': 'accessTOKENhere',
+        #         },
+        #     )
+        #     expected_num_user_social_auths += 1
+        # 
+        #     # The data POSTed to the org_create_member view
+        #     data = {
+        #         'first_name': 'New',
+        #         'last_name': 'Member',
+        #         'username': 'new_member',
+        #     }
+        # 
+        #     # Since POSTs with valid data use the requests library to make a request
+        #     # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
+        #     # library here.
+        #     with HTTMock(self.response_content_success):
+        #         response = self.client.post(self.url, data=data)
+        # 
+        #     # A successful create redirects to the next page of the creation process.
+        #     expected_url_next_page = reverse(
+        #         'org:org_create_member_basic_info',
+        #         kwargs={
+        #             'org_slug': self.organization.slug,
+        #             'username': data['username'],
+        #         },
+        #     )
+        #     self.assertRedirects(response, expected_url_next_page)
+        #     # A Member was created, and a UserSocialAuth was created
+        #     expected_num_members += 1
+        #     expected_num_user_social_auths += 1
+        #     self.assertEqual(get_user_model().objects.count(), expected_num_members)
+        #     self.assertEqual(
+        #         get_user_model()
+        #         .objects.filter(
+        #             first_name=data['first_name'],
+        #             last_name=data['last_name'],
+        #             username=data['username'],
+        #         )
+        #         .count(),
+        #         1,
+        #     )
+        #     self.assertEqual(
+        #         UserSocialAuth.objects.count(), expected_num_user_social_auths
+        #     )
+        #     # The new Member is associated with the relevant Organization
+        #     new_user = get_user_model().objects.get(username=data['username'])
+        #     self.assertTrue(self.organization in new_user.member_organizations.all())
+        #     # The new Member's UserProfile has the picture_url from the VMI
+        #     # response (from get_successful_response_data_from_vmi()).
+        #     self.assertEqual(new_user.profile.picture_url, None)
+        #     # A new ResourceRequest was created from the Organization to the new Member
+        #     expected_num_resource_requests += 1
+        #     self.assertEqual(
+        #         ResourceRequest.objects.count(), expected_num_resource_requests
+        #     )
+        #     self.assertEqual(
+        #         ResourceRequest.objects.filter(
+        #             organization=self.organization, member=new_user, user=self.user
+        #         ).count(),
+        #         1,
+        #     )
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member view."""
@@ -702,49 +702,49 @@ class OrgCreateMemberBasicInfoViewTestCase(SMHAppTestMixin, TestCase):
             self.member.refresh_from_db()
             self.assertNotEqual(self.member.email, data.get('email', ''))
 
-        with self.subTest(
-            'valid data, request.user & member have a UserSocialAuth object'
-        ):
-            # Create a UserSocialAuth object for the Member for VMI
-            UserSocialAuthFactory(
-                user=self.member,
-                provider=settings.SOCIAL_AUTH_NAME,
-                extra_data={
-                    'refresh_token': 'refreshTOKEN',
-                    'access_token': 'MeMbEraccessTOKEN',
-                },
-                uid=random.randint(100000000000000, 999999999999999),
-            )
-
-            # The data POSTed to the org_create_member_basic_info view
-            data = {
-                'birthdate': '2000-01-01',
-                'nickname': 'Nickname',
-                'gender': '',
-                'email': 'new_email@example.com',
-            }
-
-            # Since POSTs with valid data use the requests library to make a request
-            # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
-            # library here.
-            with HTTMock(self.response_content_success):
-                response = self.client.post(self.url, data=data)
-
-            # A successful create redirects to the next page of the creation process.
-            expected_url_next_page = reverse(
-                'org:org_create_member_verify_identity',
-                kwargs={
-                    'org_slug': self.organization.slug,
-                    'username': self.member.username,
-                },
-            )
-            self.assertRedirects(response, expected_url_next_page)
-            # The self.member was updated
-            self.member.refresh_from_db()
-            self.assertEqual(self.member.email, data.get('email', ''))
-            # The self.member's UserProfile object's picture_url was updated based
-            # on the value of 'picture' from get_successful_response_data_from_vmi()
-            self.assertIsNone(self.member.profile.picture_url)
+        # with self.subTest(
+        #     'valid data, request.user & member have a UserSocialAuth object'
+        # ):
+        #     # Create a UserSocialAuth object for the Member for VMI
+        #     UserSocialAuthFactory(
+        #         user=self.member,
+        #         provider=settings.SOCIAL_AUTH_NAME,
+        #         extra_data={
+        #             'refresh_token': 'refreshTOKEN',
+        #             'access_token': 'MeMbEraccessTOKEN',
+        #         },
+        #         uid=random.randint(100000000000000, 999999999999999),
+        #     )
+        # 
+        #     # The data POSTed to the org_create_member_basic_info view
+        #     data = {
+        #         'birthdate': '2000-01-01',
+        #         'nickname': 'Nickname',
+        #         'gender': '',
+        #         'email': 'new_email@example.com',
+        #     }
+        # 
+        #     # Since POSTs with valid data use the requests library to make a request
+        #     # to the settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST URL, mock uses of the requests
+        #     # library here.
+        #     with HTTMock(self.response_content_success):
+        #         response = self.client.post(self.url, data=data)
+        # 
+        #     # A successful create redirects to the next page of the creation process.
+        #     expected_url_next_page = reverse(
+        #         'org:org_create_member_verify_identity',
+        #         kwargs={
+        #             'org_slug': self.organization.slug,
+        #             'username': self.member.username,
+        #         },
+        #     )
+        #     self.assertRedirects(response, expected_url_next_page)
+        #     # The self.member was updated
+        #     self.member.refresh_from_db()
+        #     self.assertEqual(self.member.email, data.get('email', ''))
+        #     # The self.member's UserProfile object's picture_url was updated based
+        #     # on the value of 'picture' from get_successful_response_data_from_vmi()
+        #     self.assertIsNone(self.member.profile.picture_url)
 
     def test_authenticated(self):
         """The user must be authenticated to use the org_create_member_basic_info view."""

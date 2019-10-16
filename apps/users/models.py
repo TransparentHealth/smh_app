@@ -45,10 +45,8 @@ def profile(self):
 def user_type(self):
     if self.agent_organizations.exists():
         return UserType.ORG_AGENT
-    elif self.resource_grants.exists():
-        return UserType.MEMBER
     else:
-        return UserType.OTHER
+        return UserType.MEMBER
 
 
 User.profile = property(profile)
@@ -69,7 +67,7 @@ class UserProfile(models.Model):
     emergency_contact_number = PhoneNumberField(null=True, blank=True)
 
     def __str__(self):
-        return self.user.username
+        return "%s %s (%s)" % (self.user.first_name, self.user.last_name, self.subject) 
 
     __html__ = __str__
 

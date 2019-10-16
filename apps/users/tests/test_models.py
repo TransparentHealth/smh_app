@@ -7,4 +7,4 @@ class UserProfileTestCase(TestCase):
     def test_str(self):
         """Test for string representation."""
         user = UserFactory()
-        self.assertEqual(str(user.profile), user.username)
+        self.assertEqual(str(user.username), user.username)

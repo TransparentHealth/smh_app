@@ -184,13 +184,15 @@ LOGIN_URL = '/social-auth/login/verifymyidentity-openidconnect'
 
 # Settings for social_django
 SOCIAL_AUTH_URL_NAMESPACE = "social"
-SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_PIPELINE = (
+SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_USER_FIELDS = ['username', ]
+SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_PIPELINE = [
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.auth_allowed',
     'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.user.get_username',
-    'social_core.pipeline.mail.mail_validation',
+    # Get the username as the sub in  OIDC
+    'apps.verifymyidentity.pipeline.get_user_id.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',
     'social_core.pipeline.user.create_user',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.debug.debug',
@@ -198,10 +200,12 @@ SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_PIPELINE = (
     'social_core.pipeline.user.user_details',
     'apps.users.pipeline.oidc.save_profile',
     'apps.verifymyidentity.pipeline.organizations.create_or_update_org',
-    'social_core.pipeline.debug.debug',
-)
+]
 
-SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
+if DEBUG:
+    SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_PIPELINE.append('social_core.pipeline.debug.debug')
+
+SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = [
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.auth_allowed',
@@ -211,8 +215,11 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
     'apps.member.pipeline.connection_notifications',
-    'social_core.pipeline.debug.debug',
-)
+]
+
+if DEBUG:
+    SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE.append('social_core.pipeline.debug.debug')
+
 
 SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = (
     'social_core.pipeline.disconnect.allowed_to_disconnect',
