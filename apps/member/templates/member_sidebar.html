@@ -6,8 +6,8 @@
             <img src="{% static '/images/icons/edit_icon.jpg' %}" />
         </a>
         {% endif %}
-        {% if request.user.profile.picture %}
-        <img src="{{ member.profile.picture }}" alt="{{ member.first_name }} {{ member.last_name }}",  class="member-avatar">
+        {% if member.profile.id_token_payload.picture %}
+        <img src="{{ member.profile.id_token_payload.picture }}" alt="{{ member.first_name }} {{ member.last_name }}",  class="member-avatar">
         {% else %}
         <img src="{% static '/images/icons/avatar_default.png' %}" alt=">{{ member.first_name }} {{ member.last_name }}", c class="member-avatar">
         {% endif %}
