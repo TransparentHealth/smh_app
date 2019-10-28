@@ -100,7 +100,7 @@
                     </span>
                     <div role="separator" class="dropdown-divider"></div>
                     <span class="navbar-text">
-                        <a class="account-menu nav-item" href="/member/{{ request.user.id }}">Profile</a>
+                        <a class="account-menu nav-item" href="/member/{{ request.user.id }}">Profile ({{request.user.first_name|title}} {{request.user.last_name|title}})</a>
                     </span>
                     <div role="separator" class="dropdown-divider"></div>
                     <span class="navbar-text">
