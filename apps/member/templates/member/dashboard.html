@@ -62,13 +62,21 @@
       {% endifequal %}
 
       {% ifequal id_token_payload.ial "2" %}
-      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' pk=request.user.pk %}">Identity Verified</a></h2>
+      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' pk=request.user.pk %}">View</a></h2>
         <div class="text">
 
       <!-- Add records to contect when complete -->
       <div class="no-data">
 
-          <a href="{% url 'member:records' pk=request.user.pk %}"><div class="title">View All Records</div></a>
+ <form class="form--login form--limit-width text-center pb-5"
+                      method="GET"
+                      action="{% url 'member:records' pk=request.user.pk %}">
+
+                    <button type="submit" class="btn btn-primary mb-5">
+                        View All Records
+                    </button>
+                </form>
+
 
         </div>
       </div>
