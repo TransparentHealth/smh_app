@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+
+.DS_Store
+*.komodoproject
+
 # Distribution / packaging
 .Python
 build/
@@ -106,3 +110,5 @@ venv.bak/
 node_modules/
 collectedstatic
 coverage
+testdata
+src

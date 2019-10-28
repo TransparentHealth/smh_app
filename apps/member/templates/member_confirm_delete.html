@@ -4,11 +4,11 @@
 <div class="row mr-0 ml-0">
     {% include "member_sidebar.html" with member=member%}
     <div class="member-tabs col-lg-9 p-5">
-        <h2 class="member-tabs__title">Delete {{ object }}?</h2>
+        <h2 class="member-tabs__title">Are you sure you want to delete {{ member }}’s account?</h2>
         <form method="post">
           {% csrf_token %}
           <button class="btn btn-primary" type=submit>Yes</button>
-          <a class="btn btn-secondary" href="{% url 'member:member-update' member.id %}">No</a>
+          <a class="btn btn-secondary" href="{% url 'home' %}">No</a>
         </form>
     </div>
 </div>

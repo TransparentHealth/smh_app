@@ -5,19 +5,25 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('users', '0003_userprofile_subject'),
-    ]
+    dependencies = [('users', '0003_userprofile_subject')]
 
     operations = [
         migrations.AddField(
             model_name='userprofile',
             name='user_type',
-            field=models.CharField(blank=True, choices=[('', 'Other'), ('M', 'Member'), ('O', 'Organization Agent')], default='M', help_text='What kind of user is this? This controls what dashboard the user sees.', max_length=255),
+            field=models.CharField(
+                blank=True,
+                choices=[('', 'Other'), ('M', 'Member'), ('O', 'Organization Agent')],
+                default='M',
+                help_text='What kind of user is this? This controls what dashboard the user sees.',
+                max_length=255,
+            ),
         ),
         migrations.AlterField(
             model_name='userprofile',
             name='picture_url',
-            field=models.TextField(blank=True, help_text="The URL of the User's image (from VMI)"),
+            field=models.TextField(
+                blank=True, help_text="The URL of the User's image (from VMI)"
+            ),
         ),
     ]

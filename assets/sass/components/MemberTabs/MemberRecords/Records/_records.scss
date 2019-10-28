@@ -29,6 +29,12 @@
     color: $blue;
     cursor: pointer;
     font-weight: 500;
+    text-decoration: none;
+    border-bottom-color: rgba(255,255,255,0.0);
+
+    &:hover {
+      border-bottom-color: $blue;
+    }
   }
 }
 

@@ -12,6 +12,7 @@
                 {% for data_source in data_sources %}
                     {% if data_source.connected %}
                     <div class="tile-flex">
+                        {% if request.user == member %}
                         <form action="{% url 'social:disconnect' 'sharemyhealth' %}" method="post">
                           {% csrf_token %}
                           <input type="hidden" name="next" value="{{ request.path }}"/>
@@ -22,6 +23,12 @@
                             </div>
                           </button>
                         </form>
+                        {% else %}
+                        <div class="tile tile-flex__item">
+                            <img src="{{ data_source.image_url }}" alt="data_source.name">
+                            <p>{{ data_source.name }}</p>
+                        </div>
+                        {% endif %}
                     </div>
                     {% endif %}
                 {% endfor %}
@@ -31,13 +38,17 @@
                 {% for data_source in data_sources %}
                     {% if not data_source.connected %}
                     <div class="tile-flex">
+                        {% if request.user == member %}
                         <a href="{% url 'social:begin' 'sharemyhealth' %}?next={{ request.path }}">
+                        {% endif %}
                             <div class="tile tile-flex__item tile-flex__item--add">
                                 <img src="{% static '/images/icons/add.png' %}" alt="">
                                 <img src="{{ data_source.image_url }}" alt="data_source.name">
                                 <p>{{ data_source.name }}</p>
                             </div>
+                        {% if request.user == member %}
                         </a>
+                        {% endif %}
                     </div>
                     {% endif %}
                 {% endfor %}

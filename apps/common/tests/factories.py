@@ -1,5 +1,4 @@
 from django.conf import settings
-
 from factory import DjangoModelFactory, Faker
 
 

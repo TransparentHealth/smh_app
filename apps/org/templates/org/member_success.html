@@ -8,6 +8,6 @@
     <button type="button" class="close-btn" aria-label="Close">&times;</button>
 </h1>
 
-<a class="btn btn-primary" href="{% url 'member:member-update' pk=member.pk %}" target="_parent">Go to {{ member }} profile</a>
+<a class="btn btn-primary" href="{% url 'member:member-profile' pk=member.pk %}" target="_parent">Go to {{ member }} profile</a>
 
 {% endblock content %}

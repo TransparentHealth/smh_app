@@ -9,11 +9,11 @@
             <h2 class="member-tabs__title d-flex justify-content-between">
                 <span>Basic Information</span>
                 <span>
-                    {% if member.id %}
-                        <a id="delete_member" href="/member/{{ member.id }}/delete/">
+                    {% if member.id == request.user.id %}
+                        <!-- <a id="delete_member" href="/member/{{ member.id }}/delete/">
                             <img src="{% static '/images/icons/trash_can.jpg' %}" />
-                        </a>
-                        <a id="edit_member">
+                        </a> -->
+                        <a id="edit_member" class="edit-icon" href="{{ settings.REMOTE_ACCOUNT_SETTINGS_ENDPOINT }}" target="_blank" rel="noopener">
                             <img src="{% static '/images/icons/edit_icon.jpg' %}" />
                         </a>
                     {% endif %}
@@ -28,22 +28,22 @@
                         <dd class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.user.errors }}</dd>
                     {% endif %}
 
-                    {% if member.user.userprofile.subject %}
+                    {% if member.profile.sub %}
                     <dt>Permanent Link:</dt>
                     <dd>
-                        <a class="member-tabs__link" href="{% url 'member:subject_url' subject=member.user.userprofile.subject %}">
-                            {{ settings.HOSTNAME_URL }}{% url 'member:subject_url' subject=member.user.userprofile.subject %}
+                        <a class="member-tabs__link" href="{% url 'member:subject_url' subject=member.profile.sub %}">
+                            {{ settings.HOSTNAME_URL }}{% url 'member:subject_url' subject=member.profile.sub %}
                         </a>
                     </dd>
                     {% endif %}
 
-                    <dt>{{ form.birth_date.label_tag|title }}</dt>
+                    <dt>Birthdate:</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">{{ form.birth_date }}</dd>
                     <dd class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.birth_date.errors }}</dd>
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ id_token_payload.birthdate }}</dd>
+                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.profile.birthdate|date:"F j, Y" }}</dd>
 
                     <dt>Email:</dt>
-                    <dd>{{ member.user.email }}</dd>
+                    <dd>{{ member.email }}</dd>
 
                     <dt>{{ form.phone_number.label_tag|title }}</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
@@ -53,7 +53,7 @@
 
                     <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.phone_number|default:"" }}</dd>
 
-                    <dt>{{ form.address.label_tag|title }}</dt>
+                    <dt>Address:</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
                         {{ form.address }}
                         <span class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.address.errors }}</span>
@@ -61,30 +61,26 @@
                     <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.address|default:"" }}</dd>
 
                     <dt class="read_only_element {% if not member.id %}hide{% endif %}">Emergency Contact:</dt>
-                    <dt class="form_element {% if member.id %}hide{% endif %}">{{ form.emergency_contact_name.label_tag|title }}</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
                         {{ form.emergency_contact_name }}
                         <span class="invalid-feedback">{{ form.emergency_contact_name.errors }}</span>
                     </dd>
 
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.emergency_contact_name|default:"" }}</dd>
-
-                    <dt class="form_element {% if member.id %}hide{% endif %}">{{ form.emergency_contact_number.label_tag|title }}</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
                         {{ form.emergency_contact_number }}
                          <span class="invalid-feedback">{{ form.emergency_contact_number.errors }}</span>
                     </dd>
 
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.emergency_contact_number|default:"" }}</dd>
+                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.profile.emergency_contact_name|default:"" }}&#x2003;<a href="tel:{{ member.profile.emergency_contact_number|default:'' }}">{{ member.profile.emergency_contact_number|default:"" }}</a></dd>
 
                     <dt>Member since:</dt>
-                    <dd>{{ member.user.date_joined|date:"d/m/Y" }}</dd>
+                    <dd>{{ member.date_joined|date:"F j, Y" }}</dd>
                                         <dt>Identification:</dt>
-                    <dd>Identity Assurance Level (IAL): {{ id_token_payload.ial }}</dd>
-                    <dd>Authenticator Assurance Level(AAL): {{ id_token_payload.aal }}</dd>
-                    <dd>Issuer: {{ id_token_payload.iss }}</dd>
-                    <dd>Audience: {{ id_token_payload.aud }}</dd>
-                    <dd>Picture: {{ id_token_payload.picture }}</dd>
+                    <dd>Identity Assurance Level (IAL): {{ member.profile.id_token_payload.ial }}</dd>
+                    <dd>Authenticator Assurance Level(AAL): {{ member.profile.id_token_payload.aal }}</dd>
+                    <dd>Issuer: {{ member.profile.id_token_payload.iss }}</dd>
+                    <dd>Audience: {{ member.profile.id_token_payload.aud }}</dd>
+                    <dd>Picture: {{ member.profile.id_token_payload.picture }}</dd>
 
                 </dl>
                 <div class="d-flex justify-content-end">

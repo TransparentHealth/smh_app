@@ -1,82 +1,81 @@
 {% load static %}
 <div class="member-sidebar col-lg-3 pl-0 pb-5 pr-0">
     <div class="member-sidebar__image">
-
-
-         {% if request.user.userprofile.picture_url %}
-                      <img src="{{ member.user.userprofile.picture_url }}" alt="{{ member.user.first_name }} {{ member.user.last_name }}",  class="member-avatar">
-                    {% else %}
-                      <img src="{% static '/images/icons/avatar_default.png' %}" alt=">{{ member.user.first_name }} {{ member.user.last_name }}", c class="member-avatar">
-                    {% endif %}
-
-
+        {% if request.user.id == member.id %}
+        <a id="edit_picture" class="edit-icon" href="{{ settings.REMOTE_ACCOUNT_SET_PICTURE_ENDPOINT }}" target="_blank" rel="noopener">
+            <img src="{% static '/images/icons/edit_icon.jpg' %}" />
+        </a>
+        {% endif %}
+        {% if member.profile.id_token_payload.picture %}
+        <img src="{{ member.profile.id_token_payload.picture }}" alt="{{ member.first_name }} {{ member.last_name }}",  class="member-avatar">
+        {% else %}
+        <img src="{% static '/images/icons/avatar_default.png' %}" alt=">{{ member.first_name }} {{ member.last_name }}", c class="member-avatar">
+        {% endif %}
         <p class="member-avatar__overlay mb-0"><img src="{% static '/images/icons/star.png' %}" alt="">ID Verified</p>
     </div>
     <div class="member-sidebar__nav">
         <div class="member-sidebar__heading">
-            <h1>{{ member.user.first_name }} {{ member.user.last_name }}</h1>
-            <p>{{ member.parsed_id_token.gender|title  }}  <span class="mr-2 ml-2">·</span> Age  {{ member.age }}</p>
+            <h1>{{ member.first_name }} {{ member.last_name }}</h1>
+            <p>{{ member.parsed_id_token.gender|title  }}  <span class="mr-2 ml-2">·</span> Age  {{ member.profile.age }}</p>
         </div>
-        {% with request.resolver_match.url_name as url %}
-            <div class="flex-column nav">
-                {% if member.id %}
-                    <a href="{% url 'member:member-update' member.id %}" class="nav-link {% if url == 'member-update' %}active{% endif %}" role="button">Basic Information</a>
-                {% else %}
-                    <a href="{% url 'member:member-create' %}" class="nav-link {% if url == 'member-create' %}active{% endif %}" role="button">Basic Information</a>
-                {% endif %}
+        {% with request.resolver_match.url_name as url_name %}
+        <div class="flex-column nav">
+            {% if not member.id %}
+            <a href="{% url 'member:member-create' %}"
+                class="nav-link {% if url_name == 'member-create' %}active{% endif %}"
+                role="button">Basic Information</a>
+            {% else %}
+            <a href="{% url 'member:member-profile' member.id %}"
+                class="nav-link {% if url_name == 'member-profile' %}active{% endif %}"
+                role="button">Basic Information</a>
+            <!--
+            <a href="#" data-rb-event-key="memberId" class="nav-link" role="button">Identification</a>
+            -->
+            <div>
+                {# TODO: Change this link to 'member:summary' after url/view is created #}
 
-                {% if member.id %}
-                    <!--
-                    <a href="#" data-rb-event-key="memberId" class="nav-link" role="button">Identification</a>
-                    -->
-                    <div>
-                        {# TODO: Change this link to 'member:summary' after url/view is created #}
-                        
-                        {% if request.user.userprofile.user_type == "M" or request.user != member.user %}
-                        
-                        
-                            <a href="{% url 'member:records' member.id 'list' %}" class="nav-link {% if url == 'data-sources' %}active{% endif %}" role="button">Medical Data</a>
-                        {% endif %}    
-                            <!--
-                            <a href="#" data-rb-event-key="memberNotes" class="nav-link" role="button">Notes</a>
-                            <a href="#" data-rb-event-key="memberLockbox" class="nav-link" role="button">Lockbox</a>
-                            -->
-                            {% if member.user.userprofile.user_type == "M" %}
-                             {% if request.user.userprofile.user_type == "M" %}
-                            <a href="{% url 'member:organizations' member.id %}" data-rb-event-key="memberOrgs" class="nav-link  {% if url == 'organizations' %}active{% endif %}" role="button">Service Providers</a>
-                             {% else %}
-                             
-                             <a href="" data-rb-event-key="memberOrgs" class="nav-link  {% if url == 'organizations' %}active{% endif %}" role="button">Service Providers</a>
-                             <ul class="list--formatted">
-                            {% for o in member.organizations.all %}
-                        
-                                <li class="user-link">
-                                    {{o.name}}
-                                </li>
-                            {% endfor %}
-                            
-                            
-                            
-                              {% endif %} 
-                            {% else %}
-                            <a href="" data-rb-event-key="memberOrgs" class="nav-link  {% if url == 'organizations' %}active{% endif %}" role="button">Organizations</a>
-                             <ul class="list--formatted">
-                            {% for o in request.user.userprofile.id_token_payload.organization_agent %}
-                        
-                                <li class="user-link">
-                                    {{o.name}}
-                                </li>
-                  {% endfor %}
-              </ul>
-                              
-                              
-                              
-                                                      
-                            
-                        {% endif %}
-                    </div>
+                {% if request.user.user_type.value == 'Member' or request.user != member %}
+                <a href="{% url 'member:records' member.id 'list' %}"
+                    class="nav-link {% if url_name == 'data-sources' %}active{% endif %}"
+                    role="button">Medical Data</a>
+                {% endif %}
+                <!--
+                <a href="#" data-rb-event-key="memberNotes" class="nav-link" role="button">Notes</a>
+                <a href="#" data-rb-event-key="memberLockbox" class="nav-link" role="button">Lockbox</a>
+                -->
+                {% if member.user_type == member.UserType.MEMBER %}
+                    <a
+                        href="{% url 'member:organizations' member.id %}"
+                        data-rb-event-key="memberOrgs"
+                        class="nav-link  {% if url_name == 'organizations' %}active{% endif %}"
+                        role="button">Service Providers</a>
+                {% else %}
+                    <a
+                        href="{% url 'member:organizations' member.id %}"
+                        data-rb-event-key="memberOrgs"
+                        class="nav-link  {% if url_name == 'organizations' %}active{% endif %}"
+                        role="button">Organizations</a>
+                    <ul class="list--formatted">
+                        {% for o in request.user.agent_organizations.all %}
+                        <li class="user-link">
+                            {{o.name}}
+                        </li>
+                        {% endfor %}
+                    </ul>
                 {% endif %}
             </div>
+            {% endif %}
+
+            {% if request.user.id == member.id %}
+            <div>
+                <a
+                    href="{% url 'member:delete' member.id %}"
+                    data-rb-event-key="delete_account"
+                    class="nav-link"
+                    role="button">Delete Account</a>
+            </div>
+            {% endif %}
+        </div>
         {% endwith %}
     </div>
 </div>

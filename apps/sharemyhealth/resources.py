@@ -1,11 +1,11 @@
 from django.conf import settings
-
 from requests_oauthlib import OAuth2Session
 from social_django.models import UserSocialAuth
 
 
 class Resource(object):
     """A python wrapper around the social_django.models.UserSocialAuth class."""
+
     model_class = UserSocialAuth
     # The name matches the model_class's 'provider' field value
     name = 'sharemyhealth'
@@ -13,7 +13,9 @@ class Resource(object):
     client_id = settings.SOCIAL_AUTH_SHAREMYHEALTH_KEY
     client_secret = settings.SOCIAL_AUTH_SHAREMYHEALTH_SECRET
     # The URL to use when GETting the data
-    url_for_data = 'https://alpha.sharemy.health/fhir/baseDstu3/{record_type}/?subject=141'
+    url_for_data = (
+        'https://alpha.sharemy.health/fhir/baseDstu3/{record_type}/?subject=141'
+    )
     # The URL to refresh the token
     url_token_refresh = '{}/o/token'.format(settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST)
 
@@ -43,10 +45,7 @@ class Resource(object):
             token_dict['expires_at'] = self.db_object.extra_data['auth_time'] + 3600
 
         # Other data sent as a part of the request
-        extra = {
-            'client_id': self.client_id,
-            'client_secret': self.client_secret
-        }
+        extra = {'client_id': self.client_id, 'client_secret': self.client_secret}
         # The URL for the request
         url = self.url_for_data.format(record_type=record_type)
 
@@ -55,7 +54,7 @@ class Resource(object):
             token=token_dict,
             auto_refresh_url=self.url_token_refresh,
             auto_refresh_kwargs=extra,
-            token_updater=self.token_saver
+            token_updater=self.token_saver,
         )
         response = client.get(url)
         return response

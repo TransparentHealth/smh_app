@@ -1,23 +1,30 @@
+from django.conf import settings
 from django.forms import (
-    BooleanField, CharField, ChoiceField, DateField, EmailField, Form, PasswordInput
+    BooleanField,
+    CharField,
+    ChoiceField,
+    DateField,
+    EmailField,
+    Form,
+    PasswordInput,
 )
-
+from django.utils.safestring import mark_safe
 
 # Choices for a user's gender field in VMI
-GENDER_CHOICES = (
-    ('', 'Unspecified'),
-    ('female', 'Female'),
-    ('male', 'Male'),
-)
-# Choices for when a user verifies the new Member's identity. These also come from VMI.
-IDENTITY_VERIFICATION_CLASSIFICATIONS = (
+GENDER_CHOICES = (('', 'Unspecified'), ('female', 'Female'), ('male', 'Male'))
+# Choices for when a user verifies the new Member's identity. These also
+# come from VMI.
+IAL_EVIDENCE_CLASSIFICATIONS = [
     ('', 'None'),
-    ('ONE-SUPERIOR-OR-STRONG+', 'One Superior or Strong+ pieces of identity evidence'),
-    ('ONE-STRONG-TWO-FAIR', 'One Strong and Two Fair pieces of identity evidence'),
-    ('TWO-STRONG', 'Two Pieces of Strong identity evidence'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'Valid New York State Driver’s License'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'Valid New York State Identification Card'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'New York State Medicaid ID'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'Valid Medicare ID Card'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'Valid US Passport'),
+    ('ONE-SUPERIOR-OR-STRONG+', 'Valid Veteran ID Card'),
+    ('TWO-STRONG', 'Original Birth Certificate and a Social Security Card'),
     ('TRUSTED-REFEREE-VOUCH', 'I am a Trusted Referee Vouching for this person'),
-    ('KBA', 'Knowledged-Based Identity Verification'),
-)
+]
 
 
 class CreateNewMemberAtOrgForm(Form):
@@ -27,10 +34,13 @@ class CreateNewMemberAtOrgForm(Form):
     This form is used in the first step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
+    username = CharField(required=True)
     first_name = CharField(required=True)
     last_name = CharField(required=True)
-    username = CharField(required=True)
-    phone_number = CharField(required=False)
+    email = EmailField(required=False, label="Email (Not required but recommended)")
+    phone_number = CharField(
+        required=False, label="Mobile Phone Number (Not required but recommended)"
+    )
 
 
 class UpdateNewMemberAtOrgBasicInfoForm(Form):
@@ -40,10 +50,14 @@ class UpdateNewMemberAtOrgBasicInfoForm(Form):
     This form is used in the second step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
-    birthdate = DateField(required=True)
+
+    birthdate = DateField(
+        required=True,
+        label="Birth Date (mm/dd/yyyy)",
+        input_formats=['%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d'],
+    )
     gender = ChoiceField(choices=GENDER_CHOICES, required=False)
-    nickname = CharField(required=False)
-    email = EmailField(required=False)
+    nickname = CharField(required=False, label="Nickname (not required)")
 
     def clean(self):
         super().clean()
@@ -59,9 +73,14 @@ class VerifyMemberIdentityForm(Form):
     This form is used in the third step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
-    classification = ChoiceField(choices=IDENTITY_VERIFICATION_CLASSIFICATIONS, required=False)
+
+    classification = ChoiceField(choices=IAL_EVIDENCE_CLASSIFICATIONS, required=False)
     description = CharField(required=False)
-    exp = DateField(required=False, label='Expiration Date')
+    exp = DateField(
+        required=False,
+        label="Expiration Date (mm/dd/yyyy)",
+        input_formats=['%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d'],
+    )
 
     def clean(self):
         super().clean()
@@ -77,6 +96,7 @@ class UpdateNewMemberAtOrgAdditionalInfoForm(Form):
     This form is used in the fourth step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
+
     pass
 
 
@@ -87,9 +107,15 @@ class UpdateNewMemberAtOrgMemberForm(Form):
     This form is used in the last step of the process for an Organization user
     to help a person become a Member at that Organization.
     """
+
+    agree_tos_label = mark_safe(
+        'Accept the <em><a href="%s"target="_blank">Terms of Service</a></em>'
+        % (settings.TOS_URI)
+    )
+
     # Note for BooleanFields: having required=True means the user must check the
-    # checkbox in the template.
-    accept_terms_and_conditions = BooleanField(required=True)
+    # checkbox in the template
+    accept_terms_and_conditions = BooleanField(required=True, label=agree_tos_label)
     give_org_access_to_data = BooleanField(required=True)
     password1 = CharField(widget=PasswordInput, required=True, label="Password")
     password2 = CharField(widget=PasswordInput, required=True, label="Confirm Password")

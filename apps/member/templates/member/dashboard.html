@@ -8,7 +8,7 @@
       <div class="recent-alerts">
         {% include 'member/notifications-list.html' %}
       </div>
-      <h2 class="mb-3 pb-3">Organizations <a href="{% url 'member:organizations' pk=request.user.member.pk %}">Edit</a></h2>
+      <h2 class="mb-3 pb-3">Organizations <a href="{% url 'member:organizations' pk=request.user.pk %}">Edit</a></h2>
       <div class="organization-list">
         {% if organizations %}
           {% for organization in organizations %}
@@ -32,19 +32,19 @@
       </div>
   </div><!-- end of first column -->
   <div class="member-data col-md-6 pr-4 pl-4">
-      <h2 class="mb-3 pb-3">Your Profile <a href="{% url 'member:member-update' pk=request.user.member.pk %}">Edit</a></h2>
+      <h2 class="mb-3 pb-3">Your Profile <a href="{{ settings.REMOTE_ACCOUNT_SETTINGS_ENDPOINT }}" target="_blank" rel="noopener">Edit</a></h2>
       <div class="profile">
-         <a href="{% url 'member:member-update' pk=request.user.member.pk %}">
-                          {% if request.user.userprofile.picture_url %}
-                      <img src="{{ request.user.userprofile.picture_url }}" alt="Account menu icon", class="alert-item__image">
+         <a href="{% url 'member:member-profile' pk=request.user.pk %}">
+                    {% if request.user.profile.picture %}
+                      <img src="{{ request.user.profile.picture }}" alt="Account menu icon", class="alert-item__image">
                     {% else %}
                       <img src="{% static '/images/icons/avatar_default.png' %}" alt="Account menu icon", class="alert-item__image">
                     {% endif %}
         </a>
-      <a href="{% url 'member:member-update' pk=request.user.member.pk %}">
+      <a href="{% url 'member:member-profile' pk=request.user.pk %}">
         <div class="profile-text">
           <div class="title">{{ request.user.first_name }} {{ request.user.last_name }}</div>
-          <div class="age">{{ request.user.member }}</div>
+          <div class="age">{{ request.user }}</div>
         </div>
         </a>
       </div>
@@ -62,14 +62,14 @@
       {% endifequal %}
 
       {% ifequal id_token_payload.ial "2" %}
-      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' pk=request.user.member.pk %}">Identity Verified</a></h2>
+      <h2 class="mb-3 pb-3">Health Records <a href="{% url 'member:records' pk=request.user.pk %}">Identity Verified</a></h2>
         <div class="text">
-      
+
       <!-- Add records to contect when complete -->
       <div class="no-data">
-       
-          <a href="{% url 'member:records' pk=request.user.member.pk %}"><div class="title">View All Records</div></a>
-         
+
+          <a href="{% url 'member:records' pk=request.user.pk %}"><div class="title">View All Records</div></a>
+
         </div>
       </div>
       {% endifequal %}
