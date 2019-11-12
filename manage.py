@@ -5,7 +5,7 @@ import sys
 from smh_app.ssmenv import EC2ParameterStore
 import dotenv
 from getenv import env
-from smh_app.settings import EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES, DEBUG
+from smh_app.settings import EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES # , DEBUG
 
 
 AWS_DEFAULT_REGION = env('AWS_DEFAULT_REGION', 'us-east-1')
