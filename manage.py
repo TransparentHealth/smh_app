@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import logging
+# import logging
 import os
 import sys
 from smh_app.ssmenv import EC2ParameterStore
@@ -16,11 +16,11 @@ PARAMETER_STORE_PATH = "/%s/%s/" % (VPC_ENV, VPC_APP_NAME)
 
 if __name__ == '__main__':
     # (in dev)
-    logging.basicConfig(
-        level=DEBUG and 10 or 20,
-        format="{asctime} {levelname} {name}:{lineno} | {message}",
-        style="{",
-    )
+    # logging.basicConfig(
+    #    level=DEBUG and 10 or 20,
+    #    format="{asctime} {levelname} {name}:{lineno} | {message}",
+    #    style="{",
+    # )
     # Defaulting to .env
     # Get this from .env file from your local development environment or
     # Ansible,
@@ -37,9 +37,9 @@ if __name__ == '__main__':
             ENVIRONMENT_VARIABLE_STRATEGY = EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES
     except Exception as e:
         print("Exception", e)
-    print(
-        'ENVIRONMENT_VARIABLE_STRATEGY in manage.py is', ENVIRONMENT_VARIABLE_STRATEGY
-    )
+    # print(
+    #     'ENVIRONMENT_VARIABLE_STRATEGY in manage.py is', ENVIRONMENT_VARIABLE_STRATEGY
+    # )
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'smh_app.settings')
     from django.core.management import execute_from_command_line
 
