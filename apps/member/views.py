@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 class SelfOrApprovedOrgMixin(UserPassesTestMixin):
+
     def get_login_url(self):
         """Org agents can request access, others go home (login or member:dashboard)."""
         if (
@@ -102,7 +103,8 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context['data'] = data
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
-            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+            delete_memoized(fetch_member_data, context[
+                            'member'], 'sharemyhealth')
 
         # put the current resources in the summary tab.  We will not show the
         # other options in this tab.
@@ -137,7 +139,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
     default_resource_name = 'sharemyhealth'
     default_record_type = 'Condition'
 
-    def get_context_data(self, **kwargs): 
+    def get_context_data(self, **kwargs):
         """Add records data into the context."""
         context = super().get_context_data(**kwargs)
         context['member'] = self.get_member()
@@ -156,11 +158,13 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         logging.debug(
             "fhir_data records: %r",
-            fhir_data and fhir_data.get('entry') and len(fhir_data.get('entry')),
+            fhir_data and fhir_data.get(
+                'entry') and len(fhir_data.get('entry')),
         )
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
-            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+            delete_memoized(fetch_member_data, context[
+                            'member'], 'sharemyhealth')
 
         if resource_name == 'list':
             conditions_data = get_resource_data(fhir_data, 'Condition')
@@ -341,8 +345,10 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 keys=['id', 'assertedDate', 'code']
                 + ['clinicalStatus', 'verificationStatus', 'reaction'],
             )
-            headers = ['Asserted', 'Code', 'Status', 'Verification', 'Reaction']
-            default_timestamp = datetime(1, 1, 1, tzinfo=timezone(timedelta(0)))
+            headers = ['Asserted', 'Code', 'Status',
+                       'Verification', 'Reaction']
+            default_timestamp = datetime(
+                1, 1, 1, tzinfo=timezone(timedelta(0)))
             all_records = sorted(
                 [
                     {
@@ -404,10 +410,12 @@ class PrescriptionDetailModalView(
             context['data'] = fhir_data
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
-            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+            delete_memoized(fetch_member_data, context[
+                            'member'], 'sharemyhealth')
 
         prescriptions = get_prescriptions(
-            fhir_data, id=context['resource_id'], incl_practitioners=True, json=True
+            fhir_data, id=context[
+                'resource_id'], incl_practitioners=True, json=True
         )
         if not prescriptions:
             return Http404()
@@ -461,17 +469,20 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context['data'] = fhir_data
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
-            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+            delete_memoized(fetch_member_data, context[
+                            'member'], 'sharemyhealth')
 
         encounters = get_resource_data(
             fhir_data, 'Encounter', constructor=Encounter.from_data
         )
-        encounters.sort(key=lambda e: e.period.start, reverse=True)  # latest ones first
+        encounters.sort(key=lambda e: e.period.start,
+                        reverse=True)  # latest ones first
         practitioners = get_resource_data(
             fhir_data, 'Practitioner', constructor=Practitioner.from_data
         )
         for index, practitioner in enumerate(practitioners):
-            practitioner.last_encounter = practitioner.next_encounter(encounters)
+            practitioner.last_encounter = practitioner.next_encounter(
+                encounters)
             practitioners[index] = practitioner
 
         practitioners.sort(
@@ -502,7 +513,8 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
         fhir_data = data.get('fhir_data')
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
-            delete_memoized(fetch_member_data, context['member'], 'sharemyhealth')
+            delete_memoized(fetch_member_data, context[
+                            'member'], 'sharemyhealth')
 
         context['practitioner'] = next(
             iter(
@@ -596,9 +608,12 @@ class OrganizationsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView
         context['member'] = self.get_member()
         orgs = Organization.objects.all().order_by('name')
         resources = ResourceRequest.objects.filter(member=context['member'])
-        current = [r.organization for r in resources if r.status == REQUEST_APPROVED]
-        requested = [r.organization for r in resources if r.status == REQUEST_REQUESTED]
-        available = [org for org in orgs if org not in current and org not in requested]
+        current = [r.organization for r in resources if r.status ==
+                   REQUEST_APPROVED]
+        requested = [
+            r.organization for r in resources if r.status == REQUEST_REQUESTED]
+        available = [
+            org for org in orgs if org not in current and org not in requested]
         context['organizations'] = {
             'current': current,
             'requested': requested,
@@ -615,7 +630,8 @@ class RequestAccessView(LoginRequiredMixin, TemplateView):
         context['member'] = get_object_or_404(
             get_user_model().objects.filter(pk=self.kwargs['pk'])
         )
-        member_requests = ResourceRequest.objects.filter(member=context['member'])
+        member_requests = ResourceRequest.objects.filter(
+            member=context['member'])
         member_connected_orgs = [
             rr.organization for rr in member_requests if rr.status == REQUEST_APPROVED
         ]
@@ -797,7 +813,8 @@ def resource_request_response(request):
     if form.is_valid() and (
         form.cleaned_data['member'] == request.user
         or (
-            form.cleaned_data['organization'] in request.user.agent_organizations.all()
+            form.cleaned_data[
+                'organization'] in request.user.agent_organizations.all()
             and form.cleaned_data['status'] in [REQUEST_DENIED, REQUEST_REQUESTED]
         )
     ):
@@ -853,7 +870,8 @@ def refresh_member_data(request, pk):
         fetch_member_data(member, 'sharemyhealth', refresh=True)
     else:
         print(
-            "refresh not allowed: request.user %r != member %r" % (request.user, member)
+            "refresh not allowed: request.user %r != member %r" % (
+                request.user, member)
         )
 
     if request.POST.get('next', None):
