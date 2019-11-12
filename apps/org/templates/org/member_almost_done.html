@@ -6,7 +6,14 @@
     <div class="row">
         <div class="col">
             <h1>
-                <span>You're almost done, <em>{{ member }}</em>! Click on the button below to complete setup on your device</span>
+                
+
+                    <span>Attention agent for {{ organization }}: Allow <em>{{ member.first_name }} {{ member.last_name }}</em> to complete his or her
+                   account by having them scan the QR code with their device or hand them the laptop/tablet to complete the form.
+                   </span>
+                
+                
+                
                 <button type="button" class="close-btn" aria-label="Close">&times;</button>
             </h1>
         </div>
@@ -18,7 +25,7 @@
     </div>
     <div class="row my-2">
         <div class="col">
-            <a class="btn btn-primary" href="{% url 'logout' %}?next={{ url_to_set_password }}" target="_blank" rel="noopener noreferrer">Click to Complete</a>
+            <a class="btn btn-primary" href="{% url 'logout' %}?next={{ url_to_set_password }}" target="_blank" rel="noopener noreferrer">Click to Allow {{ member.first_name }} {{ member.last_name }} to complete account setup</a>
         </div>
     </div>
 </div>

@@ -4,7 +4,9 @@
 {% block content %}
 
 <h1>
-    <span>Congratulations, <em>{{ member }}</em>! you have completed your account creation at <em>{{ organization }}</em></span>
+    <span>Congratulations, <em>{{ member.first_name }} {{ member.last_name }}</em>! You have completed your account creation at <em>{{ organization }}</em>.
+    Login to connect your health data to your account.
+    </span>
     <button type="button" class="close-btn" aria-label="Close">&times;</button>
 </h1>
 

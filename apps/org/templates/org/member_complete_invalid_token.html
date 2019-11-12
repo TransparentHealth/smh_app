@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<h1>{{ member }}, the token used was invalid, possibly because it has already been used.</h1>
+<h1>{{ member.first_name }} {{ member.last_name }}, the token used was invalid, possibly because it has already been used.</h1>
 
 <p>Please request another token to complete your account creation at {{ organization }}.</p>
 <a class="btn btn-primary" href="{% url 'org:dashboard' %}" target="_parent">Go to Dashboard</a>

@@ -3,7 +3,7 @@
 
 {% block content %}
 <h1>
-    <span>Fill in the following additional info for new member <em>{{ member }}</em> at <em>{{ organization }}</em></span>
+    <span>Fill in the following additional info for new member <em>{{ member.first_name }} {{ member.last_name }}</em> at <em>{{ organization }}</em></span>
     <button type="button" class="close-btn" aria-label="Close">&times;</button>
 </h1>
 
