@@ -18,4 +18,11 @@ def save_profile(backend, user, response, *args, **kwargs):
             id_token = response.get('id_token')
             id_token_payload = JWT().unpack(id_token).payload()
             profile.subject = id_token_payload.get('sub')
+            profile.preferred_username = id_token_payload.get(
+                'preferred_username')
             profile.save()
+
+            profile.user.first_name = id_token_payload.get('given_name')
+            profile.user.last_name = id_token_payload.get('family_name')
+            profile.user.email = id_token_payload.get('email')
+            profile.user.save()
