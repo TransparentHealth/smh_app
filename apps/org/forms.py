@@ -15,7 +15,6 @@ GENDER_CHOICES = (('', 'Unspecified'), ('female', 'Female'), ('male', 'Male'))
 # Choices for when a user verifies the new Member's identity. These also
 # come from VMI.
 IAL_EVIDENCE_CLASSIFICATIONS = [
-    ('', 'None'),
     ('ONE-SUPERIOR-OR-STRONG+', 'Valid New York State Driver’s License'),
     ('ONE-SUPERIOR-OR-STRONG+', 'Valid New York State Identification Card'),
     ('ONE-SUPERIOR-OR-STRONG+', 'New York State Medicaid ID'),
@@ -56,7 +55,7 @@ class UpdateNewMemberAtOrgBasicInfoForm(Form):
         label="Birth Date (mm/dd/yyyy)",
         input_formats=['%m/%d/%Y', '%m/%d/%y', '%Y-%m-%d'],
     )
-    gender = ChoiceField(choices=GENDER_CHOICES, required=False)
+    gender = ChoiceField(choices=GENDER_CHOICES, required=False, label="Sex")
     nickname = CharField(required=False, label="Nickname (not required)")
 
     def clean(self):
@@ -74,7 +73,7 @@ class VerifyMemberIdentityForm(Form):
     to help a person become a Member at that Organization.
     """
 
-    classification = ChoiceField(choices=IAL_EVIDENCE_CLASSIFICATIONS, required=False)
+    classification = ChoiceField(choices=IAL_EVIDENCE_CLASSIFICATIONS, required=True)
     description = CharField(required=False)
     exp = DateField(
         required=False,

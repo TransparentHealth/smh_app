@@ -28,6 +28,12 @@
                         <dd class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.user.errors }}</dd>
                     {% endif %}
 
+                    <dt>Username:</dt>
+                    <dd>{{ member.profile.id_token_payload.preferred_username }}</dd>
+                    
+                    <dt>Account Number:</dt>
+                    <dd>{{ member.profile.id_token_payload.sub }}</dd>
+
                     {% if member.profile.sub %}
                     <dt>Permanent Link:</dt>
                     <dd>
@@ -51,14 +57,14 @@
                         <span class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.phone_number.errors }}</span>
                     </dd>
 
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.phone_number|default:"" }}</dd>
+                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.phone_number|default:"-" }}</dd>
 
                     <dt>Address:</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
                         {{ form.address }}
                         <span class="form_element invalid-feedback {% if member.id %}hide{% endif %}">{{ form.address.errors }}</span>
                     </dd>
-                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.address|default:"" }}</dd>
+                    <dd class="read_only_element {% if not member.id %}hide{% endif %}">{{ member.address|default:"-" }}</dd>
 
                     <dt class="read_only_element {% if not member.id %}hide{% endif %}">Emergency Contact:</dt>
                     <dd class="form_element {% if member.id %}hide{% endif %}">
