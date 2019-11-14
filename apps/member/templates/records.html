@@ -26,6 +26,7 @@
                 sets record.number and link to detail view specific to
                 to the patient here.
             -->
+            
             {% if all_records %}
                 <!-- showing the list of all resources here -->
                 <div class="tile-flex mt-5">
@@ -93,7 +94,7 @@
                 </div>
             {% endif %}
         </div>
-
+{{data}}
         {% if settings.DEBUG and data.error %}
         <div class="debug-panel">
             <p class="alert alert-danger">{{ data.error }}</p>
