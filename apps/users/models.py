@@ -41,7 +41,8 @@ def profile(self):
     return self.userprofile
 
 
-# Make user_type a property of the User model, because that is where it is tested
+# Make user_type a property of the User model, because that is where it is
+# tested
 def user_type(self):
     if self.agent_organizations.exists():
         return UserType.ORG_AGENT
@@ -60,14 +61,16 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     # subject = VMI social_auth id_token['sub']
-    subject = models.CharField(max_length=64, null=True, blank=True, db_index=True)
-
-    # Most of the UserProfile data is stored in the VMI socialauth id_token, but these are not
-    emergency_contact_name = models.CharField(null=True, blank=True, max_length=128)
+    subject = models.CharField(
+        max_length=64, null=True, blank=True, db_index=True)
+    # Most of the UserProfile data is stored in the VMI socialauth id_token,
+    # but these are not
+    emergency_contact_name = models.CharField(
+        null=True, blank=True, max_length=128)
     emergency_contact_number = PhoneNumberField(null=True, blank=True)
 
     def __str__(self):
-        return "%s %s (%s)" % (self.user.first_name, self.user.last_name, self.subject) 
+        return "%s %s (%s)" % (self.user.first_name, self.user.last_name, self.subject)
 
     __html__ = __str__
 
@@ -131,7 +134,8 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     instance.profile.save()
 
 
-# This is still tied to UserProfile (rather than User) for historical migration reasons.
+# This is still tied to UserProfile (rather than User) for historical
+# migration reasons.
 @receiver(post_save, sender=UserProfile)
 def create_user_profile_connect_to_hixny_notification(
     sender, instance, created, **kwargs
@@ -178,10 +182,12 @@ def create_user_set_recovery_passphrase_notification(
         if 'Notification' in kwargs:
             Notification = kwargs['Notification']
         else:
-            Notification = import_module('apps.notifications.models').Notification
+            Notification = import_module(
+                'apps.notifications.models').Notification
 
         if 'db_alias' in kwargs:
-            Notification_objects = Notification.objects.using(kwargs['db_alias'])
+            Notification_objects = Notification.objects.using(kwargs[
+                                                              'db_alias'])
         else:
             Notification_objects = Notification.objects
 
