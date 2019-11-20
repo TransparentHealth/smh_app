@@ -135,6 +135,10 @@ window.addEventListener('DOMContentLoaded', () => {
 	function closeMemberModal() {
 		memberModal.classList.remove('show-modal')
 	}
-	createAccountBtn.onclick = openMemberModal
-	backdrop.onclick = closeMemberModal
+	if (createAccountBtn) {
+		createAccountBtn.onclick = openMemberModal
+	}
+	if (backdrop) {
+		backdrop.onclick = closeMemberModal
+	}
 })
