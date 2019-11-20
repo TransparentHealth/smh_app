@@ -333,11 +333,11 @@ ORGANIZATION_TITLE = env('DJANGO_ORGANIZATION_TITLE',
 ORGANIZATION_URI = env('DJANGO_ORGANIZATION_URI', 'https://abhealth.us')
 
 POLICY_URI = env('DJANGO_POLICY_URI',
-                 'http://sharemy.health/privacy-policy1.0.html')
+                 'http://sharemy.health/privacy-policy-1.0.html')
 POLICY_TITLE = env('DJANGO_POLICY_TITLE', 'Privacy Policy')
 TOS_TITLE = env('DJANGO_TOS_TITLE', 'Terms of Service')
 TOS_URI = env('DJANGO_TOS_URI',
-              'http://sharemy.health/terms-of-service1.0.html')
+              'http://sharemy.health/terms-of-service-1.0.html')
 
 CONTACT_EMAIL = env('DJANGO_CONTACT_EMAIL', 'sharemyhealth@abhealth.us')
 TAG_LINE = env(
