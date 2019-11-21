@@ -315,7 +315,6 @@ MEMBER_DATA_RECORD_TYPE_MAPPING = {
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'sitestatic'),
-    os.path.join(BASE_DIR, 'assets/dist'),
 ]
 
 STATIC_URL = '/static/'
