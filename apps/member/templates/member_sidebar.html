@@ -43,26 +43,13 @@
                 <a href="#" data-rb-event-key="memberNotes" class="nav-link" role="button">Notes</a>
                 <a href="#" data-rb-event-key="memberLockbox" class="nav-link" role="button">Lockbox</a>
                 -->
-                {% if member.user_type == member.UserType.MEMBER %}
+                
                     <a
                         href="{% url 'member:organizations' member.id %}"
                         data-rb-event-key="memberOrgs"
                         class="nav-link  {% if url_name == 'organizations' %}active{% endif %}"
                         role="button">Service Providers</a>
-                {% else %}
-                    <a
-                        href="{% url 'member:organizations' member.id %}"
-                        data-rb-event-key="memberOrgs"
-                        class="nav-link  {% if url_name == 'organizations' %}active{% endif %}"
-                        role="button">Organizations</a>
-                    <ul class="list--formatted">
-                        {% for o in request.user.agent_organizations.all %}
-                        <li class="user-link">
-                            {{o.name}}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+              
             </div>
             {% endif %}
 
