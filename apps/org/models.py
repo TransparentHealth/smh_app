@@ -244,7 +244,8 @@ def create_or_update_resource_request_notifications(
                     'method': 'get',
                 }
             ],
-            message="<b>{instance.member.profile.name}</b> granted {instance.organization.name} access to their health records",
+            message="""<b>{instance.member.profile.name}</b> granted
+            {instance.organization.name} access to their health records""",
             picture_url=instance.member.profile.picture_url,
         )
         notification.created = instance.updated
