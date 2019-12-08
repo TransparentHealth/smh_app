@@ -5,13 +5,15 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.auth.tokens import default_token_generator as token_generator
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, reverse
+from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
 from django.views.generic.base import TemplateView
+from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import FormView
 from social_django.models import UserSocialAuth
 
