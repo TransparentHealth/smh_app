@@ -6,16 +6,13 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator as token_generator
-from django.core.exceptions import ImproperlyConfigured
-from django.http import Http404, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, reverse
-from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
 from django.views.generic.base import TemplateView
-from django.views.generic.detail import BaseDetailView
-from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
+from django.views.generic.edit import FormView
 from social_django.models import UserSocialAuth
 
 from apps.notifications.models import Notification
@@ -37,7 +34,6 @@ from .models import (
     ResourceGrant,
     ResourceRequest,
 )
-from .tokens import default_token_generator
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -60,66 +56,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         ]
 
         return context
-
-
-class CreateOrganizationView(LoginRequiredMixin, CreateView):
-    model = Organization
-    fields = ['name', 'users']
-    template_name = 'org/organization.html'
-    success_url = reverse_lazy('org:dashboard')
-
-    def form_valid(self, form):
-        """Override this method to also associate the creator with the new Organization."""
-        # Now that the form has passed validation, save the object, then add
-        # the request.user to its users.
-        response = super().form_valid(form)
-        form.instance.agents.add(self.request.user)
-        return response
-
-
-class UpdateOrganizationView(LoginRequiredMixin, UpdateView):
-    model = Organization
-    fields = ['name', 'users']
-    template_name = 'org/organization.html'
-    success_url = reverse_lazy('org:dashboard')
-
-    def get_queryset(self):
-        """A user may only edit Organizations that they are agents of."""
-        qs = super().get_queryset()
-        return qs.filter(agents=self.request.user)
-
-
-class DeleteOrganizationView(LoginRequiredMixin, DeleteView):
-    model = Organization
-    success_url = reverse_lazy('organization-list')
-    template_name = 'org/organization_confirm_delete.html'
-    success_url = reverse_lazy('org:dashboard')
-
-    def get_queryset(self):
-        """A user may only delete Organizations that they are agents of."""
-        qs = super().get_queryset()
-        return qs.filter(agents=self.request.user)
-
-
-class JoinOrganizationView(LoginRequiredMixin, BaseDetailView):
-    model = Organization
-    success_url = reverse_lazy('org:dashboard')
-    token_kwarg = "token"
-    token_generator = default_token_generator
-
-    def get_success_url(self):
-        """Return the URL to redirect to after processing a valid form."""
-        if not self.success_url:
-            raise ImproperlyConfigured(
-                "No URL to redirect to. Provide a success_url.")
-        return str(self.success_url)  # success_url may be lazy
-
-    def render_to_response(self, context):
-        tkn = self.kwargs.get(self.token_kwarg)
-        if self.token_generator.check_token(self.object, tkn):
-            self.object.agents.add(self.request.user)
-            return HttpResponseRedirect(self.get_success_url())
-        raise Http404()
 
 
 class OrgCreateMemberMixin:

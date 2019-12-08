@@ -40,14 +40,6 @@ class Organization(CreatedUpdatedModel, models.Model):
         settings.AUTH_USER_MODEL, blank=True, related_name="member_organizations"
     )
 
-    # users field DEPRECATED: use Organization.agents field instead
-    users = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        blank=True,
-        verbose_name="Agents",
-        related_name="organizations",
-    )
-
     phone = PhoneNumberField(blank=True)
     street_line_1 = models.CharField(max_length=255, blank=True)
     street_line_2 = models.CharField(max_length=255, blank=True)
@@ -252,7 +244,8 @@ def create_or_update_resource_request_notifications(
                     'method': 'get',
                 }
             ],
-            message="<b>{instance.member.profile.name}</b> granted {instance.organization.name} access to their health records",
+            message="""<b>{instance.member.profile.name}</b> granted
+            {instance.organization.name} access to their health records""",
             picture_url=instance.member.profile.picture_url,
         )
         notification.created = instance.updated
@@ -269,7 +262,8 @@ def create_or_update_resource_request_notifications(
             notify=instance.organization,
             actor=instance.member,
             instance=instance,
-            message="<b>{instance.member.profile.name}</b> denied {instance.organization.name} access to their health records",
+            message="""<b>{instance.member.profile.name}</b> revoked
+            or denied {instance.organization.name} access to their health records""",
             picture_url=instance.member.profile.picture_url,
         )
         notification.created = instance.updated
