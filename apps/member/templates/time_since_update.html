@@ -1,11 +1,11 @@
 <div class="row mt-1">
-    <div class="col alert alert-warning">The health data was last updated at {{ updated_at }}
-    ({{ time_since_update.days }} days ago.)
-    {% if time_since_update.days > 0 %}
+    <div class="col alert alert-warning">
+        The health data was last updated at {{ updated_at }}
+        
         {% if member != request.user %}
-        Please ask the member to login and refresh it.
+        If the health information needs to be updated, please request the member to login into Share My Health
         {% endif %}
-    {% endif %}
+        
     </div>
     {% if member == request.user  and  time_since_update.days > 0 %}
     <div class="col-auto">
