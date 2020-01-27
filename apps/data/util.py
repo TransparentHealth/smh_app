@@ -21,5 +21,5 @@ def parse_timestamp(timestamp):
                     'TIMEZONE': settings.TIME_ZONE,
                 },
             )
-            dt = timestamp
+
         return dt
