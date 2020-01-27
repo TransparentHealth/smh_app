@@ -94,6 +94,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
+        logging.log(1,data.get('updated_at'))
         if context['updated_at']:
             context['time_since_update'] = (
                 datetime.now(timezone.utc) - context['updated_at']

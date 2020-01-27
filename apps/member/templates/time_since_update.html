@@ -1,8 +1,13 @@
 <div class="row mt-1">
     <div class="col alert alert-warning">
+        {% if updated_at != None %}
         The health data was last updated at {{ updated_at }}
+        {% else %}
+        Health data has not been updated yet
+        {% endif %}
         
         {% if member != request.user %}
+        
         If the health information needs to be updated, please request the member to login into Share My Health
         {% endif %}
         
