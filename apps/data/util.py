@@ -21,5 +21,4 @@ def parse_timestamp(timestamp):
                     'TIMEZONE': settings.TIME_ZONE,
                 },
             )
-
         return dt
