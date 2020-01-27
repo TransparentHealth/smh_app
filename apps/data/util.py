@@ -11,8 +11,6 @@ def parse_timestamp(timestamp):
     if timestamp is not None:
         try:
             # fast but fragile
-            print(timestamp)
-            
             dt = datetime.strptime(timestamp, '%Y-%m-%d T%H:%M:%S%z').strftime('%a %d/%m/%Y %H:%M:%S')
         except ValueError:
             # slow but reliable
@@ -23,4 +21,5 @@ def parse_timestamp(timestamp):
                     'TIMEZONE': settings.TIME_ZONE,
                 },
             )
+            dt = timestamp
         return dt
