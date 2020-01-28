@@ -5,14 +5,14 @@
         <p id="message1"></p>
         {% if updated_at != None %}
         <script type="text/javascript">
-            console.log(document.getElementById("timestamp"));
-            var refreshDate = new Date(document.getElementById("updated_at")).toLocaleString();
+            console.log(document.getElementById("timestamp").innerText);
+            var refreshDate = new Date(document.getElementById("timestamp").innerText).toLocaleString();
             try {
                 if (refreshDate != "Invalid Date") {
                     document.getElementById("message1").innerHTML += "Health information was last updated " + refreshDate;
                 }
                 else {
-                    document.getElementById("message1").innerHTML += "Health information was last updated " + document.getElementById("updated_at");
+                    document.getElementById("message1").innerHTML += "Health information was last updated " + document.getElementById("updated_at").innerText;
                     console.log(document.getElementById("updated_at"));
                 }
             }
