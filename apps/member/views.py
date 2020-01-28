@@ -155,7 +155,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context['time_since_update'] = (
                 datetime.now(timezone.utc) - context['updated_at']
             )
-            context['updated_at'] = context['updated_at'].timestamp()
+            
         fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
