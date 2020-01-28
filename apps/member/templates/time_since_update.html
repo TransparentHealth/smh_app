@@ -5,6 +5,7 @@
         <p id="message1"></p>
         {% if updated_at != None %}
         <script type="text/javascript">
+            console.log("script called");
             try {
                 document.getElementById("message1").innerHTML += "Health information was last updated " + new Date(document.getElementById("timestamp")).toLocaleString();
             }
