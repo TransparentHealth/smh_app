@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.utils import timezone
 
 import dateparser
 from django.conf import settings
@@ -18,7 +19,8 @@ def parse_timestamp(timestamp):
                 timestamp,
                 settings={
                     'RETURN_AS_TIMEZONE_AWARE': True,
-                    'TIMEZONE': settings.TIME_ZONE,
+            #         'TIMEZONE': settings.TIME_ZONE,
                 },
             )
+            
         return dt
