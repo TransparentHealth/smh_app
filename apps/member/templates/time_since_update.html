@@ -1,17 +1,18 @@
 <div class="row mt-1">
-    <p id="timestamp" hidden="hidden">{{ updated_at }}</p>
-    <p id="teststamp" hidden="hidden">{{ timestamp }}</p>
+    <p id="updated_at" hidden="hidden">{{ updated_at }}</p>
+    <p id="timestamp" hidden="hidden">{{ timestamp }}</p>
     <div class="col alert alert-warning">
         <p id="message1"></p>
         {% if updated_at != None %}
         <script type="text/javascript">
-            console.log(document.getElementById("teststamp"));
-            try {
-                document.getElementById("message1").innerHTML += "Health information was last updated " + new Date(document.getElementById("timestamp")).toLocaleString();
+            console.log(document.getElementById("timestamp"));
+            var refreshDate = new Date(document.getElementById("updated_at")).toLocaleString();
+            if (refreshDate != "Invalid Date") {
+                document.getElementById("message1").innerHTML += "Health information was last updated " + refreshDate;
             }
-            catch {
-                document.getElementById("message1").innerHTML += "Health information was last updated " + document.getElementById("timestamp");
-                console.log(document.getElementById("timestamp"));
+            else {
+                document.getElementById("message1").innerHTML += "Health information was last updated " + document.getElementById("updated_at");
+                console.log(document.getElementById("updated_at"));
             }
         </script> 
         

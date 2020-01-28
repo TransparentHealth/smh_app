@@ -150,10 +150,12 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
+        context['timestamp'] = data.get('updated_at', "No timestamp")
         if context['updated_at']:
             context['time_since_update'] = (
                 datetime.now(timezone.utc) - context['updated_at']
             )
+            context['updated_at'] = context['updated_at'].timestamp()
         fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
