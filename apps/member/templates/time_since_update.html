@@ -7,12 +7,17 @@
         <script type="text/javascript">
             console.log(document.getElementById("timestamp"));
             var refreshDate = new Date(document.getElementById("updated_at")).toLocaleString();
-            if (refreshDate != "Invalid Date") {
-                document.getElementById("message1").innerHTML += "Health information was last updated " + refreshDate;
+            try {
+                if (refreshDate != "Invalid Date") {
+                    document.getElementById("message1").innerHTML += "Health information was last updated " + refreshDate;
+                }
+                else {
+                    document.getElementById("message1").innerHTML += "Health information was last updated " + document.getElementById("updated_at");
+                    console.log(document.getElementById("updated_at"));
+                }
             }
-            else {
-                document.getElementById("message1").innerHTML += "Health information was last updated " + document.getElementById("updated_at");
-                console.log(document.getElementById("updated_at"));
+            catch {
+                console.log("error parsing date");
             }
         </script> 
         
