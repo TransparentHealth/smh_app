@@ -19,7 +19,7 @@ def parse_timestamp(timestamp):
                 timestamp,
                 settings={
                     'RETURN_AS_TIMEZONE_AWARE': True,
-            #         'TIMEZONE': settings.TIME_ZONE,
+                    'TIMEZONE': settings.TIME_ZONE,
                 },
             )
             
