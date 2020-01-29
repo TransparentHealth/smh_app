@@ -1,5 +1,4 @@
 from datetime import datetime
-from django.utils import timezone
 
 import dateparser
 from django.conf import settings
