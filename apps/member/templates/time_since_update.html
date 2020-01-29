@@ -29,7 +29,7 @@
         {% endif %}
 
     </div>
-    {% if member == request.user %}
+    <!--{% if member == request.user %}
     <div class="col-auto">
         <form method="post" action="{% url 'member:refresh-data' member.id %}">
             {% csrf_token %}
@@ -37,6 +37,6 @@
             <input class="btn btn-primary" type="submit" value="Update Now"></input>
         </form>
     </div>
-    {% endif %}
+    {% endif %}-->
 
 </div>
