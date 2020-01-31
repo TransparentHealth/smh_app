@@ -1,18 +1,35 @@
 <div class="row mt-1">
+    <p id="updated_at" hidden="hidden">{{ updated_at }}</p>
+    <p id="timestamp" hidden="hidden">{{ timestamp }}</p>
     <div class="col alert alert-warning">
+        <p id="message1"></p>
         {% if updated_at != None %}
-        The health data was last updated at {{ updated_at }}
+        <script type="text/javascript">
+            var refreshDate = new Date(document.getElementById("timestamp").innerText).toLocaleString();
+            try {
+                if (refreshDate != "Invalid Date") {
+                    document.getElementById("message1").innerHTML += "Health information was last updated " + refreshDate;
+                }
+                else {
+                    document.getElementById("message1").innerHTML += "Health information was last updated " + document.getElementById("updated_at").innerText;
+                }
+            }
+            catch {
+                console.log("error parsing date");
+            }
+        </script> 
+        
         {% else %}
         Health data has not been updated yet
         {% endif %}
-        
+
         {% if member != request.user %}
-        
+
         If the health information needs to be updated, please request the member to login into Share My Health
         {% endif %}
-        
+
     </div>
-    {% if member == request.user  and  time_since_update.days > 0 %}
+    <!--{% if member == request.user %}
     <div class="col-auto">
         <form method="post" action="{% url 'member:refresh-data' member.id %}">
             {% csrf_token %}
@@ -20,6 +37,6 @@
             <input class="btn btn-primary" type="submit" value="Update Now"></input>
         </form>
     </div>
-    {% endif %}
+    {% endif %}-->
 
 </div>
