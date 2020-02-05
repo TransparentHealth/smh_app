@@ -217,7 +217,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                     for condition in conditions_data
                 ],
                 key=lambda diagnosis: (
-                    ['active', 'recurrence', 'inactive', 'remission', 'resolved'].index(
+                    ['active', 'recurrence', 'inactive', 'remission', 'resolved', ''].index(
                         diagnosis['Status']
                     ),
                     diagnosis['Diagnosis'],
