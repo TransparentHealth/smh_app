@@ -112,3 +112,5 @@ collectedstatic
 coverage
 testdata
 src
+.vs
+/.vs
