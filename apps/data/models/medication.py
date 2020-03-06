@@ -1,8 +1,11 @@
+import logging
 from dataclasses import dataclass, field
 from typing import List
 
 from .model import DataModel
 from .types import CodeableConcept, Identifier, Period, Quantity, Reference
+
+logger = logging.getLogger('smh_debug')
 
 
 @dataclass
@@ -84,19 +87,22 @@ class MedicationStatement(DataModel):
 
     def __str__(self):
         """Provide a string representation that focuses on the key distinguishing data"""
-        return (
-            f"MedicationStatement(medication='{self.medicationReference.display}'"
-            + f", subject='{self.subject.display}'"
-            + f", effectivePeriod=('{self.effectivePeriod.start}', '{self.effectivePeriod.end}'"
-            + f", dosage=["
-            + ', '.join(
-                [
-                    f"'{dose.doseQuantity.value} {dose.doseQuantity.unit}'"
-                    for dose in self.dosage
-                ]
-            )
-            + '])'
-        )
+        try:
+            return (f"MedicationStatement(medication='{self.medicationReference.display}'"
+                    + f", subject='{self.subject.display}'"
+                    + f", effectivePeriod=('{self.effectivePeriod.start}', '{self.effectivePeriod.end}'"
+                    + f", dosage=["
+                    + ', '.join(
+                        [
+                            f"'{dose.doseQuantity.value} {dose.doseQuantity.unit}'"
+                            for dose in self.dosage
+                        ]
+                    ) + '])'
+                    )
+        except:
+            logger.debug("MedicationStatement Conversion Dosage error[%s]: %s" % (__context__,
+                                                                                  self.dosage))
+            return "DOSAGE ERROR"
 
     CONVERTERS = dict(
         identifier=[lambda value: [Identifier.from_data(val) for val in value]],
