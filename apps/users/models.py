@@ -122,9 +122,9 @@ class UserProfile(models.Model):
         except ValueError:
             assert born.day == 29 and born.month == 2
             if LEAP_DAY_ANNIVERSARY_FEB28:
-                anniversary = datetime.date(today.year, 2, 28)
+                anniversary = date(today.year, 2, 28)
             else:
-                anniversary = datetime.date(today.year, 3, 1)
+                anniversary = date(today.year, 3, 1)
         if today < anniversary:
             age -= 1
         return age
