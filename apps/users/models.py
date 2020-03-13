@@ -15,6 +15,8 @@ from apps.data.util import parse_timestamp
 
 from .utils import get_id_token_payload
 
+LEAP_DAY_ANNIVERSARY_FEB28 = True
+
 
 class UserType(Enum):
     OTHER = 'Other'
@@ -93,18 +95,39 @@ class UserProfile(models.Model):
 
     @property
     def age(self):
+        """
+        calculate age from  date of birth and today()
+        :return: age
+        """
+        # try:
+        #     born = self.birthdate
+        #     if born is None:
+        #         return "Unknown"
+        #     today = date.today()
+        #     age = today.year - born.year
+        #     if age < 0:
+        #         return "Unknown"
+        #     else:
+        #         return age
+        # except Exception:
+        #     return "Unknown"
         try:
             born = self.birthdate
-            if born is None:
-                return "Unknown"
-            today = date.today()
-            age = today.year - born.year
-            if age < 0:
-                return "Unknown"
-            else:
-                return age
         except Exception:
             return "Unknown"
+        today = date.today()
+        age = today.year - born.year
+        try:
+            anniversary = born.replace(year=today.year)
+        except ValueError:
+            assert born.day == 29 and born.month == 2
+            if LEAP_DAY_ANNIVERSARY_FEB28:
+                anniversary = datetime.date(today.year, 2, 28)
+            else:
+                anniversary = datetime.date(today.year, 3, 1)
+        if today < anniversary:
+            age -= 1
+        return age
 
     @property
     def birthdate(self):
