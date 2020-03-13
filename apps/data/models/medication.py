@@ -99,9 +99,8 @@ class MedicationStatement(DataModel):
                         ]
                     ) + '])'
                     )
-        except:
-            logger.debug("MedicationStatement Conversion Dosage error[%s]: %s" % (__context__,
-                                                                                  self.dosage))
+        except Exception:
+            logger.debug("MedicationStatement Conversion Dosage error[%s]: %s" % self.dosage, exec_info=True)
             return "DOSAGE ERROR"
 
     CONVERTERS = dict(
