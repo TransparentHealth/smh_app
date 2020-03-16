@@ -43,6 +43,15 @@ from .utils import (
     get_prescriptions,
     get_resource_data,
 )
+from .fhir_requests import (
+    get_converted_fhir_resource,
+    get_lab_results,
+    get_vital_signs,
+    RESOURCES,
+    VITALSIGNS
+)
+from .fhir_utils import resource_count
+
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +95,7 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
 
 
 class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
-    template_name = "summary.html"
+    template_name = "summary2.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -103,7 +112,36 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
+        #
+        # get resource bundles
+        #
+        resource_list = RESOURCES
+        # Observation mixes lab results and vital signs
+        resource_list.remove('Observation')
 
+        resources = get_converted_fhir_resource(fhir_data)
+        if len(resources.entry) > 0:
+            resources = resources.entry
+        else:
+            resources = []
+        context.setdefault('resources', resources)
+        labs = get_lab_results(fhir_data)
+        if len(labs.entry) > 0:
+            labs = labs.entry
+        else:
+            labs = []
+        context.setdefault('labs', labs)
+        vitals = get_vital_signs(fhir_data)
+        if len(vitals.entry) > 0:
+            vitals = vitals.entry
+        else:
+            vitals = []
+        context.setdefault('vitals', vitals)
+
+        counts = resource_count(resources)
+        context.setdefault('counts', counts)
+        #
+        #####
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context[
                             'member'], 'sharemyhealth')
@@ -178,7 +216,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             allergies = get_allergies(fhir_data, keys=['id'])
             all_records = RECORDS
             for record in all_records:
-                # adding data for each resoureType in response from
+                # adding data for each resourceType in response from
                 # endpoint
                 if record['name'] == 'Diagnoses':
                     record['count'] = len(conditions_data)

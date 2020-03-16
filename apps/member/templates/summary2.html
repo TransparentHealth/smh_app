@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row mr-0 ml-0">
+    {% include "member_sidebar.html" with member=member %}
+    <div class="member-tabs col-lg-9">
+        {% include "time_since_update.html" %}
+        {% include "member_tabbed_nav.html" with member=member %}
+         <div role="tabpanel" aria-hidden="true" class=" tab-pane">
+            <!-- showing the list of resources summarized here -->
+            <h2 class="member-tabs__title mt-5">Summary</h2>
+            <div class="tile-flex justify-content-start mt-3 mb-5">
+                {% for key, val in counts %}
+                <a
+                    class="tile tile-flex__item {% if not val %} disabled {% endif %}"
+                    {% if val %}
+                        href="{% url 'member:records' member.id key.slug %}"
+                    {% else %}
+                        href="#"
+                    {% endif %}
+                >
+                    {% with 'images/icons/'|add:key.slug|add:".png" as source %}
+                        <img src="{% static source %}" alt="key">
+                    {% endwith %}
+                    <p>{{ record.name }}
+                        <span> {% if val %} ({{ val }}) {% endif %}</span>
+                    </p>
+                </a>
+                {% endfor %}
+            </div>
+
+            <!-- Notes Section -->
+            <div class="heading-with-sort d-flex justify-content-between align-items-center pb-2 mb-3">
+                <h2>Recent Notes</h2>
+                <form class="mb-2 form-inline">
+                    <div class="form-group">
+                        <label for="sortOption" class="mr-2 mb-0 form-label">Sort by</label>
+                        <select id="sortOption" class="form-control">
+                            <option>Most Recent</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <table class="table table--records mt-2 table-hover">
+                <thead>
+                    <tr>
+                        {% for title in notes_headers %}
+                            <th> {{ title }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {% if notes %}
+                            {% for note in notes%}
+                                <!-- no example of notes in the data currently, so this rendering will likely change. -->
+                                <td> {{ note }}</td>
+                            {% endfor %}
+                        {% else %}
+                            <td colspan="{{ notes_headers|length }}">No Notes</td>
+                        {% endif %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

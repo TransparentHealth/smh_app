@@ -28,8 +28,8 @@ RECORDS = [
     #   'name': 'Progress Notes',
     #   'slug': 'progress-notes',
     # },
-    # {
-    #   'name': 'Vital Signs',
-    #   'slug': 'vital-signs',
-    # },
+    {
+      'name': 'Vital Signs',
+      'slug': 'vital-signs',
+    },
 ]
