@@ -92,19 +92,23 @@ class UserProfile(models.Model):
         return ' '.join([self.user.first_name or '', self.user.last_name or '']).strip()
 
     @property
-    def age(self):
-        try:
-            born = self.birthdate
-            if born is None:
-                return "Unknown"
-            today = date.today()
-            age = today.year - born.year
-            if age < 0:
-                return "Unknown"
-            else:
-                return age
-        except Exception:
+    def age(self, LEAP_DAY_ANNIVERSARY_FEB28=True):
+        if not self.birthdate:
             return "Unknown"
+        born = self.birthdate
+        today = date.today()
+        age = today.year - born.year
+        try:
+            anniversary = born.replace(year=today.year)
+        except ValueError:
+            assert born.day == 29 and born.month == 2
+            if LEAP_DAY_ANNIVERSARY_FEB28:
+                anniversary = date(today.year, 2, 28)
+            else:
+                anniversary = date(today.year, 3, 1)
+        if today < anniversary:
+            age -= 1
+        return age
 
     @property
     def birthdate(self):
