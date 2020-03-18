@@ -35,7 +35,7 @@ from apps.org.models import (
 from apps.users.models import UserProfile
 from apps.users.utils import get_id_token_payload
 
-from .constants import RECORDS
+from .constants import RECORDS, RECORDS_STU3
 from .forms import ResourceRequestForm
 from .utils import (
     fetch_member_data,
@@ -148,25 +148,47 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         # put the current resources in the summary tab.  We will not show the
         # other options in this tab.
-        conditions_data = get_resource_data(fhir_data, 'Condition')
-        prescription_data = get_prescriptions(data)
+        # conditions_data = get_resource_data(fhir_data, 'Condition')
+        # prescription_data = get_prescriptions(data)
 
-        all_records = RECORDS
+        # all_records = RECORDS
+        all_records = RECORDS_STU3
         summarized_records = []
         notes_headers = ['Agent Name', 'Organization', 'Date']
         for record in all_records:
-            # adding data for each resourceType in response from endpoint
-            if record['name'] == 'Diagnoses':
-                record['count'] = len(conditions_data)
-                record['data'] = conditions_data
+            if record['call_type'].lower() == "fhir":
+                entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                record['data'] = entries['entry']
+                record['count'] = len(entries['entry'])
                 summarized_records.append(record)
+            elif record['call_type'].lower() == 'custom':
+                if record['name'] == 'VitalSigns':
+                    entries = get_vital_signs(fhir_data)
+                    record['data'] = entries['entry']
+                    record['count'] = len(entries['entry'])
+                    summarized_records.append(record)
+                elif record['name'] == 'LabResults':
+                    entries = get_lab_results(fhir_data)
+                    record['data'] = entries['entry']
+                    record['count'] = len(entries['entry'])
+                    summarized_records.append(record)
+            else:   # skip
+                pass
 
-            if record['name'] == 'Prescriptions':
-                record['count'] = len(prescription_data)
-                record['data'] = prescription_data
-                summarized_records.append(record)
 
-            context.setdefault('summarized_records', summarized_records)
+        # for record in all_records:
+        #     # adding data for each resourceType in response from endpoint
+        #     if record['name'] == 'Diagnoses':
+        #         record['count'] = len(conditions_data)
+        #         record['data'] = conditions_data
+        #         summarized_records.append(record)
+        #
+        #     if record['name'] == 'Prescriptions':
+        #         record['count'] = len(prescription_data)
+        #         record['data'] = prescription_data
+        #         summarized_records.append(record)
+
+        context.setdefault('summarized_records', summarized_records)
 
         context.setdefault('notes_headers', notes_headers)
         # TODO: include notes in the context data.
@@ -175,7 +197,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
 
 class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
-    template_name = "records.html"
+    template_name = "records2.html"
     default_resource_name = 'sharemyhealth'
     default_record_type = 'Condition'
 
@@ -209,218 +231,246 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                             'member'], 'sharemyhealth')
 
         if resource_name == 'list':
-            conditions_data = get_resource_data(fhir_data, 'Condition')
-            observation_data = get_resource_data(fhir_data, 'Observation')
-            procedure_data = get_resource_data(fhir_data, 'Procedure')
-            prescription_data = get_prescriptions(fhir_data)
-            allergies = get_allergies(fhir_data, keys=['id'])
-            all_records = RECORDS
+            # conditions_data = get_resource_data(fhir_data, 'Condition')
+            # observation_data = get_resource_data(fhir_data, 'Observation')
+            # procedure_data = get_resource_data(fhir_data, 'Procedure')
+            # prescription_data = get_prescriptions(fhir_data)
+            # allergies = get_allergies(fhir_data, keys=['id'])
+            # all_records = RECORDS
+            all_records = RECORDS_STU3
+            summarized_records = []
             for record in all_records:
-                # adding data for each resourceType in response from
-                # endpoint
-                if record['name'] == 'Diagnoses':
-                    record['count'] = len(conditions_data)
-                    record['data'] = conditions_data
+                # # adding data for each resourceType in response from
+                # # endpoint
+                # if record['name'] == 'Diagnoses':
+                #     record['count'] = len(conditions_data)
+                #     record['data'] = conditions_data
+                #
+                # if record['name'] == 'Lab Results':
+                #     record['count'] = len(observation_data)
+                #     record['data'] = observation_data
+                #
+                # if record['name'] == 'Prescriptions':
+                #     record['count'] = len(prescription_data)
+                #     record['data'] = prescription_data
+                #
+                # if record['name'] == 'Procedures':
+                #     record['count'] = len(procedure_data)
+                #     record['data'] = procedure_data
+                #
+                # if record['name'] == 'Allergies':
+                #     record['count'] = len(allergies)
+                #     record['data'] = allergies
+                if record['call_type'].lower() == "fhir":
+                    entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                    record['data'] = entries['entry']
+                    record['count'] = len(entries['entry'])
+                    summarized_records.append(record)
+                elif record['call_type'].lower() == 'custom':
+                    if record['name'] == 'VitalSigns':
+                        entries = get_vital_signs(fhir_data)
+                        record['data'] = entries['entry']
+                        record['count'] = len(entries['entry'])
+                        summarized_records.append(record)
+                    elif record['name'] == 'LabResults':
+                        entries = get_lab_results(fhir_data)
+                        record['data'] = entries['entry']
+                        record['count'] = len(entries['entry'])
+                        summarized_records.append(record)
+                else:  # skip
+                    pass
 
-                if record['name'] == 'Lab Results':
-                    record['count'] = len(observation_data)
-                    record['data'] = observation_data
+            context.setdefault('all_records', summarized_records)
 
-                if record['name'] == 'Prescriptions':
-                    record['count'] = len(prescription_data)
-                    record['data'] = prescription_data
-
-                if record['name'] == 'Procedures':
-                    record['count'] = len(procedure_data)
-                    record['data'] = procedure_data
-
-                if record['name'] == 'Allergies':
-                    record['count'] = len(allergies)
-                    record['data'] = allergies
-
-            context.setdefault('all_records', all_records)
-
-        elif resource_name == 'diagnoses':
-            conditions_data = get_resource_data(
-                fhir_data, 'Condition', Condition.from_data
-            )
-            headers = ['Diagnosis', 'Status', 'Verification']
-            diagnoses = sorted(
-                [
-                    dict(
-                        Diagnosis=condition.code.text,
-                        Status=condition.clinicalStatus,
-                        Verification=condition.verificationStatus,
-                    )
-                    for condition in conditions_data
-                ],
-                key=lambda diagnosis: (
-                    ['active', 'recurrence', 'inactive', 'remission', 'resolved', ''].index(
-                        diagnosis['Status']
-                    ),
-                    diagnosis['Diagnosis'],
-                ),
-            )
-
-            context.setdefault('title', 'Diagnoses')
+        else:
+            headers = ['column 1', 'column 2', 'column 3', 'record']
+            title = resource_name
+            entries = get_converted_fhir_resource(fhir_data, [resource_name])
+            content_list = entries['entry']
+            context.setdefault('title', title)
             context.setdefault('headers', headers)
-            context.setdefault('content_list', diagnoses)
-
-        elif resource_name == 'lab-results':
-            observation_data = get_resource_data(
-                fhir_data, 'Observation', constructor=Observation.from_data
-            )
-            headers = ['Date', 'Code', 'Display', 'Lab Result']
-            lab_results = sorted(
-                [
-                    {
-                        'Date': observation.effectivePeriod.start,
-                        'Code': (
-                            observation.code.coding[0].code
-                            if len(observation.code.coding) > 0
-                            else None
-                        ),
-                        'Display': observation.code.text,
-                        'Lab Result': observation.valueQuantity,
-                    }
-                    for observation in observation_data
-                ],
-                key=lambda observation: observation['Date']
-                or datetime(1, 1, 1, tzinfo=timezone.utc),
-                reverse=True,
-            )
-
-            context.setdefault('title', 'Lab Results')
-            context.setdefault('headers', headers)
-            context.setdefault('content_list', lab_results)
-
-        elif resource_name == 'procedures':
-            procedures_data = sorted(
-                get_resource_data(
-                    fhir_data, 'Procedure', constructor=Procedure.from_data
-                ),
-                key=lambda procedure: (
-                    procedure.performedPeriod.start
-                    or datetime(1, 1, 1, tzinfo=timezone.utc)
-                ),
-                reverse=True,
-            )
-            headers = ['Date', 'Status', 'Description', 'Provider']
-            procedures = [
-                {
-                    'Date': procedure.performedPeriod.start,
-                    'Status': procedure.status,
-                    'Description': procedure.code.text,
-                    'Provider': mark_safe(
-                        '; '.join(
-                            [
-                                '<a class="modal-link" href="{url}">{name}</a>'.format(
-                                    name=performer.actor.display,
-                                    url=reverse_lazy(
-                                        'member:provider_detail',
-                                        kwargs={
-                                            'pk': context['member'].id,
-                                            'provider_id': performer.actor.id,
-                                        },
-                                    ),
-                                )
-                                for performer in procedure.performer
-                                if 'Practitioner' in performer.actor.reference
-                            ]
-                        )
-                    ),
-                }
-                for procedure in procedures_data
-            ]
-
-            context.setdefault('title', 'Procedures')
-            context.setdefault('headers', headers)
-            context.setdefault('content_list', procedures)
-
-        elif resource_name == 'prescriptions':
-            prescription_data = get_prescriptions(fhir_data)
-            headers = ['Date', 'Medication', 'Provider(s)']
-            all_records = []
-
-            # sort prescriptions by start date descending
-            med_names = [
-                np[0]
-                for np in sorted(
-                    [
-                        (name, prescription)
-                        for name, prescription in prescription_data.items()
-                    ],
-                    key=lambda np: np[1]['statements']
-                    and np[1]['statements'][0].effectivePeriod.start
-                    or datetime(1, 1, 1, tzinfo=timezone.utc),
-                    reverse=True,
-                )
-            ]
-            # set up the display data
-            for med_name in med_names:
-                prescription = prescription_data[med_name]
-                record = {
-                    'Date': prescription['statements']
-                    and prescription['statements'][0].effectivePeriod.start
-                    or None,
-                    'Medication': med_name,
-                    'Provider(s)': ', '.join(
-                        [
-                            request.requester.agent.display
-                            for request in prescription['requests']
-                        ]
-                    ),
-                }
-                record['links'] = {
-                    'Medication': f"/member/{context['member'].id}"
-                    + f"/modal/prescription/{prescription['medication'].id}"
-                }
-                all_records.append(record)
-
-            context.setdefault('title', 'Prescriptions')
-            context.setdefault('headers', headers)
-            context.setdefault('content_list', all_records)
-
-        elif resource_name == 'allergies':
-            allergies = get_allergies(
-                fhir_data,
-                keys=['id', 'assertedDate', 'code']
-                + ['clinicalStatus', 'verificationStatus', 'reaction'],
-            )
-            headers = ['Asserted', 'Code', 'Status',
-                       'Verification', 'Reaction']
-            default_timestamp = datetime(
-                1, 1, 1, tzinfo=timezone(timedelta(0)))
-            all_records = sorted(
-                [
-                    {
-                        'Asserted': allergy.assertedDate,
-                        'Code': allergy.code.text,
-                        'Status': allergy.clinicalStatus.text,
-                        'Verification': allergy.verificationStatus.text,
-                        'Reaction': ', '.join(
-                            [
-                                ', '.join(
-                                    [
-                                        manifestation.text
-                                        for manifestation in manifestations
-                                    ]
-                                )
-                                for manifestations in [
-                                    reaction.manifestation
-                                    for reaction in allergy.reaction
-                                ]
-                            ]
-                        ),
-                    }
-                    for allergy in allergies
-                ],
-                key=lambda r: r.get('Asserted') or default_timestamp,
-                reverse=True,
-            )
-            context.setdefault('title', 'Allergies')
-            context.setdefault('headers', headers)
-            context.setdefault('content_list', all_records)
+            context.setdefault('content_list', content_list)
+        # elif resource_name == 'diagnoses':
+        #     conditions_data = get_resource_data(
+        #         fhir_data, 'Condition', Condition.from_data
+        #     )
+        #     headers = ['Diagnosis', 'Status', 'Verification']
+        #     diagnoses = sorted(
+        #         [
+        #             dict(
+        #                 Diagnosis=condition.code.text,
+        #                 Status=condition.clinicalStatus,
+        #                 Verification=condition.verificationStatus,
+        #             )
+        #             for condition in conditions_data
+        #         ],
+        #         key=lambda diagnosis: (
+        #             ['active', 'recurrence', 'inactive', 'remission', 'resolved', ''].index(
+        #                 diagnosis['Status']
+        #             ),
+        #             diagnosis['Diagnosis'],
+        #         ),
+        #     )
+        #
+        #     context.setdefault('title', 'Diagnoses')
+        #     context.setdefault('headers', headers)
+        #     context.setdefault('content_list', diagnoses)
+        #
+        # elif resource_name == 'lab-results':
+        #     observation_data = get_resource_data(
+        #         fhir_data, 'Observation', constructor=Observation.from_data
+        #     )
+        #     headers = ['Date', 'Code', 'Display', 'Lab Result']
+        #     lab_results = sorted(
+        #         [
+        #             {
+        #                 'Date': observation.effectivePeriod.start,
+        #                 'Code': (
+        #                     observation.code.coding[0].code
+        #                     if len(observation.code.coding) > 0
+        #                     else None
+        #                 ),
+        #                 'Display': observation.code.text,
+        #                 'Lab Result': observation.valueQuantity,
+        #             }
+        #             for observation in observation_data
+        #         ],
+        #         key=lambda observation: observation['Date']
+        #         or datetime(1, 1, 1, tzinfo=timezone.utc),
+        #         reverse=True,
+        #     )
+        #
+        #     context.setdefault('title', 'Lab Results')
+        #     context.setdefault('headers', headers)
+        #     context.setdefault('content_list', lab_results)
+        #
+        # elif resource_name == 'procedures':
+        #     procedures_data = sorted(
+        #         get_resource_data(
+        #             fhir_data, 'Procedure', constructor=Procedure.from_data
+        #         ),
+        #         key=lambda procedure: (
+        #             procedure.performedPeriod.start
+        #             or datetime(1, 1, 1, tzinfo=timezone.utc)
+        #         ),
+        #         reverse=True,
+        #     )
+        #     headers = ['Date', 'Status', 'Description', 'Provider']
+        #     procedures = [
+        #         {
+        #             'Date': procedure.performedPeriod.start,
+        #             'Status': procedure.status,
+        #             'Description': procedure.code.text,
+        #             'Provider': mark_safe(
+        #                 '; '.join(
+        #                     [
+        #                         '<a class="modal-link" href="{url}">{name}</a>'.format(
+        #                             name=performer.actor.display,
+        #                             url=reverse_lazy(
+        #                                 'member:provider_detail',
+        #                                 kwargs={
+        #                                     'pk': context['member'].id,
+        #                                     'provider_id': performer.actor.id,
+        #                                 },
+        #                             ),
+        #                         )
+        #                         for performer in procedure.performer
+        #                         if 'Practitioner' in performer.actor.reference
+        #                     ]
+        #                 )
+        #             ),
+        #         }
+        #         for procedure in procedures_data
+        #     ]
+        #
+        #     context.setdefault('title', 'Procedures')
+        #     context.setdefault('headers', headers)
+        #     context.setdefault('content_list', procedures)
+        #
+        # elif resource_name == 'prescriptions':
+        #     prescription_data = get_prescriptions(fhir_data)
+        #     headers = ['Date', 'Medication', 'Provider(s)']
+        #     all_records = []
+        #
+        #     # sort prescriptions by start date descending
+        #     med_names = [
+        #         np[0]
+        #         for np in sorted(
+        #             [
+        #                 (name, prescription)
+        #                 for name, prescription in prescription_data.items()
+        #             ],
+        #             key=lambda np: np[1]['statements']
+        #             and np[1]['statements'][0].effectivePeriod.start
+        #             or datetime(1, 1, 1, tzinfo=timezone.utc),
+        #             reverse=True,
+        #         )
+        #     ]
+        #     # set up the display data
+        #     for med_name in med_names:
+        #         prescription = prescription_data[med_name]
+        #         record = {
+        #             'Date': prescription['statements']
+        #             and prescription['statements'][0].effectivePeriod.start
+        #             or None,
+        #             'Medication': med_name,
+        #             'Provider(s)': ', '.join(
+        #                 [
+        #                     request.requester.agent.display
+        #                     for request in prescription['requests']
+        #                 ]
+        #             ),
+        #         }
+        #         record['links'] = {
+        #             'Medication': f"/member/{context['member'].id}"
+        #             + f"/modal/prescription/{prescription['medication'].id}"
+        #         }
+        #         all_records.append(record)
+        #
+        #     context.setdefault('title', 'Prescriptions')
+        #     context.setdefault('headers', headers)
+        #     context.setdefault('content_list', all_records)
+        #
+        # elif resource_name == 'allergies':
+        #     allergies = get_allergies(
+        #         fhir_data,
+        #         keys=['id', 'assertedDate', 'code']
+        #         + ['clinicalStatus', 'verificationStatus', 'reaction'],
+        #     )
+        #     headers = ['Asserted', 'Code', 'Status',
+        #                'Verification', 'Reaction']
+        #     default_timestamp = datetime(
+        #         1, 1, 1, tzinfo=timezone(timedelta(0)))
+        #     all_records = sorted(
+        #         [
+        #             {
+        #                 'Asserted': allergy.assertedDate,
+        #                 'Code': allergy.code.text,
+        #                 'Status': allergy.clinicalStatus.text,
+        #                 'Verification': allergy.verificationStatus.text,
+        #                 'Reaction': ', '.join(
+        #                     [
+        #                         ', '.join(
+        #                             [
+        #                                 manifestation.text
+        #                                 for manifestation in manifestations
+        #                             ]
+        #                         )
+        #                         for manifestations in [
+        #                             reaction.manifestation
+        #                             for reaction in allergy.reaction
+        #                         ]
+        #                     ]
+        #                 ),
+        #             }
+        #             for allergy in allergies
+        #         ],
+        #         key=lambda r: r.get('Asserted') or default_timestamp,
+        #         reverse=True,
+        #     )
+        #     context.setdefault('title', 'Allergies')
+        #     context.setdefault('headers', headers)
+        #     context.setdefault('content_list', all_records)
 
         return context
 

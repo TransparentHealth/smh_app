@@ -48,12 +48,12 @@ def get_converted_fhir_resource(fhir_data, resourcetype="all"):
     resource_list = []
     if isinstance(resourcetype, str):
         if resourcetype.lower() == "all":
-            resource_list = settings.RESOURCES
+            resource_list = RESOURCES
         else:
             resource_list = [resourcetype]
     else:
         for r in resourcetype:
-            if r in settings.RESOURCES:
+            if r in RESOURCES:
                 resource_list.append(r)
 
     # print("Getting %s" % resource_list)
@@ -103,7 +103,7 @@ def get_vital_signs(fhir_data):
     skipped = 0
     for o in observations:
 
-        if o["code"]["coding"][0]["code"] in settings.VITALSIGNS:
+        if o["code"]["coding"][0]["code"] in VITALSIGNS:
             # print("adding...")
             bundle["entry"].append(o)
             found += 1
@@ -138,7 +138,7 @@ def get_lab_results(fhir_data):
     skipped = 0
     for o in observations:
 
-        if o["code"]["coding"][0]["code"] not in settings.VITALSIGNS:
+        if o["code"]["coding"][0]["code"] not in VITALSIGNS:
             # print("adding...")
             bundle["entry"].append(o)
             found += 1
