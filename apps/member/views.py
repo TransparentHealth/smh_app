@@ -209,8 +209,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             )
         ###
         # REMOVE THIS LINE AND REVERT TO data.get('fhir_data')
-        fhir_data = load_test_fhir_data()
-        # fhir_data = data.get('fhir_data')
+        # fhir_data = load_test_fhir_data()
+        fhir_data = data.get('fhir_data')
         # Put the above line back !!!!!!
         if settings.DEBUG:
             context['data'] = data
@@ -356,8 +356,8 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
 
         ###
         # REMOVE THIS LINE AND REVERT TO data.get('fhir_data')
-        fhir_data = load_test_fhir_data()
-        # fhir_data = data.get('fhir_data')
+        # fhir_data = load_test_fhir_data()
+        fhir_data = data.get('fhir_data')
         # Put the above line back !!!!!!
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
