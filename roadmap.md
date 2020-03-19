@@ -184,8 +184,12 @@ FIELD_TITLES = [
 
 ```
 
-This will be best implemented using a template tag. The idea would be to pass the resource name and field name to a template tag and it returns either the field name or a show_name if a match is found for profile and system_name.
+the friendlyfield templatetag now works.
 
+```
+{{ key|friendlyfield:resource_profile.name }}:<br/>{{ value }}
+```
+the tag is in apps/common/fhirtags.py
 
 
 ## Icons - SMH_APP
