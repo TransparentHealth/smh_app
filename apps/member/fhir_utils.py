@@ -2,6 +2,7 @@
 import logging
 import json
 
+from django.conf import settings
 from jsonpath_ng import parse, jsonpath
 
 
@@ -48,14 +49,17 @@ def find_list_entry(big_list, key, value):
     return
 
 
-def load_test_fhir_data():
+def load_test_fhir_data(data):
     """
     load a test fhir structure
     :return: fhir_data
     """
-    f = open("/Volumes/GoogleDrive/My Drive/NewWave/Projects/AFBH-NY/hixny/data_analysis/md_fhir.json", "r")
-    fhir_data = json.load(f)
-
+    if settings.VPC_ENV in ['prod', 'staging', 'dev']:
+        fhir_data = data.get('fhir_data')
+    else:
+        # Only run this locally
+        f = open("/Volumes/GoogleDrive/My Drive/NewWave/Projects/AFBH-NY/hixny/data_analysis/md_fhir.json", "r")
+        fhir_data = json.load(f)
     return fhir_data
 
 

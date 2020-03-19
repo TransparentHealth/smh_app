@@ -8,6 +8,7 @@ django-memoize==2.2.0
 django-phonenumber-field==2.0.1
 django-localflavor==2.1
 django-settings-export==1.2.1
+jsonPath-ng==1.5.1
 Pillow==6.2.0
 qrcode==6.1
 pyjwkest==1.4.0

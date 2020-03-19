@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load smhtags %}
+{% load fhirtags %}
 
 {% block extra_head %}
 {% endblock %}
@@ -64,7 +65,7 @@
                                 <tr>
                                     {% for heading in headers %}
                                         <th>
-                                            {{ heading }}
+                                            {{ heading|friendlyfield:resource_profile.name }}
                                         </th>
                                     {% endfor %}
                                 </tr>
@@ -91,7 +92,7 @@
                                                 {% if key in exclude or key in headers%}
                                                 {% else %}
                                                     <td>
-                                                        {{ key }}:<br/>{{ value }}
+                                                        {{ key|friendlyfield:resource_profile.name }}:<br/>{{ value }}
                                                     </td>
                                                 {% endif %}
                                             {% endfor %}

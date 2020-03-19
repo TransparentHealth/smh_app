@@ -208,10 +208,9 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 datetime.now(timezone.utc) - context['updated_at']
             )
         ###
-        # REMOVE THIS LINE AND REVERT TO data.get('fhir_data')
-        # fhir_data = load_test_fhir_data()
-        fhir_data = data.get('fhir_data')
-        # Put the above line back !!!!!!
+        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        fhir_data = load_test_fhir_data(data)
+        # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
 
@@ -298,6 +297,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('headers', headers)
             context.setdefault('exclude', exclude)
             context.setdefault('content_list', content_list)
+            context.setdefault('resource_profile', resource_profile)
             # sorted_content = sort_json(content_list, sort_field, sort_value, sort_reverse)
             # context.setdefault('content_list', sorted_content)
 
@@ -355,10 +355,9 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
         data = fetch_member_data(member, 'sharemyhealth')
 
         ###
-        # REMOVE THIS LINE AND REVERT TO data.get('fhir_data')
-        # fhir_data = load_test_fhir_data()
-        fhir_data = data.get('fhir_data')
-        # Put the above line back !!!!!!
+        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        fhir_data = load_test_fhir_data(data)
+        # fhir_data = data.get('fhir_data')
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, member, 'sharemyhealth')

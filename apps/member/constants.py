@@ -37,9 +37,15 @@ RECORDS = [
 FIELD_TITLES = [
     {'profile': 'AllergyIntolerance',
      'elements': [
-        {'system_name': 'onsetDateTime', "show_name": 'Onset'},
-        {'system_name': 'assertedDate', "show_name": 'Asserted'},
-    ]}
+        {'system_name': 'id', 'show_name': 'Ref#'},
+        {'system_name': 'clinicalStatus', 'show_name': 'Status'},
+        {'system_name': 'verificationStatus', 'show_name': 'Verified'},
+        {'system_name': 'onsetDateTime', 'show_name': 'Onset'},
+        {'system_name': 'assertedDate', 'show_name': 'Asserted'},
+        {'system_name': 'code', 'show_name': 'Info'},
+        {'system_name': 'type', 'show_name': 'Severity'},
+
+     ]}
 ]
 
 RECORDS_STU3 = [
