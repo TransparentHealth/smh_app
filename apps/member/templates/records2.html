@@ -28,6 +28,7 @@
                 <!-- showing the list of all resources here -->
                 <div class="tile-flex mt-5">
                     {% for record in all_records %}
+                       {% if record.count > 0 %}
                     <a
                         class="tile tile-flex__item {% if not record.count %} disabled {% endif %}"
                         {% if record.count %}
@@ -39,10 +40,11 @@
                         {% with 'images/icons/'|add:record.slug|add:".png" as source %}
                             <img src="{% static source %}" alt="record.name">
                         {% endwith %}
-                        <p>{{ record.name }}
+                        <p>{{ record.display }}
                             <span> {% if record.count %} ({{ record.count }}) {% endif %}</span>
                         </p>
                     </a>
+                        {%  endif %}
                     {% endfor %}
                 </div>
             {% else %}
@@ -56,34 +58,45 @@
                         </a>
                     </div>
                     <div class="table-responsive">
+
                         <table class="table table--records table-hover">
                             <thead>
                                 <tr>
-                                    {% for title in headers %}
-                                        <th>{{ title }}</th>
+                                    {% for heading in headers %}
+                                        <th>
+                                            {{ heading }}
+                                        </th>
                                     {% endfor %}
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for item in content_list %}
-                                <tr>
-                                    {% for key, value in item.items %}
-                                        {% if key in headers %}
-                                        <td>{% if key in item.links %}
-                                            <a href="" class="modal-link" data-toggle="modal"
-                                                data-target="#record-detail--modal"
-                                                data-url="{{ item.links|get:key }}">
-                                                {{ value }}
-                                            </a>
-                                            {% elif value %}
-                                            {{ value }}
-                                            {% else %}
-                                            —
+                                    <tr>
+                                        {% for key, value in item.items %}
+                                            {% if key in headers %}
+                                            <td>{% if key == "id" %}
+                                                <a href="" class="modal-link" data-toggle="modal"
+                                                    data-target="#record-detail--modal"
+                                                    data-url="/member/{{ member.id }}/data/{{ item.resourceType }}/{{ item.id }}">
+                                                    {{ value }}</a>
+                                                {% elif value %}
+                                                    {{ value }}
+                                                {% else %}
+                                                {% endif %}
+                                            </td>
                                             {% endif %}
-                                        </td>
+                                        {% endfor %}
+                                        {% if "*" in headers %}
+                                            {% for key, value in item.items %}
+                                                {% if key in exclude or key in headers%}
+                                                {% else %}
+                                                    <td>
+                                                        {{ key }}:<br/>{{ value }}
+                                                    </td>
+                                                {% endif %}
+                                            {% endfor %}
                                         {% endif %}
-                                    {% endfor %}
-                                </tr>
+                                    </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -119,12 +132,12 @@
             if(data.includes('<html')) {
                 window.location = "{% url 'login' %}";
                 return;
-            }
-            modal.find('#record-detail--content').html(data);
+            };
+            modal.find('.modal-body').html(
+              '<div class="modal-body"><pre>' + data + '</pre></div>');
           }).fail(function() {
             modal.find('#record-detail--body').html("<p><em>Data could not be loaded.</em></p>");
           });
         });
     });
-</script>
-{% endblock %}
+</script>{% endblock %}

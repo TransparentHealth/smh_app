@@ -1,4 +1,5 @@
 import json
+
 import logging
 from datetime import datetime, timedelta, timezone
 
@@ -35,7 +36,7 @@ from apps.org.models import (
 from apps.users.models import UserProfile
 from apps.users.utils import get_id_token_payload
 
-from .constants import RECORDS, RECORDS_STU3
+from .constants import RECORDS, RECORDS_STU3, FIELD_TITLES
 from .forms import ResourceRequestForm
 from .utils import (
     fetch_member_data,
@@ -50,8 +51,14 @@ from .fhir_requests import (
     RESOURCES,
     VITALSIGNS
 )
-from .fhir_utils import resource_count
-
+from .fhir_utils import (
+    resource_count,
+    load_test_fhir_data,
+    find_index,
+    find_list_entry,
+    path_extract,
+    sort_json
+)
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +116,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 datetime.now(timezone.utc) - context['updated_at']
             )
             context['updated_at'] = context['updated_at'].timestamp()
+
         fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
@@ -140,6 +148,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         counts = resource_count(resources)
         context.setdefault('counts', counts)
+        print(counts)
         #
         #####
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
@@ -156,6 +165,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         summarized_records = []
         notes_headers = ['Agent Name', 'Organization', 'Date']
         for record in all_records:
+
             if record['call_type'].lower() == "fhir":
                 entries = get_converted_fhir_resource(fhir_data, record['resources'])
                 record['data'] = entries['entry']
@@ -215,8 +225,11 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context['time_since_update'] = (
                 datetime.now(timezone.utc) - context['updated_at']
             )
-            
-        fhir_data = data.get('fhir_data')
+        ###
+        # REMOVE THIS LINE AND REVERT TO data.get('fhir_data')
+        fhir_data = load_test_fhir_data()
+        # fhir_data = data.get('fhir_data')
+        # Put the above line back !!!!!!
         if settings.DEBUG:
             context['data'] = data
 
@@ -262,6 +275,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 #     record['count'] = len(allergies)
                 #     record['data'] = allergies
                 if record['call_type'].lower() == "fhir":
+                    # print("record processing for ", record['name'])
                     entries = get_converted_fhir_resource(fhir_data, record['resources'])
                     record['data'] = entries['entry']
                     record['count'] = len(entries['entry'])
@@ -283,13 +297,46 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('all_records', summarized_records)
 
         else:
-            headers = ['column 1', 'column 2', 'column 3', 'record']
-            title = resource_name
-            entries = get_converted_fhir_resource(fhir_data, [resource_name])
-            content_list = entries['entry']
+            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_name)]
+
+            # print("Resource Profile", resource_profile)
+
+            if resource_profile:
+                title = resource_profile['display']
+                headers = resource_profile['headers']
+                exclude = resource_profile['exclude']
+                # second_fields = headers
+                # second_fields.append(exclude)
+            else:
+                title = resource_name
+                headers = ['id', ]
+                exclude = ['']
+                # second_fields
+
+            ff = find_list_entry(FIELD_TITLES, "profile", resource_profile['name'])
+            # print("Friendly:", ff)
+            # print("headers:", headers)
+            # print("Exclude:", exclude)
+            # print("second_fields:", second_fields)
+            if "sort" in resource_profile:
+                sort_field = resource_profile['sort']['field']
+                sort_value = resource_profile['sort']['value']
+                sort_reverse = resource_profile['sort']['reverse']
+            else:
+                sort_field = ""
+                sort_value = ""
+                sort_reverse = True
+
+            title = resource_profile['display']
+            entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+            content_list = path_extract(entries['entry'], resource_profile)
+            context.setdefault('friendly_fields', find_list_entry(FIELD_TITLES, "profile", resource_profile['name']))
             context.setdefault('title', title)
             context.setdefault('headers', headers)
+            context.setdefault('exclude', exclude)
             context.setdefault('content_list', content_list)
+            # sorted_content = sort_json(content_list, sort_field, sort_value, sort_reverse)
+            # context.setdefault('content_list', sorted_content)
         # elif resource_name == 'diagnoses':
         #     conditions_data = get_resource_data(
         #         fhir_data, 'Condition', Condition.from_data
@@ -524,7 +571,12 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
         resource_type = kwargs['resource_type']
         resource_id = kwargs['resource_id']
         data = fetch_member_data(member, 'sharemyhealth')
-        fhir_data = data.get('fhir_data')
+
+        ###
+        # REMOVE THIS LINE AND REVERT TO data.get('fhir_data')
+        fhir_data = load_test_fhir_data()
+        # fhir_data = data.get('fhir_data')
+        # Put the above line back !!!!!!
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, member, 'sharemyhealth')
@@ -533,15 +585,31 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
             response_data = get_prescriptions(
                 fhir_data, id=resource_id, incl_practitioners=True, json=True
             )
+        elif resource_type in RESOURCES:
+            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_type.lower())]
+            if resource_profile:
+                bundle = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+                for entry in bundle['entry']:
+                    if 'id' in entry:
+                        if entry['id'] == resource_id:
+                            data = entry
+
+            response_data = json.dumps(data, indent=settings.JSON_INDENT)
+            # print("httpResponse:", HttpResponse(response_data), "-----")
+            return HttpResponse(response_data)
+
         else:
             # fallback
-            response_data = {
+            data = {
                 resource['id']: resource
                 for resource in get_resource_data(
                     fhir_data, kwargs['resource_type'], id=resource_id
                 )
             }
-        return JsonResponse(response_data)
+            response_data = json.dumps(data, indent=settings.JSON_INDENT)
+            # print("httpResponse:", response_data, "-----")
+
+        return HttpResponse(response_data)
 
 
 class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):

@@ -407,6 +407,12 @@ SESSION_COOKIE_SAMESITE = None
 # Using django-session-security to manage session timeout
 SESSION_SECURITY_EXPIRE_AFTER = 30 * 60  # 30 min inactivity
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
+#  2621440 = 2.5Mb
+
+JSON_INDENT = 4
+
 # AWS Settings -------------------------------------------
 AWS_DEFAULT_REGION = env('AWS_DEFAULT_REGION', 'us-east-1')
 

@@ -38,7 +38,7 @@ DEBUG_MODULE = False
 
 def get_converted_fhir_resource(fhir_data, resourcetype="all"):
     """
-    Get resourceType using HIE_Profile.fhir_content as fhir_datat
+    Get resourceType using HIE_Profile.fhir_content as fhir_data
     :param fhir_data: source fhir bundle
     :param resourcetype:
     :return:

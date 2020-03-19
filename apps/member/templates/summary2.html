@@ -23,7 +23,7 @@
                     {% with 'images/icons/'|add:key.slug|add:".png" as source %}
                         <img src="{% static source %}" alt="key">
                     {% endwith %}
-                    <p>{{ record.name }}
+                    <p>{{ record.display }}
                         <span> {% if val %} ({{ val }}) {% endif %}</span>
                     </p>
                 </a>
