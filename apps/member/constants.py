@@ -124,7 +124,9 @@ RECORDS_STU3 = [
     {'name': 'Measure', 'slug': 'measure', 'call_type': 'fhir', 'resources': ['Measure'], 'display': 'Measure', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'MeasureReport', 'slug': 'measurereport', 'call_type': 'fhir', 'resources': ['MeasureReport'], 'display': 'Measure Report', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'Media', 'slug': 'media', 'call_type': 'fhir', 'resources': ['Media'], 'display': 'Media', 'headers': ['id'], 'exclude': ['meta']},
-    {'name': 'Medication', 'slug': 'medication', 'call_type': 'fhir', 'resources': ['Medication'], 'display': 'Medication', 'headers': ['id'], 'exclude': ['meta']},
+    {'name': 'Medication', 'slug': 'medication', 'call_type': 'fhir', 'resources': ['Medication'], 'display': 'Medication', 'headers': ['id', 'code', '*'], 'exclude': ['meta', 'resourceType'],
+     'field_formats':[{"field": "code", "detail": "$.code.coding[*].display", "format": ""},
+                     ]},
     {'name': 'MedicationAdministration', 'slug': 'medicationadministration', 'call_type': 'fhir', 'resources': ['MedicationAdministration'], 'display': 'Medication Administration', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'MedicationDispense', 'slug': 'medicationdispense', 'call_type': 'fhir', 'resources': ['MedicationDispense'], 'display': 'Medication Dispense', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'MedicationRequest', 'slug': 'medicationrequest', 'call_type': 'fhir', 'resources': ['MedicationRequest'], 'display': 'Medication Request', 'headers': ['id'], 'exclude': ['meta']},
@@ -134,11 +136,11 @@ RECORDS_STU3 = [
     {'name': 'NamingSystem', 'slug': 'namingsystem', 'call_type': 'fhir', 'resources': ['NamingSystem'], 'display': 'Naming System', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'NutritionOrder', 'slug': 'nutritionorder', 'call_type': 'fhir', 'resources': ['NutritionOrder'], 'display': 'Nutrition Order', 'headers': ['id'], 'exclude': ['meta']},
     # Observation mixes labs and vital-signs
-    {'name': 'Observation', 'slug': 'observation', 'call_type': 'skip', 'resources': ['Observation'], 'display': 'Observation', 'headers': ['id'], 'exclude': ['meta']},
+    {'name': 'Observation', 'slug': 'observation', 'call_type': 'fhir', 'resources': ['Observation'], 'display': 'Observation', 'headers': ['id'], 'exclude': ['meta']},
     # Split to vital-signs
-    {'name': 'VitalSigns', 'slug': 'vitalsigns', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Vital Signs', 'headers': ['id'], 'exclude': ['meta']},
+    {'name': 'VitalSigns', 'slug': 'vitalsigns', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Vital Signs', 'headers': ['id', '*'], 'exclude': ['meta', 'resourceType']},
     # Split to Lab Results
-    {'name': 'LabResults', 'slug': 'labresults', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Lab Results', 'headers': ['id'], 'exclude': ['meta']},
+    {'name': 'LabResults', 'slug': 'labresults', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Lab Results', 'headers': ['id', "*"], 'exclude': ['meta', 'resourceType']},
     #
     {'name': 'OperationDefinition', 'slug': 'operationdefinition', 'call_type': 'fhir', 'resources': ['OperationDefinition'], 'display': 'Operation Definition', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'OperationOutcome', 'slug': 'operationoutcome', 'call_type': 'fhir', 'resources': ['OperationOutcome'], 'display': 'Operation Outcome', 'headers': ['id'], 'exclude': ['meta']},

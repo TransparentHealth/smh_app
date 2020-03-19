@@ -36,13 +36,16 @@ def find_index(dicts, key, value):
 
 def find_list_entry(big_list, key, value):
     for l in big_list:
-        print("looking at", l)
+        # print("looking at", l, " with key:", key, " value: ", value)
         if key in l:
-            print("found:", key)
-            print("checking", value, "against ", l[key])
+            # print("checking", value, "against ", l[key])
             if l[key] == value:
-                print("found value:", value)
+                # print("found value:", value)
                 return l
+            else:
+                # print("no match for ", value)
+                pass
+    return
 
 
 def load_test_fhir_data():

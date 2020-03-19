@@ -407,10 +407,13 @@ SESSION_COOKIE_SAMESITE = None
 # Using django-session-security to manage session timeout
 SESSION_SECURITY_EXPIRE_AFTER = 30 * 60  # 30 min inactivity
 
+# CDAs and FHIR Resources can be large. Editing in Admin can fail
+# If we don't update the max limit (in bytes)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
 FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
 #  2621440 = 2.5Mb
 
+# Used for Pretty Printing JSON
 JSON_INDENT = 4
 
 # AWS Settings -------------------------------------------

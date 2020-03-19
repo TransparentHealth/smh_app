@@ -33,7 +33,8 @@ RESOURCES = ['Account', 'ActivityDefinition', 'AllergyIntolerance', 'AdverseEven
 VITALSIGNS = ['3141-9', '8302-2', '39156-5',
               '8480-6', '8462-4', '8867-4', '8310-5', '9279-1']
 
-DEBUG_MODULE = False
+# True or False to enable debug printing
+DEBUG_MODULE = True
 
 
 def get_converted_fhir_resource(fhir_data, resourcetype="all"):
@@ -82,7 +83,7 @@ def get_resource_data(data, resource_types, constructor=dict, id=None):
     ]
 
 
-def get_vital_signs(fhir_data):
+def get_vital_signs(fhir_data, record):
     """
     get vital-signs from observations
 
@@ -90,14 +91,16 @@ def get_vital_signs(fhir_data):
     :return:
     """
 
+    bundle = {"resourceType": "Bundle", "entry": []}
+
     o_bundle = get_converted_fhir_resource(fhir_data,
-                                           resourcetype="Observation")
+                                           record['resources'])
 
     if len(o_bundle["entry"]) == 0:
-        return BUNDLE
+        return bundle
     else:
         observations = o_bundle['entry']
-    bundle = BUNDLE
+
 
     found = 0
     skipped = 0
@@ -112,43 +115,53 @@ def get_vital_signs(fhir_data):
             skipped += 1
 
     if DEBUG_MODULE:
-        print("Skipped:%s Added: %s of %s" % (skipped,
-                                              found,
-                                              len(observations)))
+        print("Vital Signs: Skipped:%s Added: %s of %s and returning %s" % (skipped,
+                                                                            found,
+                                                                            len(observations),
+                                                                            len(bundle['entry'])))
     return bundle
 
 
-def get_lab_results(fhir_data):
+def get_lab_results(fhir_data, record):
     """
     get lab results by excluding vital-signs from observations
     :param fhir_data:
     :return:
     """
 
+    bundle = {"resourceType": "Bundle", "entry": []}
+
+    # print("base bundle:", len(bundle['entry']))
     o_bundle = get_converted_fhir_resource(fhir_data,
-                                           resourcetype="Observation")
+                                           record['resources'])
 
     if len(o_bundle["entry"]) == 0:
-        return BUNDLE
+        return bundle
     else:
+        # print("how big", len(o_bundle['entry']))
         observations = o_bundle['entry']
-    bundle = BUNDLE
 
     found = 0
     skipped = 0
-    for o in observations:
-
-        if o["code"]["coding"][0]["code"] not in VITALSIGNS:
-            # print("adding...")
-            bundle["entry"].append(o)
-            found += 1
-        else:
-            # print("skipping,,,,,")
+    # print("Lab Results:Bundle size:", len(bundle['entry']))
+    for o in o_bundle['entry']:
+        # print(o["code"]["coding"][0]["code"], VITALSIGNS)
+        if o['code']['coding'][0]['code'] in VITALSIGNS:
+            # print("skipping...")
             skipped += 1
+            # print("skipped Bundle size:", skipped, "/", len(bundle['entry']))
+
+        else:
+            # print("adding...")
+            bundle['entry'].append(o)
+            found += 1
+            # print("added Bundle size:", len(bundle['entry']))
+
 
     if DEBUG_MODULE:
-        print("Skipped:%s Added: %s of %s" % (skipped,
-                                              found,
-                                              len(observations)))
+        print("Lab Results: Skipped:%s Added: %s of %s and returning %s" % (skipped,
+                                                                            found,
+                                                                            len(observations),
+                                                                            len(bundle['entry'])))
 
     return bundle
