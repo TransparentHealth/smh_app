@@ -137,28 +137,30 @@ def sort_json(json_obj, columns):
         sortable_obj = []
         unsortable_obj = []
         for j in json_obj:
-            if columns[0][:1] == '-':
-                if strip_sort_indicator(columns[0]) in j:
-                    sortable_obj.append(j)
-                else:
-                    unsortable_obj.append(j)
+            if strip_sort_indicator(columns[0]) in j:
+                print(columns[0], "is sortable")
+                sortable_obj.append(j)
+            else:
+                unsortable_obj.append(j)
 
         if len(columns) == 1:
             result = []
-            if columns[0][:1] == '-':
+            if reverse_sort(columns[0]):
                 # result = sorted(sortable_obj, key=lambda e: (-e[strip_sort_indicator(columns[0])]))
                 result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=True)
             else:
+                print("standard sort:", columns[0], '/', sortable_obj)
                 result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=False)
-
+                print(len(result))
             for u in unsortable_obj:
                 result.append(u)
+            print(len(result))
             return result
 
         else:
             result = []
             # Need to add second column sort capability
-            if columns[0][:1] == '-':
+            if reverse_sort(columns[0]):
                 print("reverse sort:", strip_sort_indicator(columns[0]))
                 print(json_obj[0])
                 result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=True)
@@ -189,3 +191,16 @@ def strip_sort_indicator(sort_field):
 
     else:
         return
+
+def reverse_sort(sort_field):
+    """
+    Check for leading - to indicate reverse sort
+    :param sort_field:
+    :return: True | False
+    """
+
+    if sort_field:
+        if sort_field[:1] == '-':
+            return True
+
+    return False
