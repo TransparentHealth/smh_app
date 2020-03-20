@@ -4,6 +4,9 @@ import json
 
 from django.conf import settings
 from jsonpath_ng import parse, jsonpath
+from operator import itemgetter
+from operator import itemgetter as i
+from functools import cmp_to_key
 
 
 def resource_count(entries=[]):
@@ -118,21 +121,71 @@ def path_extract(entry, resource_spec):
     return entry
 
 
-def sort_json(json_obj, sort_field, sort_value, reverse=True):
+def sort_json(json_obj, columns):
     """
-    Sort json by a field
-    :param json_obj:
-    :param sort_field:
-    :return: sorted_obj
-    """
-    sorted_obj = {}
-    print("json_obj", len(json_obj))
-    print("sort_field:", sort_field)
-    print("sort_value:", sort_value)
-    print("Reverse:", reverse)
-    if json_obj:
-        sorted_obj = []
-        if sort_field and sort_value:
-            sorted_obj = sorted(json_obj, key=lambda x: x[sort_field], reverse=reverse)
+    Sort json by fields
+    https://stackoverflow.com/questions/1143671/python-sorting-list-of-dictionaries-by-multiple-keys
 
-    return sorted_obj
+    Supports a single sort_field passed as a list
+    Removes any dicts that don't have the sort_field and appends them to the end after sorting
+    :param json_obj: List
+    :param sort_fields: list with minus prefix
+    :return: result | json_obj
+    """
+
+    if columns:
+        sortable_obj = []
+        unsortable_obj = []
+        for j in json_obj:
+            if columns[0][:1] == '-':
+                if strip_sort_indicator(columns[0]) in j:
+                    sortable_obj.append(j)
+                else:
+                    unsortable_obj.append(j)
+
+        if len(columns) == 1:
+            result = []
+            if columns[0][:1] == '-':
+                # result = sorted(sortable_obj, key=lambda e: (-e[strip_sort_indicator(columns[0])]))
+                result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=True)
+            else:
+                result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=False)
+
+            for u in unsortable_obj:
+                result.append(u)
+            return result
+
+        else:
+            result = []
+            # Need to add second column sort capability
+            if columns[0][:1] == '-':
+                print("reverse sort:", strip_sort_indicator(columns[0]))
+                print(json_obj[0])
+                result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=True)
+            else:
+                print("sort:", columns[0])
+                result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=False)
+
+            for u in unsortable_obj:
+                result.append(u)
+            return result
+    else:
+        print('No sort')
+        return json_obj
+
+
+def strip_sort_indicator(sort_field):
+    """
+    Remove the leading '-'
+    :param sort_field:
+    :return: result
+    """
+
+    if sort_field:
+        if sort_field[:1] == '-':
+            return sort_field[1:]
+        else:
+            return sort_field
+
+    else:
+        return

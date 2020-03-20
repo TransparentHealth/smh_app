@@ -273,13 +273,9 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             # print("Exclude:", exclude)
             # print("second_fields:", second_fields)
             if "sort" in resource_profile:
-                sort_field = resource_profile['sort']['field']
-                sort_value = resource_profile['sort']['value']
-                sort_reverse = resource_profile['sort']['reverse']
+                sort_field = resource_profile['sort']
             else:
                 sort_field = ""
-                sort_value = ""
-                sort_reverse = True
 
             title = resource_profile['display']
             if resource_profile['call_type'] == 'custom':
@@ -296,10 +292,10 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('title', title)
             context.setdefault('headers', headers)
             context.setdefault('exclude', exclude)
-            context.setdefault('content_list', content_list)
+            # context.setdefault('content_list', content_list)
             context.setdefault('resource_profile', resource_profile)
-            # sorted_content = sort_json(content_list, sort_field, sort_value, sort_reverse)
-            # context.setdefault('content_list', sorted_content)
+            sorted_content = sort_json(content_list, sort_field)
+            context.setdefault('content_list', sorted_content)
 
         return context
 

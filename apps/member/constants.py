@@ -59,7 +59,8 @@ RECORDS_STU3 = [
                      {"field": "code", "detail": "$.code.text", "format": ""},
                      {"field": "onsetDateTime", "detail": "$.onsetDateTime[*]", "format": {"start": 0, "end": 10}},
                      {"field": "assertedDate", "detail": "$.assertedDate[*]", "format": {"start": 0, "end": 10}}
-                     ]},
+                     ],
+     'sort': ['-onsetDateTime',]},
     {'name': 'AdverseEvent', 'slug': 'adverseevent', 'call_type': 'fhir', 'resources': ['AdverseEvent'], 'display': 'Adverse Event', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'Appointment', 'slug': 'appointment', 'call_type': 'fhir', 'resources': ['Appointment'], 'display': 'Appointment', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'AppointmentResponse', 'slug': 'appointmentresponse', 'call_type': 'fhir', 'resources': ['AppointmentResponse'], 'display': 'Appointment Response', 'headers': ['id'], 'exclude': ['meta']},
