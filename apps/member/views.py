@@ -253,7 +253,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         else:
             resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_name)]
 
-            print("Resource Profile", resource_profile)
+            # print("Resource Profile", resource_profile)
 
             if resource_profile:
                 title = resource_profile['display']
