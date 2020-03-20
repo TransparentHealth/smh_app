@@ -138,7 +138,7 @@ def sort_json(json_obj, columns):
         unsortable_obj = []
         for j in json_obj:
             if strip_sort_indicator(columns[0]) in j:
-                print(columns[0], "is sortable")
+                # print(columns[0], "is sortable")
                 sortable_obj.append(j)
             else:
                 unsortable_obj.append(j)
@@ -149,30 +149,30 @@ def sort_json(json_obj, columns):
                 # result = sorted(sortable_obj, key=lambda e: (-e[strip_sort_indicator(columns[0])]))
                 result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=True)
             else:
-                print("standard sort:", columns[0], '/', sortable_obj)
+                # print("standard sort:", columns[0], '/', sortable_obj)
                 result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=False)
-                print(len(result))
+                # print(len(result))
             for u in unsortable_obj:
                 result.append(u)
-            print(len(result))
+            # print(len(result))
             return result
 
         else:
             result = []
             # Need to add second column sort capability
             if reverse_sort(columns[0]):
-                print("reverse sort:", strip_sort_indicator(columns[0]))
-                print(json_obj[0])
+                # print("reverse sort:", strip_sort_indicator(columns[0]))
+                # print(json_obj[0])
                 result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=True)
             else:
-                print("sort:", columns[0])
+                # print("sort:", columns[0])
                 result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=False)
 
             for u in unsortable_obj:
                 result.append(u)
             return result
     else:
-        print('No sort')
+        # print('No sort')
         return json_obj
 
 
