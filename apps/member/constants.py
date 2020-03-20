@@ -52,7 +52,7 @@ RECORDS_STU3 = [
     {'name': 'Account', 'slug': 'account', 'call_type': 'fhir', 'resources': ['Account'], 'display': 'Account', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'ActivityDefinition', 'slug': 'activitydefinition', 'call_type': 'fhir', 'resources': ['ActivityDefinition'], 'display': 'Activity Definition', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'AllergyIntolerance', 'slug': 'allergyintolerance', 'call_type': 'fhir', 'resources': ['AllergyIntolerance'],
-     'display': 'Allergy Intolerance',
+     'display': 'Allergies',
      'headers': ['id', 'clinicalStatus', 'verificationStatus', 'category', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'patient'],
      'field_formats':[{"field": "category", "detail": "$.category[*]", "format": ""},
@@ -60,7 +60,7 @@ RECORDS_STU3 = [
                      {"field": "onsetDateTime", "detail": "$.onsetDateTime[*]", "format": {"start": 0, "end": 10}},
                      {"field": "assertedDate", "detail": "$.assertedDate[*]", "format": {"start": 0, "end": 10}}
                      ],
-     'sort': ['-onsetDateTime',]},
+     'sort': ['-onsetDateTime']},
     {'name': 'AdverseEvent', 'slug': 'adverseevent', 'call_type': 'fhir', 'resources': ['AdverseEvent'], 'display': 'Adverse Event', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'Appointment', 'slug': 'appointment', 'call_type': 'fhir', 'resources': ['Appointment'], 'display': 'Appointment', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'AppointmentResponse', 'slug': 'appointmentresponse', 'call_type': 'fhir', 'resources': ['AppointmentResponse'], 'display': 'Appointment Response', 'headers': ['id'], 'exclude': ['meta']},
@@ -80,9 +80,29 @@ RECORDS_STU3 = [
     {'name': 'Communication', 'slug': 'communication', 'call_type': 'fhir', 'resources': ['Communication'], 'display': 'Communication', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'CommunicationRequest', 'slug': 'communicationrequest', 'call_type': 'fhir', 'resources': ['CommunicationRequest'], 'display': 'Communication Response', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'CompartmentDefinition', 'slug': 'compartmentdefinition', 'call_type': 'fhir', 'resources': ['CompartmentDefinition'], 'display': 'Compartment Definition', 'headers': ['id'], 'exclude': ['meta']},
-    {'name': 'Composition', 'slug': 'composition', 'call_type': 'fhir', 'resources': ['Composition'], 'display': 'Composition', 'headers': ['id'], 'exclude': ['meta']},
-    {'name': 'ConceptMap', 'slug': 'conceptmap', 'call_type': 'fhir', 'resources': ['ConceptMap'], 'display': 'Concept Map', 'headers': ['id'], 'exclude': ['meta']},
-    {'name': 'Condition', 'slug': 'condition', 'call_type': 'fhir', 'resources': ['Condition'], 'display': 'Condition', 'headers': ['id'], 'exclude': ['meta']},
+    {'name': 'Composition', 'slug': 'composition', 'call_type': 'fhir', 'resources': ['Composition'],
+     'display': 'Composition',
+     'headers': ['id', 'status', 'type', 'date', '*'],
+     'exclude': ['meta', 'identifier', 'resourceType', 'class', 'subject', 'author', 'title', 'attester', 'custodian', 'event'],
+     'field_formats':[{'field': 'type', 'detail': '$.type.coding[*].display', 'format': ''},
+                      {'field': 'date', 'detail': '$.date', 'format': {'start': 0, 'end': 10}},
+                      {'field': 'section', 'detail': '$.section[*].entry[*].display', 'format': ''}],
+     'sort': ['-date']
+     },
+    {'name': 'ConceptMap', 'slug': 'conceptmap', 'call_type': 'fhir', 'resources': ['ConceptMap'],
+     'display': 'Concept Map',
+     'headers': ['id', '*'],
+     'exclude': ['meta', 'resourceType'],
+     'field_formats':[],
+     'sort': ['-id']
+     },
+    {'name': 'Condition', 'slug': 'condition', 'call_type': 'fhir', 'resources': ['Condition'],
+     'display': 'Condition',
+     'headers': ['id', 'clinicalStatus', 'verificationStatus', 'code'],
+     'exclude': ['meta', 'resourceType', 'category', 'subject'],
+     'field_formats': [{'field': 'code', 'detail': '$.code.text', 'format': ''}],
+     'sort': ['-id']
+     },
     {'name': 'Consent', 'slug': 'consent', 'call_type': 'fhir', 'resources': ['Consent'], 'display': 'Consent', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'Contract', 'slug': 'contract', 'call_type': 'fhir', 'resources': ['Contract'], 'display': 'Contract', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'Coverage', 'slug': 'coverage', 'call_type': 'fhir', 'resources': ['Coverage'], 'display': 'Coverage', 'headers': ['id'], 'exclude': ['meta']},
@@ -99,8 +119,9 @@ RECORDS_STU3 = [
      'exclude': ['resourceType', 'meta', 'identifier', 'subject'],
      'field_formats':[{"field": "result", "detail": "$.result[*].display", "format": ""},
                      {"field": "code", "detail": "$.code.coding[*].display", "format": ""},
-                     {"field": "effectivePeriod", "detail": "$.effectivePeriod[*]", "format": {"start": 0, "end": 10}}
-                    ]},
+                     {"field": "effectivePeriod", "detail": "$.effectivePeriod[*]", "format": {"start": 0, "end": 10}}],
+     'sort': ['-effectivePeriod']
+     },
     {'name': 'DocumentManifest', 'slug': 'documentmanifest', 'call_type': 'fhir', 'resources': ['DocumentManifest'], 'display': 'Document Manifest', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'DocumentReference', 'slug': 'documentreference', 'call_type': 'fhir', 'resources': ['DocumentReference'], 'display': 'Document Reference', 'headers': ['id'], 'exclude': ['meta']},
     {'name': 'EligibilityRequest', 'slug': 'eligibilityrequest', 'call_type': 'fhir', 'resources': ['EligibilityRequest'], 'display': 'Eligibility Request', 'headers': ['id'], 'exclude': ['meta']},
@@ -145,7 +166,7 @@ RECORDS_STU3 = [
     # Observation mixes labs and vital-signs
     {'name': 'Observation', 'slug': 'observation', 'call_type': 'fhir', 'resources': ['Observation'], 'display': 'Observation', 'headers': ['id'], 'exclude': ['meta']},
     # Split to vital-signs
-    {'name': 'VitalSigns', 'slug': 'vitalsigns', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Vital Signs', 'headers': ['id', '*'], 'exclude': ['meta', 'resourceType']},
+    {'name': 'VitalSigns', 'slug': 'vitalsigns', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Vital Signs', 'headers': ['id', '*'], 'exclude': ['meta', 'resourceType', 'subject']},
     # Split to Lab Results
     {'name': 'LabResults', 'slug': 'labresults', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Lab Results', 'headers': ['id', "*"], 'exclude': ['meta', 'resourceType']},
     #
