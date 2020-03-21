@@ -146,7 +146,6 @@ def sort_json(json_obj, columns):
         if len(columns) == 1:
             result = []
             if reverse_sort(columns[0]):
-                # result = sorted(sortable_obj, key=lambda e: (-e[strip_sort_indicator(columns[0])]))
                 result = sorted(sortable_obj, key=itemgetter(strip_sort_indicator(columns[0])), reverse=True)
             else:
                 # print("standard sort:", columns[0], '/', sortable_obj)
@@ -204,3 +203,22 @@ def reverse_sort(sort_field):
             return True
 
     return False
+
+
+def rebuild_field_path(sort_field, resource):
+    """
+    convert dot connected fields into a valid field reference
+    :param sort_field:
+    :return: path_to_field
+    """
+
+    sorted = strip_sort_indicator(sort_field)
+
+    split_sorted = sorted.split()
+
+    sort_with_this = ""
+    for s in split_sorted:
+        if s in resource:
+            sort_with_this = sort_with_this + s
+
+    return sort_with_this

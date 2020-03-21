@@ -36,7 +36,7 @@ from apps.org.models import (
 from apps.users.models import UserProfile
 from apps.users.utils import get_id_token_payload
 
-from .constants import RECORDS, RECORDS_STU3, FIELD_TITLES
+from .constants import RECORDS, RECORDS_STU3, FIELD_TITLES, PROVIDER_RESOURCES
 from .forms import ResourceRequestForm
 from .utils import (
     fetch_member_data,
@@ -389,48 +389,114 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
 
 
 class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
-    template_name = "providers.html"
+    template_name = "records2.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['member'] = self.get_member()
+        resource_name = self.kwargs.get('resource_name') or 'list'
         data = fetch_member_data(context['member'], 'sharemyhealth')
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
         if context['updated_at']:
             context['time_since_update'] = (
                 datetime.now(timezone.utc) - context['updated_at']
             )
-        fhir_data = data.get('fhir_data')
+
+        ####
+        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        fhir_data = load_test_fhir_data(data)
+        # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
-            context['data'] = fhir_data
+            context['data'] = data
+
+        logging.debug(
+            "fhir_data records: %r",
+            fhir_data and fhir_data.get(
+                'entry') and len(fhir_data.get('entry')),
+        )
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context[
-                            'member'], 'sharemyhealth')
+                'member'], 'sharemyhealth')
 
-        encounters = get_resource_data(
-            fhir_data, 'Encounter', constructor=Encounter.from_data
-        )
-        encounters.sort(key=lambda e: e.period.start,
-                        reverse=True)  # latest ones first
-        practitioners = get_resource_data(
-            fhir_data, 'Practitioner', constructor=Practitioner.from_data
-        )
-        for index, practitioner in enumerate(practitioners):
-            practitioner.last_encounter = practitioner.next_encounter(
-                encounters)
-            practitioners[index] = practitioner
+        if resource_name == 'list':
+            provider_related = []
+            for r in RECORDS_STU3:
+                if r['name'] in PROVIDER_RESOURCES:
+                    provider_related.append(r)
+            all_records = provider_related
+            summarized_records = []
+            for record in all_records:
+                if record['call_type'].lower() == "fhir":
+                    # print("record processing for ", record['name'])
+                    entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                    record['data'] = entries['entry']
+                    record['count'] = len(entries['entry'])
+                    summarized_records.append(record)
+                elif record['call_type'].lower() == 'custom':
+                    pass
+                else:  # skip
+                    pass
 
-        practitioners.sort(
-            key=lambda p: (
-                p.last_encounter.period.start
-                if p.last_encounter
-                else datetime(1, 1, 1, tzinfo=timezone.utc)
-            ),
-            reverse=True,
-        )
+            context.setdefault('all_records', summarized_records)
 
-        context['practitioners'] = practitioners
+        else:
+            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_name)]
+
+            # print("Resource Profile", resource_profile)
+
+            if resource_profile:
+                title = resource_profile['display']
+                headers = resource_profile['headers']
+                exclude = resource_profile['exclude']
+                # second_fields = headers
+                # second_fields.append(exclude)
+            else:
+                title = resource_name
+                headers = ['id', ]
+                exclude = ['']
+                # second_fields
+
+            ff = find_list_entry(FIELD_TITLES, "profile", resource_profile['name'])
+            # print("Friendly:", ff)
+            # print("headers:", headers)
+            # print("Exclude:", exclude)
+            # print("second_fields:", second_fields)
+            if "sort" in resource_profile:
+                sort_field = resource_profile['sort']
+            else:
+                sort_field = ""
+
+            title = resource_profile['display']
+            if resource_profile['call_type'] == 'custom':
+                if resource_profile['slug'] == 'labresults':
+                    entries = get_lab_results(fhir_data, resource_profile)
+                elif resource_profile['slug'] == 'vitalsigns':
+                    entries = get_vital_signs(fhir_data, resource_profile)
+            elif resource_profile['call_type'] == 'skip':
+                entries = {'entry': []}
+            else:
+                entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+            content_list = path_extract(entries['entry'], resource_profile)
+            context.setdefault('friendly_fields',
+                               find_list_entry(FIELD_TITLES, "profile", resource_profile['name']))
+            context.setdefault('title', title)
+            context.setdefault('headers', headers)
+            context.setdefault('exclude', exclude)
+            # context.setdefault('content_list', content_list)
+            context.setdefault('resource_profile', resource_profile)
+            sorted_content = sort_json(content_list, sort_field)
+            context.setdefault('content_list', sorted_content)
+
+        return context
+
+    def render_to_response(self, context, **kwargs):
+        if context.get('redirect_url'):
+            return redirect(context.get('redirect_url'))
+        else:
+            return super().render_to_response(context, **kwargs)
+
+        #######
         return context
 
 
