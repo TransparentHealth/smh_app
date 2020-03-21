@@ -79,7 +79,6 @@ def path_extract(entry, resource_spec):
     :return:
     """
 
-
     if 'field_formats' in resource_spec:
         field_formats = resource_spec['field_formats']
     else:
@@ -138,8 +137,13 @@ def sort_json(json_obj, columns):
         unsortable_obj = []
         for j in json_obj:
             if strip_sort_indicator(columns[0]) in j:
-                # print(columns[0], "is sortable")
-                sortable_obj.append(j)
+                # print(columns[0], "may be sortable:", type(j[columns[0]]))
+                if type(j[strip_sort_indicator(columns[0])]) in [list, dict]:
+                    # print("Excluding a ", type(j[columns[0]]))
+                    unsortable_obj.append(j)
+                else:
+                    # print('sorting:', j[columns[0]])
+                    sortable_obj.append(j)
             else:
                 unsortable_obj.append(j)
 
@@ -190,6 +194,7 @@ def strip_sort_indicator(sort_field):
 
     else:
         return
+
 
 def reverse_sort(sort_field):
     """

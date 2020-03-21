@@ -274,11 +274,11 @@ RECORDS_STU3 = [
     {'name': 'Person', 'slug': 'person', 'call_type': 'fhir', 'resources': ['Person'], 'display': 'Person', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'PlanDefinition', 'slug': 'plandefinition', 'call_type': 'fhir', 'resources': ['PlanDefinition'], 'display': 'Plan Definition', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Practitioner', 'slug': 'practitioner', 'call_type': 'fhir', 'resources': ['Practitioner'], 'display': 'Provider',
-     'headers': ['id', 'practitioner', 'organization', '*'],
+     'headers': ['id', 'name', 'telecom', 'address', '*'],
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats': [{"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
                       ],
-    'sort': ['practitioner']
+    'sort': ['name',]
      },
     {'name': 'PractitionerRole', 'slug': 'practitionerrole', 'call_type': 'fhir', 'resources': ['PractitionerRole'], 'display': 'Practitioner Role',
      'headers': ['id', 'practitioner', 'organization', '*'],

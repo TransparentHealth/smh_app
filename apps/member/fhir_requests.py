@@ -34,7 +34,7 @@ VITALSIGNS = ['3141-9', '8302-2', '39156-5',
               '8480-6', '8462-4', '8867-4', '8310-5', '9279-1']
 
 # True or False to enable debug printing
-DEBUG_MODULE = True
+DEBUG_MODULE = False
 
 
 def get_converted_fhir_resource(fhir_data, resourcetype="all"):

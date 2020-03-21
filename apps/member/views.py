@@ -207,6 +207,9 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context['time_since_update'] = (
                 datetime.now(timezone.utc) - context['updated_at']
             )
+
+        context['back_to'] = 'member:records'
+
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
         fhir_data = load_test_fhir_data(data)
@@ -393,6 +396,8 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        print(context)
+
         context['member'] = self.get_member()
         resource_name = self.kwargs.get('resource_name') or 'list'
         data = fetch_member_data(context['member'], 'sharemyhealth')
@@ -401,6 +406,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context['time_since_update'] = (
                 datetime.now(timezone.utc) - context['updated_at']
             )
+        context['back_to'] = 'member:providers'
 
         ####
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
@@ -438,6 +444,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 else:  # skip
                     pass
 
+            context['back_to'] = 'member:providers'
             context.setdefault('all_records', summarized_records)
 
         else:
@@ -487,6 +494,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('resource_profile', resource_profile)
             sorted_content = sort_json(content_list, sort_field)
             context.setdefault('content_list', sorted_content)
+            context['back_to'] = 'member:providers'
 
         return context
 

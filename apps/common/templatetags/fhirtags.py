@@ -1,6 +1,7 @@
 from django import template
 from django.template.defaulttags import register
 from ...member.constants import FIELD_TITLES
+from ...member.fhir_custom_formats import address
 
 # register = template.Library()
 
@@ -36,18 +37,6 @@ def valueformat(value, key):
     """
     Receive value and name of field.
     Check for special formatting for Name, Address or Telecom otherwise return value
-     "address": [
-        {
-            "use": "work",
-            "line": [
-                "80 Wolf Road"
-            ],
-            "city": "Albany",
-            "state": "NY",
-            "postalCode": "12205",
-            "country": "US"
-        }
-    ]
     [{'system': 'phone', 'value': '+1-518-438-4483', 'use': 'work'}]
     name: [{'use': 'usual', 'family': 'Randaisi', 'given': ['Deborah', 'L'], 'suffix': ['P.A.C']}]
     :param value:
@@ -55,45 +44,21 @@ def valueformat(value, key):
     :return: value | formatted value based on key
     """
 
+    # print(key, value)
     if key:
         if key.lower() == "address":
-            f_value = ""
-            use_str = ""
-            line_str = ""
-            city_str = ""
-            state_str = ""
-            zip_str = ""
-            print("address processing", value)
-            if isinstance(value, str):
-                return value
-            for a in value:
-                print("working on:", a)
-                if 'use' in a:
-                    use_str = a['use']
-                if 'city' in a:
-                    city_str = a['city']
-                if 'state' in a:
-                    state_str = a['state']
-                if 'postalCode' in a:
-                    zip_str = a['postalCode']
-                if 'line' in a:
-                    line_str = ','.join([str(x) for x in a['line']])
-                f_value += "%s: %s, %s, %s %s. " % (use_str,
-                                                    line_str,
-                                                    city_str,
-                                                    state_str,
-                                                    zip_str)
-
+            f_value = address(value)
             return f_value
+
         elif key.lower() == "telecom":
             if isinstance(value, str):
                 return value
-            use_str = ""
-            sys_str = ""
-            val_str = ""
             f_value = ""
 
             for t in value:
+                use_str = ""
+                sys_str = ""
+                val_str = ""
                 if 'system' in t:
                     sys_str = t['system']
                 if 'use' in t:
@@ -108,10 +73,10 @@ def valueformat(value, key):
             if isinstance(value, str):
                 return value
             f_value = ""
-            family_str = ""
-            given_str = ""
-            suffix_str = ""
             for n in value:
+                family_str = ""
+                given_str = ""
+                suffix_str = ""
                 if 'given' in n:
                     given_str = ' '.join([str(x) for x in n['given']])
                 if 'suffix' in n:
