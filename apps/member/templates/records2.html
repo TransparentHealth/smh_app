@@ -84,7 +84,7 @@
                                                     data-url="/member/{{ member.id }}/data/{{ item.resourceType }}/{{ item.id }}">
                                                     {{ value }}</a>
                                                 {% elif value %}
-                                                    {{ value }}
+                                                    {{ value|valueformat:key }}
                                                 {% else %}
                                                     +++
                                                 {% endif %}
@@ -96,7 +96,7 @@
                                                 {% if key in exclude or key in headers%}
                                                 {% else %}
                                                     <td>
-                                                        {{ key|friendlyfield:resource_profile.name }}:<br/>{{ value }}
+                                                        {{ key|friendlyfield:resource_profile.name }}:<br/>{{ value|valueformat:key }}
                                                     </td>
                                                 {% endif %}
                                             {% endfor %}
