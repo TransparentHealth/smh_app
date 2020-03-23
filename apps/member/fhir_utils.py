@@ -65,6 +65,7 @@ def load_test_fhir_data(data):
         # Only run this locally
         # f = open("/Volumes/GoogleDrive/My Drive/NewWave/Projects/AFBH-NY/hixny/data_analysis/md_fhir.json", "r")
         # fhir_data = json.load(f)
+        fhir_data = data.get('fhir_data')
     return fhir_data
 
 
