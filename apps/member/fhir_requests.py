@@ -1,37 +1,10 @@
 import logging
 from django.conf import settings
+from .constants import RESOURCES, VITALSIGNS
 logger = logging.getLogger(__name__)
 
 
 BUNDLE = {"resourceType": "Bundle", "entry": []}
-
-RESOURCES = ['Account', 'ActivityDefinition', 'AllergyIntolerance', 'AdverseEvent', 'Appointment',
-             'AppointmentResponse', 'AuditEvent', 'Basic', 'Binary', 'BodySite', 'Bundle',
-             'CapabilityStatement', 'CarePlan', 'CareTeam', 'ChargeItem', 'Claim', 'ClaimResponse',
-             'ClinicalImpression', 'CodeSystem', 'Communication', 'CommunicationRequest',
-             'CompartmentDefinition', 'Composition', 'ConceptMap', 'Condition', 'Consent',
-             'Contract', 'Coverage', 'DataElement', 'DetectedIssue', 'Device', 'DeviceComponent',
-             'DeviceMetric', 'DeviceRequest', 'DeviceUseStatement', 'DiagnosticReport', 'DocumentManifest',
-             'DocumentReference', 'EligibilityRequest', 'EligibilityResponse', 'Encounter', 'Endpoint',
-             'EnrollmentRequest', 'EnrollmentResponse', 'EpisodeOfCare', 'ExpansionProfile',
-             'ExplanationOfBenefit', 'FamilyMemberHistory', 'Flag', 'Goal', 'GraphDefinition',
-             'Group', 'GuidanceResponse', 'HealthcareService', 'ImagingManifest', 'ImagingStudy',
-             'Immunization', 'ImmunizationRecommendation', 'ImplementationGuide', 'Library', 'Linkage',
-             'List', 'Location', 'Measure', 'MeasureReport', 'Media',
-             'Medication', 'MedicationAdministration', 'MedicationDispense', 'MedicationRequest',
-             'MedicationStatement', 'MessageDefinition', 'MessageHeader', 'NamingSystem',
-             'NutritionOrder', 'Observation', 'OperationDefinition', 'OperationOutcome',
-             'Organization', 'Parameters', 'Patient', 'PaymentNotice', 'PaymentReconciliation',
-             'Person', 'PlanDefinition', 'Practitioner', 'PractitionerRole', 'Procedure',
-             'ProcedureRequest', 'ProcessRequest', 'ProcessResponse', 'Provenance',
-             'Questionnaire', 'QuestionnaireResponse', 'ReferralRequest', 'RelatedPerson',
-             'RequestGroup', 'ResearchStudy', 'ResearchSubject', 'RiskAssessment',
-             'Schedule', 'SearchParameter', 'Sequence', 'ServiceDefinition', 'Slot', 'Specimen',
-             'StructureDefinition', 'StructureMap', 'Subscription', 'Substance', 'SupplyDelivery',
-             'SupplyRequest', 'Task', 'TestScript', 'TestReport', 'ValueSet', 'VisionPrescription']
-
-VITALSIGNS = ['3141-9', '8302-2', '39156-5',
-              '8480-6', '8462-4', '8867-4', '8310-5', '9279-1']
 
 # True or False to enable debug printing
 DEBUG_MODULE = False

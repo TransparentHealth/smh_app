@@ -8,7 +8,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
 #  2621440 = 2.5Mb
 ```
 
-Added lists for FHIR STU3 Resources and Vital-Signs
+Added lists for FHIR STU3 Resources and Vital-Signs to apps.member.constants
 
 ```
 RESOURCES = [‘Account’, ‘ActivityDefinition’, ‘AllergyIntolerance’, ‘AdverseEvent’, ‘Appointment’,
@@ -41,7 +41,6 @@ VITALSIGNS = ['3141-9', '8302-2', '39156-5',
 
 
 ```
-Added RESOURCES and VITALSIGNS to  SETTINGS_EXPORT
 
 ## Settings - SMH_APP
 
