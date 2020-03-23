@@ -186,7 +186,7 @@ RECORDS_STU3 = [
      'headers': ['id', 'code', '*'],
      'exclude': ['meta', 'resourceType'],
      'field_formats':[{"field": "code", "detail": "$.code.text", "format": ''}],
-     'sort': []
+     'sort': ['code',]
      },
     {'name': 'MedicationAdministration', 'slug': 'medicationadministration', 'call_type': 'fhir', 'resources': ['MedicationAdministration'], 'display': 'Medication Administration', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'MedicationDispense', 'slug': 'medicationdispense', 'call_type': 'fhir', 'resources': ['MedicationDispense'], 'display': 'Medication Dispense',
@@ -333,3 +333,31 @@ RECORDS_STU3 = [
     {'name': 'ValueSet', 'slug': 'valueset', 'call_type': 'fhir', 'resources': ['ValueSet'], 'display': 'Value Set', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'VisionPrescription', 'slug': 'visionprescription', 'call_type': 'fhir', 'resources': ['VisionPrescription'], 'display': 'Vision Prescription', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']}
 ]
+
+RESOURCES = ['Account', 'ActivityDefinition', 'AllergyIntolerance', 'AdverseEvent', 'Appointment',
+             'AppointmentResponse', 'AuditEvent', 'Basic', 'Binary', 'BodySite', 'Bundle',
+             'CapabilityStatement', 'CarePlan', 'CareTeam', 'ChargeItem', 'Claim', 'ClaimResponse',
+             'ClinicalImpression', 'CodeSystem', 'Communication', 'CommunicationRequest',
+             'CompartmentDefinition', 'Composition', 'ConceptMap', 'Condition', 'Consent',
+             'Contract', 'Coverage', 'DataElement', 'DetectedIssue', 'Device', 'DeviceComponent',
+             'DeviceMetric', 'DeviceRequest', 'DeviceUseStatement', 'DiagnosticReport', 'DocumentManifest',
+             'DocumentReference', 'EligibilityRequest', 'EligibilityResponse', 'Encounter', 'Endpoint',
+             'EnrollmentRequest', 'EnrollmentResponse', 'EpisodeOfCare', 'ExpansionProfile',
+             'ExplanationOfBenefit', 'FamilyMemberHistory', 'Flag', 'Goal', 'GraphDefinition',
+             'Group', 'GuidanceResponse', 'HealthcareService', 'ImagingManifest', 'ImagingStudy',
+             'Immunization', 'ImmunizationRecommendation', 'ImplementationGuide', 'Library', 'Linkage',
+             'List', 'Location', 'Measure', 'MeasureReport', 'Media',
+             'Medication', 'MedicationAdministration', 'MedicationDispense', 'MedicationRequest',
+             'MedicationStatement', 'MessageDefinition', 'MessageHeader', 'NamingSystem',
+             'NutritionOrder', 'Observation', 'OperationDefinition', 'OperationOutcome',
+             'Organization', 'Parameters', 'Patient', 'PaymentNotice', 'PaymentReconciliation',
+             'Person', 'PlanDefinition', 'Practitioner', 'PractitionerRole', 'Procedure',
+             'ProcedureRequest', 'ProcessRequest', 'ProcessResponse', 'Provenance',
+             'Questionnaire', 'QuestionnaireResponse', 'ReferralRequest', 'RelatedPerson',
+             'RequestGroup', 'ResearchStudy', 'ResearchSubject', 'RiskAssessment',
+             'Schedule', 'SearchParameter', 'Sequence', 'ServiceDefinition', 'Slot', 'Specimen',
+             'StructureDefinition', 'StructureMap', 'Subscription', 'Substance', 'SupplyDelivery',
+             'SupplyRequest', 'Task', 'TestScript', 'TestReport', 'ValueSet', 'VisionPrescription']
+
+VITALSIGNS = ['3141-9', '8302-2', '39156-5',
+              '8480-6', '8462-4', '8867-4', '8310-5', '9279-1']

@@ -7,6 +7,7 @@ from jsonpath_ng import parse, jsonpath
 from operator import itemgetter
 from operator import itemgetter as i
 from functools import cmp_to_key
+from .constants import VITALSIGNS
 
 
 def resource_count(entries=[]):
@@ -60,9 +61,10 @@ def load_test_fhir_data(data):
     if settings.VPC_ENV in ['prod', 'staging', 'dev']:
         fhir_data = data.get('fhir_data')
     else:
+        pass
         # Only run this locally
-        f = open("/Volumes/GoogleDrive/My Drive/NewWave/Projects/AFBH-NY/hixny/data_analysis/md_fhir.json", "r")
-        fhir_data = json.load(f)
+        # f = open("/Volumes/GoogleDrive/My Drive/NewWave/Projects/AFBH-NY/hixny/data_analysis/md_fhir.json", "r")
+        # fhir_data = json.load(f)
     return fhir_data
 
 
@@ -227,3 +229,87 @@ def rebuild_field_path(sort_field, resource):
             sort_with_this = sort_with_this + s
 
     return sort_with_this
+
+
+def create_vital_sign_view_by_date(fhir_entries):
+    """
+    use the grouped vitalsigns
+
+    create a single record based on the vital signs from
+    """
+
+    vs_view = []
+    vs_item = {}
+    vs_deduplicate = []
+    vitalsigns = group_vitalsigns_by_date(fhir_entries)
+    for k, v in vitalsigns:
+        # For each start date we must build a view
+        for f in v:
+            # Get each vitalsign fhir entry dict
+            pass
+            if 'code' in f:
+                if 'coding' in f['code']:
+                    for coding in f['code']['coding'] and 'valueQuantity' in f:
+                        if coding['code'] in VITALSIGNS:
+
+                            vs_item['code'] = coding['code']
+                            vs_item['display'] = coding['display']
+                            vs_item['value'] = f['valueQuantity']['value']
+                            vs_item['unit'] = f['valueQuantity']['unit']
+
+
+
+    return vs_view
+
+
+def group_vitalsigns_by_date(fhir_entries):
+    """
+    Build a Vital Signs Dict by date
+    Consolidate entries for a date into a single record
+    :param fhir_entries:
+    :return: fhir_bundle
+    """
+
+    vitalsigns = {}
+
+    # Loop through vital signs and group records by effectivePeriod
+    # vitalsigns = {
+    #    "{YYYY-MM-DD}"
+
+    #     "entries": [
+    #       {fhir_entries for effectivePeriod.start},
+    #       ]
+    # }
+
+    for f in fhir_entries:
+        vs = {}
+        if 'effectivePeriod' in f:
+            if 'start' in f['effectivePeriod']:
+                # we can work with the record
+                startd = f['effectivePeriod']['start'][0:10]
+                if startd in vitalsigns:
+                    vitalsigns[startd] = f
+
+    #             vs = find_key_value_in_list(vitalsigns, 'effectivePeriod', f['effectivePeriod'['start']])
+    #             vs['date'] = f['effectivePeriod']['start']
+    #             if 'code' in f:
+    #                 if 'coding' in f['code']:
+    #                     for c in f['code']['coding']:
+    #                         vs[]
+
+    return vitalsigns
+
+
+def find_key_value_in_list(listing, key, value):
+    """
+    look for key with value in list and return dict
+    :param listing:
+    :param key:
+    :param value:
+    :return: dict_found
+    """
+    dict_found = next(filter(lambda obj: obj.get(key) == value, listing), None)
+    if dict_found:
+        return dict_found
+    else:
+        return {}
