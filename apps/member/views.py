@@ -1,26 +1,26 @@
 import json
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.staticfiles.templatetags.staticfiles import static
-from django.http.response import Http404, HttpResponse, JsonResponse
+from django.http.response import Http404, HttpResponse   ## , JsonResponse
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
-from django.utils.html import mark_safe
+# from django.utils.html import mark_safe
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import DeleteView
 from memoize import delete_memoized
 
-from apps.data.models.condition import Condition
-from apps.data.models.encounter import Encounter
+# from apps.data.models.condition import Condition
+# from apps.data.models.encounter import Encounter
 from apps.data.models.procedure import Procedure
-from apps.data.models.observation import Observation
+# from apps.data.models.observation import Observation
 from apps.data.models.practitioner import Practitioner
 from apps.data.util import parse_timestamp
 from apps.notifications.models import Notification
@@ -36,11 +36,11 @@ from apps.org.models import (
 from apps.users.models import UserProfile
 from apps.users.utils import get_id_token_payload
 
-from .constants import RECORDS, RECORDS_STU3, FIELD_TITLES, PROVIDER_RESOURCES
+from .constants import RECORDS_STU3, FIELD_TITLES, PROVIDER_RESOURCES, RESOURCES, VITALSIGNS
 from .forms import ResourceRequestForm
 from .utils import (
     fetch_member_data,
-    get_allergies,
+    # get_allergies,
     get_prescriptions,
     get_resource_data,
 )
@@ -48,8 +48,6 @@ from .fhir_requests import (
     get_converted_fhir_resource,
     get_lab_results,
     get_vital_signs,
-    RESOURCES,
-    VITALSIGNS
 )
 from .fhir_utils import (
     resource_count,
@@ -270,7 +268,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 exclude = ['']
                 # second_fields
 
-            ff = find_list_entry(FIELD_TITLES, "profile", resource_profile['name'])
+            # ff = find_list_entry(FIELD_TITLES, "profile", resource_profile['name'])
             # print("Friendly:", ff)
             # print("headers:", headers)
             # print("Exclude:", exclude)
@@ -283,7 +281,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             title = resource_profile['display']
             if resource_profile['call_type'] == 'custom':
                 if resource_profile['slug'] == 'labresults':
-                    entries =  get_lab_results(fhir_data, resource_profile)
+                    entries = get_lab_results(fhir_data, resource_profile)
                 elif resource_profile['slug'] == 'vitalsigns':
                     entries = get_vital_signs(fhir_data, resource_profile)
             elif resource_profile['call_type'] == 'skip':
@@ -464,7 +462,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 exclude = ['']
                 # second_fields
 
-            ff = find_list_entry(FIELD_TITLES, "profile", resource_profile['name'])
+            # ff = find_list_entry(FIELD_TITLES, "profile", resource_profile['name'])
             # print("Friendly:", ff)
             # print("headers:", headers)
             # print("Exclude:", exclude)

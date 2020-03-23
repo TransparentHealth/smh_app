@@ -1,12 +1,12 @@
 # util functions for fhir_requests
-import logging
-import json
+# import logging
+# import json
 
 from django.conf import settings
-from jsonpath_ng import parse, jsonpath
+from jsonpath_ng import parse    ##, jsonpath
 from operator import itemgetter
-from operator import itemgetter as i
-from functools import cmp_to_key
+# from operator import itemgetter as i
+# from functools import cmp_to_key
 from .constants import VITALSIGNS
 
 
@@ -31,7 +31,8 @@ def resource_count(entries=[]):
 
 
 def find_index(dicts, key, value):
-    class Null: pass
+    class Null:
+        pass
     for i, d in enumerate(dicts):
         if d.get(key, Null) == value:
             return i
