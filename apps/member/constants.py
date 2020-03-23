@@ -183,9 +183,9 @@ RECORDS_STU3 = [
     {'name': 'MeasureReport', 'slug': 'measurereport', 'call_type': 'fhir', 'resources': ['MeasureReport'], 'display': 'Measure Report', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Media', 'slug': 'media', 'call_type': 'fhir', 'resources': ['Media'], 'display': 'Media', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Medication', 'slug': 'medication', 'call_type': 'fhir', 'resources': ['Medication'], 'display': 'Medication',
-     'headers': ['id', 'code'],
+     'headers': ['id', 'code', '*'],
      'exclude': ['meta', 'resourceType'],
-     'field_formats':[{"field": "code", "detail": "$.code.coding[*].display", "format": ''}],
+     'field_formats':[{"field": "code", "detail": "$.code.text", "format": ''}],
      'sort': []
      },
     {'name': 'MedicationAdministration', 'slug': 'medicationadministration', 'call_type': 'fhir', 'resources': ['MedicationAdministration'], 'display': 'Medication Administration', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
