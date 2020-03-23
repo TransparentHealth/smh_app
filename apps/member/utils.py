@@ -167,3 +167,5 @@ def get_allergies(data, keys=None):
         for entry in (data or {}).get('entry', [])
         if entry['resource']['resourceType'] == 'AllergyIntolerance'
     ]
+
+

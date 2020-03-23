@@ -15,6 +15,8 @@ from apps.data.util import parse_timestamp
 
 from .utils import get_id_token_payload
 
+LEAP_DAY_ANNIVERSARY_FEB28 = True
+
 
 class UserType(Enum):
     OTHER = 'Other'
