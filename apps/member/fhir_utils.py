@@ -3,7 +3,7 @@
 # import json
 
 from django.conf import settings
-from jsonpath_ng import parse    ##, jsonpath
+from jsonpath_ng import parse    #, jsonpath
 from operator import itemgetter
 # from operator import itemgetter as i
 # from functools import cmp_to_key
