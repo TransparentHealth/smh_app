@@ -13,6 +13,7 @@ from ...member.fhir_custom_formats import address
 #     ]}
 # ]
 
+
 @register.filter
 def friendlyfield(value, resource):
     """

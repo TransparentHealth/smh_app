@@ -8,7 +8,7 @@ OBSERVATiON_PROFILE = {"resourceType": "Observation",
                                          "valueQuantity.value",
                                          "valueQuantity.unit",
                                          "status"]
- }
+}
 
 # {'code': {'coding': [{'code': '9279-1',
 #                       'display': 'Respiratory Rate',
