@@ -1,5 +1,5 @@
 import logging
-from django.conf import settings
+# from django.conf import settings
 from .constants import RESOURCES, VITALSIGNS
 logger = logging.getLogger(__name__)
 
