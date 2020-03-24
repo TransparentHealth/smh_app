@@ -74,7 +74,6 @@ def get_vital_signs(fhir_data, record):
     else:
         observations = o_bundle['entry']
 
-
     found = 0
     skipped = 0
     for o in observations:
@@ -129,7 +128,6 @@ def get_lab_results(fhir_data, record):
             bundle['entry'].append(o)
             found += 1
             # print("added Bundle size:", len(bundle['entry']))
-
 
     if DEBUG_MODULE:
         print("Lab Results: Skipped:%s Added: %s of %s and returning %s" % (skipped,
