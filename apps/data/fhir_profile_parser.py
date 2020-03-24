@@ -3,7 +3,7 @@
 # flake8: noqa
 
 
-OBSERVATiON_PROFILE = {"resourceType": "Observation",
+OBSERVATION_PROFILE = {"resourceType": "Observation",
                        "displayFields": ["text",
                                          "subject.display",
                                          "valueQuantity.value",
