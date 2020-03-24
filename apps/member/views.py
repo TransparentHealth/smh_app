@@ -205,14 +205,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         if context['updated_at']:
             context['time_since_update'] = (
                 datetime.now(timezone.utc) - context['updated_at']
-            )
-
-        context['back_to'] = 'member:records'
-
-        ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
-        fhir_data = load_test_fhir_data(data)
-        # fhir_data = data.get('fhir_data')
+            )            
+        fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
 

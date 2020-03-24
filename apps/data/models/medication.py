@@ -100,6 +100,7 @@ class MedicationStatement(DataModel):
                         ]
                     ) + '])'
                     )
+
         except Exception:
             logger.debug("MedicationStatement Conversion Dosage error[%s]: %s" % self.dosage, exec_info=True)
             return "DOSAGE ERROR"
