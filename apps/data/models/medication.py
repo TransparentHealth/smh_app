@@ -1,3 +1,4 @@
+# flake8: noqa
 import logging
 from dataclasses import dataclass, field
 from typing import List
@@ -28,14 +29,14 @@ class MedicationRequester(DataModel):
     VALIDATORS = dict(
         agent=[
             lambda instance, field, value: not value
-            or not value.resourceType
-            or value.resourceType
-            in ['Practitioner', 'Organization', 'Patient', 'RelatedPerson', 'Device']
+                                           or not value.resourceType
+                                           or value.resourceType
+                                           in ['Practitioner', 'Organization', 'Patient', 'RelatedPerson', 'Device']
         ],
         onBehalfOf=[
             lambda instance, field, value: not value
-            or not value.resourceType
-            or value.resourceType in ['Organization']
+                                           or not value.resourceType
+                                           or value.resourceType in ['Organization']
         ],
     )
 
@@ -99,9 +100,9 @@ class MedicationStatement(DataModel):
                         ]
                     ) + '])'
                     )
-        except:
-            logger.debug("MedicationStatement Conversion Dosage error[%s]: %s" % (__context__,
-                                                                                  self.dosage))
+
+        except Exception:
+            logger.debug("MedicationStatement Conversion Dosage error[%s]: %s" % self.dosage, exec_info=True)
             return "DOSAGE ERROR"
 
     CONVERTERS = dict(
@@ -115,14 +116,14 @@ class MedicationStatement(DataModel):
     VALIDATORS = dict(
         status=[
             lambda instance, field, value: value
-            in [
-                'active',
-                'completed',
-                'entered-in-error',
-                'intended',
-                'stopped',
-                'on-hold',
-            ]
+                                           in [
+                                               'active',
+                                               'completed',
+                                               'entered-in-error',
+                                               'intended',
+                                               'stopped',
+                                               'on-hold',
+                                           ]
         ],
         taken=[lambda instance, field, value: value in ['y', 'n', 'unk', 'na']],
     )

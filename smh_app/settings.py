@@ -273,6 +273,9 @@ RESOURCE_NAME_AND_CLASS_MAPPING = {
     'sharemyhealth': 'apps.sharemyhealth.resources.Resource'
 }
 
+
+CREATE_MEMBER_ACCOUNT_URI = "%s/home/select-org-for-account-create/member" % (SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
+
 # Valid record types for member data
 VALID_MEMBER_DATA_RECORD_TYPES = [
     'prescriptions',
@@ -392,6 +395,7 @@ SETTINGS_EXPORT = [
     'SESSION_COOKIE_AGE',
     'REMOTE_ACCOUNT_SETTINGS_ENDPOINT',
     'REMOTE_ACCOUNT_SET_PICTURE_ENDPOINT',
+    'CREATE_MEMBER_ACCOUNT_URI',
 ]
 
 # Django-phonenumber-field settings
@@ -407,13 +411,22 @@ SESSION_COOKIE_SAMESITE = None
 # Using django-session-security to manage session timeout
 SESSION_SECURITY_EXPIRE_AFTER = 30 * 60  # 30 min inactivity
 
+# CDAs and FHIR Resources can be large. Editing in Admin can fail
+# If we don't update the max limit (in bytes)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
+#  2621440 = 2.5Mb
+
+# Used for Pretty Printing JSON
+JSON_INDENT = 4
+
 # AWS Settings -------------------------------------------
 AWS_DEFAULT_REGION = env('AWS_DEFAULT_REGION', 'us-east-1')
 
 EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES = env(
     'EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES', "EC2_PARAMSTORE")
 
-VPC_ENV = env('VPC_ENV',"UNKNOWN")
+VPC_ENV = env('VPC_ENV', "UNKNOWN")
 ROLE_TYPE = env('ROLE_TYPE', "NOT_SET")
 
 LOGGING = {
@@ -453,7 +466,7 @@ LOGGING = {
     },
     'loggers': {
         # root logger
-        'smh':{
+        'smh': {
             'handlers': ['console', 'logging.handlers.SysLogHandler'],
             'propagate': True,
             'level': 'INFO',
