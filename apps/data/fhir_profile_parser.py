@@ -1,5 +1,6 @@
 # Parse different FHIR Profiles
 # FHIR Version 3.0.2
+# flake8: noqa
 
 
 OBSERVATiON_PROFILE = {"resourceType": "Observation",
@@ -7,8 +8,7 @@ OBSERVATiON_PROFILE = {"resourceType": "Observation",
                                          "subject.display",
                                          "valueQuantity.value",
                                          "valueQuantity.unit",
-                                         "status"]
-}
+                                         "status"]}
 
 # {'code': {'coding': [{'code': '9279-1',
 #                       'display': 'Respiratory Rate',

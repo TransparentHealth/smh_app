@@ -1,4 +1,4 @@
-# noqa: E131
+# flake8: noqa
 import logging
 from dataclasses import dataclass, field
 from typing import List
