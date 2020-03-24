@@ -1,5 +1,5 @@
 psycopg2-binary==2.7.5
-Django==2.2.10
+Django==3.0
 social-auth-app-django==3.1.0
 python-jose==3.1.0
 dj-database-url==0.5.0
@@ -8,6 +8,7 @@ django-memoize==2.2.0
 django-phonenumber-field==2.0.1
 django-localflavor==2.1
 django-settings-export==1.2.1
+jsonPath-ng==1.5.1
 Pillow==6.2.0
 qrcode==6.1
 pyjwkest==1.4.0
