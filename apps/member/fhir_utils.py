@@ -3,7 +3,7 @@
 # import json
 
 from django.conf import settings
-from jsonpath_ng import parse    #, jsonpath
+from jsonpath_ng import parse    # , jsonpath
 from operator import itemgetter
 # from operator import itemgetter as i
 # from functools import cmp_to_key
@@ -243,6 +243,7 @@ def create_vital_sign_view_by_date(fhir_entries):
     vs_view = []
     vs_item = {}
     vs_deduplicate = []
+    vs_deduplicate.append('')
     vitalsigns = group_vitalsigns_by_date(fhir_entries)
     for k, v in vitalsigns:
         # For each start date we must build a view
@@ -258,8 +259,6 @@ def create_vital_sign_view_by_date(fhir_entries):
                             vs_item['display'] = coding['display']
                             vs_item['value'] = f['valueQuantity']['value']
                             vs_item['unit'] = f['valueQuantity']['unit']
-
-
 
     return vs_view
 
@@ -285,6 +284,7 @@ def group_vitalsigns_by_date(fhir_entries):
 
     for f in fhir_entries:
         vs = {}
+        vs = vs
         if 'effectivePeriod' in f:
             if 'start' in f['effectivePeriod']:
                 # we can work with the record

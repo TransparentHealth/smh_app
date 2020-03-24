@@ -31,7 +31,7 @@ class CodeableConcept(DataModel):
 
     @classmethod
     def from_data(cls, value):
-        """CodeableConcept are sometimes given as plain strings; 
+        """ CodeableConcept are sometimes given as plain strings;
         interpret as the "text" value
         """
         if isinstance(value, str):

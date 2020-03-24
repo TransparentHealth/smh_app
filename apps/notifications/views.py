@@ -27,12 +27,12 @@ class DismissNotificationView(LoginRequiredMixin, View):
                 # the request.user must be the notify user, or an agent of the
                 # notify org.
                 if (
-                    'user' in str(notification.notify_content_type)
-                    and notification.notify_id != request.user.id
+                        'user' in str(notification.notify_content_type)
+                        and notification.notify_id != request.user.id
                 ) or (
-                    'organization' in str(notification.notify_content_type)
-                    and notification.notify_id
-                    not in [org.pk for org in request.user.agent_organizations.all()]
+                        'organization' in str(notification.notify_content_type)
+                        and notification.notify_id
+                        not in [org.pk for org in request.user.agent_organizations.all()]
                 ):
                     raise Notification.DoesNotExist()
 

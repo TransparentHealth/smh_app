@@ -36,7 +36,8 @@ from apps.org.models import (
 from apps.users.models import UserProfile
 from apps.users.utils import get_id_token_payload
 
-from .constants import RECORDS_STU3, FIELD_TITLES, PROVIDER_RESOURCES, RESOURCES, VITALSIGNS
+from .constants import RECORDS_STU3, FIELD_TITLES, PROVIDER_RESOURCES, RESOURCES
+# , VITALSIGNS
 from .forms import ResourceRequestForm
 from .utils import (
     fetch_member_data,

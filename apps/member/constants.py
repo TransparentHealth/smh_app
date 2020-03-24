@@ -1,3 +1,4 @@
+# flake8: noqa
 RECORDS = [
     {'name': 'Diagnoses', 'slug': 'diagnoses'},
     {'name': 'Prescriptions', 'slug': 'prescriptions'},
@@ -28,9 +29,8 @@ RECORDS = [
     #   'name': 'Progress Notes',
     #   'slug': 'progress-notes',
     # },
-    {
-      'name': 'Vital Signs',
-      'slug': 'vital-signs',
+    {'name': 'Vital Signs',
+     'slug': 'vital-signs',
     },
 ]
 
