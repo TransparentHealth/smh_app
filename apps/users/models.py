@@ -94,27 +94,10 @@ class UserProfile(models.Model):
         return ' '.join([self.user.first_name or '', self.user.last_name or '']).strip()
 
     @property
-    def age(self):
-        """
-        calculate age from  date of birth and today()
-        :return: age
-        """
-        # try:
-        #     born = self.birthdate
-        #     if born is None:
-        #         return "Unknown"
-        #     today = date.today()
-        #     age = today.year - born.year
-        #     if age < 0:
-        #         return "Unknown"
-        #     else:
-        #         return age
-        # except Exception:
-        #     return "Unknown"
-        try:
-            born = self.birthdate
-        except Exception:
+    def age(self, LEAP_DAY_ANNIVERSARY_FEB28=True):
+        if not self.birthdate:
             return "Unknown"
+        born = self.birthdate
         today = date.today()
         age = today.year - born.year
         try:
