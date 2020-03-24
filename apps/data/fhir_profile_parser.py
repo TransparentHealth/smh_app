@@ -3,11 +3,11 @@
 
 
 OBSERVATiON_PROFILE = {"resourceType": "Observation",
- "displayFields": ["text",
-                   "subject.display",
-                   "valueQuantity.value",
-                   "valueQuantity.unit",
-                   "status"]
+                       "displayFields": ["text",
+                                         "subject.display",
+                                         "valueQuantity.value",
+                                         "valueQuantity.unit",
+                                         "status"]
  }
 
 # {'code': {'coding': [{'code': '9279-1',
@@ -18,16 +18,13 @@ OBSERVATiON_PROFILE = {"resourceType": "Observation",
 #  'id': '335',
 #  'resourceType': 'Observation',
 #  'status': 'final',
-#  'subject': {'display': 'MANASI DUTTA, Manasi Dutta',
-#              'reference': 'Patient/2'},
 #  'valueQuantity': {'unit': '/min', 'value': 16}
 # }
 
 
-def get display_fields(resourceType):
+def get_display_fields(resourceType):
     """
     process resource for display
     """
 
-
-
+    return resourceType
