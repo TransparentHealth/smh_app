@@ -1,8 +1,12 @@
+# flake8: noqa
+import logging
 from dataclasses import dataclass, field
 from typing import List
 
 from .model import DataModel
 from .types import CodeableConcept, Identifier, Period, Quantity, Reference
+
+logger = logging.getLogger('smh_debug')
 
 
 @dataclass
@@ -25,14 +29,14 @@ class MedicationRequester(DataModel):
     VALIDATORS = dict(
         agent=[
             lambda instance, field, value: not value
-            or not value.resourceType
-            or value.resourceType
-            in ['Practitioner', 'Organization', 'Patient', 'RelatedPerson', 'Device']
+                                           or not value.resourceType
+                                           or value.resourceType
+                                           in ['Practitioner', 'Organization', 'Patient', 'RelatedPerson', 'Device']
         ],
         onBehalfOf=[
             lambda instance, field, value: not value
-            or not value.resourceType
-            or value.resourceType in ['Organization']
+                                           or not value.resourceType
+                                           or value.resourceType in ['Organization']
         ],
     )
 
@@ -84,19 +88,22 @@ class MedicationStatement(DataModel):
 
     def __str__(self):
         """Provide a string representation that focuses on the key distinguishing data"""
-        return (
-            f"MedicationStatement(medication='{self.medicationReference.display}'"
-            + f", subject='{self.subject.display}'"
-            + f", effectivePeriod=('{self.effectivePeriod.start}', '{self.effectivePeriod.end}'"
-            + f", dosage=["
-            + ', '.join(
-                [
-                    f"'{dose.doseQuantity.value} {dose.doseQuantity.unit}'"
-                    for dose in self.dosage
-                ]
-            )
-            + '])'
-        )
+        try:
+            return (f"MedicationStatement(medication='{self.medicationReference.display}'"
+                    + f", subject='{self.subject.display}'"
+                    + f", effectivePeriod=('{self.effectivePeriod.start}', '{self.effectivePeriod.end}'"
+                    + f", dosage=["
+                    + ', '.join(
+                        [
+                            f"'{dose.doseQuantity.value} {dose.doseQuantity.unit}'"
+                            for dose in self.dosage
+                        ]
+                    ) + '])'
+                    )
+
+        except Exception:
+            logger.debug("MedicationStatement Conversion Dosage error[%s]: %s" % self.dosage, exec_info=True)
+            return "DOSAGE ERROR"
 
     CONVERTERS = dict(
         identifier=[lambda value: [Identifier.from_data(val) for val in value]],
@@ -109,14 +116,14 @@ class MedicationStatement(DataModel):
     VALIDATORS = dict(
         status=[
             lambda instance, field, value: value
-            in [
-                'active',
-                'completed',
-                'entered-in-error',
-                'intended',
-                'stopped',
-                'on-hold',
-            ]
+                                           in [
+                                               'active',
+                                               'completed',
+                                               'entered-in-error',
+                                               'intended',
+                                               'stopped',
+                                               'on-hold',
+                                           ]
         ],
         taken=[lambda instance, field, value: value in ['y', 'n', 'unk', 'na']],
     )
