@@ -28,7 +28,7 @@ class EncounterParticipant(DataModel):
 class EncounterLocation(DataModel):
     location: Reference = field(default_factory=Reference)
 
-    CONVERTERS = {'location': [Reference.from_data]}
+    # CONVERTERS = {'location': [Reference.from_data]}
 
 
 @dataclass
