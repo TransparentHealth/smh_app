@@ -152,7 +152,7 @@ class ContactPoint(DataModel):
     rank: int = None
     period: Period = None
 
-    CONVERTERS = dict(period=[Period.from_data])
+    # CONVERTERS = dict(period=[Period.from_data])
 
     def __str__(self):
         return f"{self.system or ''}{':' if self.system else ''} {self.value}".strip()
