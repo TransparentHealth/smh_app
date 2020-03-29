@@ -407,8 +407,8 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             )
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
-        fhir_data = load_test_fhir_data(data)
-        # fhir_data = data.get('fhir_data')
+        # fhir_data = load_test_fhir_data(data)
+        fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = fhir_data
 
