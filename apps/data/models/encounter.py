@@ -30,7 +30,6 @@ class EncounterLocation(DataModel):
 
     # CONVERTERS = {'location': [Reference.from_data]}
 
-
 @dataclass
 class Encounter(DataModel):
 
