@@ -15,7 +15,6 @@ class EncounterParticipant(DataModel):
 
     CONVERTERS = {
         'type': [lambda value: [CodeableConcept.from_data(val) for val in value]],
-        'individual': [Reference.from_data],
     }
 
     # CONVERTERS = {
