@@ -1,8 +1,9 @@
 # util functions for fhir_requests
 # import logging
-# import json
+import json
 
 from django.conf import settings
+from getenv import env
 from jsonpath_ng import parse    # , jsonpath
 from operator import itemgetter
 # from operator import itemgetter as i
@@ -62,12 +63,30 @@ def load_test_fhir_data(data):
     if settings.VPC_ENV in ['prod', 'staging', 'dev']:
         fhir_data = data.get('fhir_data')
     else:
-        pass
-        # Only run this locally
-        # f = open("/Volumes/GoogleDrive/My Drive/NewWave/Projects/AFBH-NY/hixny/data_analysis/md_fhir.json", "r")
-        # fhir_data = json.load(f)
-        fhir_data = data.get('fhir_data')
+        patch_file = env('FHIR_PATCH_FILE', None)
+        if patch_file:
+            # Only run this locally
+            f = open(patch_file, 'r')
+            fhir_data = json.load(f)
+        else:
+            fhir_data = data.get('fhir_data')
     return fhir_data
+
+
+# def load_test_fhir_data(data):
+#     """
+#     load a test fhir structure
+#     :return: fhir_data
+#     """
+#     if settings.VPC_ENV in ['prod', 'staging', 'dev']:
+#         fhir_data = data.get('fhir_data')
+#     else:
+#         pass
+#         # Only run this locally
+#         # f = open("/Volumes/GoogleDrive/My Drive/NewWave/Projects/AFBH-NY/hixny/data_analysis/md_fhir.json", "r")
+#         # fhir_data = json.load(f)
+#         fhir_data = data.get('fhir_data')
+#     return fhir_data
 
 
 def path_extract(entry, resource_spec):
@@ -315,3 +334,145 @@ def find_key_value_in_list(listing, key, value):
         return dict_found
     else:
         return {}
+
+
+def view_filter(all_records, view=None):
+    """
+    Filter RECORDS_STU3 on key = view
+    :param all_records:
+    :param view:
+    :return: view_records
+    """
+    if view is None:
+        # nothing to filter
+        return all_records
+    else:
+        # filter on view
+        records = []
+        for a in all_records:
+            # print('filtering ', a)
+            if 'views' in a:
+                if view in a['views']:
+                    # print('found', view)
+                    records.append(a)
+        return records
+
+
+def value_in(resource, value):
+    """
+    check for field in resource
+    :param resource:
+    :param value:
+    :return: True | False
+    """
+    if value in resource:
+        if isinstance(resource[value], dict):
+            if resource[value] == {}:
+                return False
+            else:
+                return True
+        elif isinstance(resource[value], list) or isinstance(resource[value], str):
+            if len(resource[value]) == 0:
+                return False
+            else:
+                return True
+    else:
+        return False
+
+
+def dict_to_list_on_key(group_dict):
+    """
+    split a dict with a format of {'key0': [list of value 0 items], 'key1': [list of value1 items]}
+    to entry = [{'key0': ['list', ' of', 'value0', ' items']},{'key1': ['list', ' of', 'value1', ' items']}]
+    """
+    entry = []
+    for key in group_dict:
+        entry.append({key: group_dict[key]})
+    return {'entry': entry}
+
+
+def groupsort(entry, resource):
+    """
+
+    :param entry:
+    :param resource:
+    :return:
+    """
+
+    if not resource:
+        return entry
+
+    # We have a resource definition
+    if not value_in(resource, 'group'):
+        return entry
+    # We have a group definition
+    grouped = {}
+    # print('group', resource['group'][0])
+    # print(entry[0])
+    ct = 0
+    for e in entry:
+        ct += 1
+        jp_parsing = parse(resource['group'][0])
+        result = jp_parsing.find(e)
+        # print("count:", ct, "Result:", resource['group'][0], ">", result)
+        group_key = [match.value for match in result]
+        # print("group_key:", group_key)
+        if len(group_key) > 0:
+            # we have group_key = ['key']
+            if grouped == {}:
+                grouped[group_key[0]] = [e, ]
+            elif group_key[0] not in grouped.keys():
+                grouped[group_key[0]] = [e, ]
+            else:
+                grouped[group_key[0]].append(e)
+
+    # print(type(grouped))
+    group_entry = dict_to_list_on_key(grouped)
+    if not value_in(resource, 'sort'):
+        # nothing to sort
+        return group_entry
+
+    reverse = reverse_sort(resource['sort'][0])
+    # sort_field = strip_sort_indicator(resource['sort'][0])
+
+    group_entry['entry'].sort(key=lambda d: list(d.keys()), reverse=reverse)
+    # print('group_entry[entry][0]:', group_entry['entry'][0])
+    return group_entry
+
+
+def concatenate_lists(entry):
+    """
+    take a list with a key (e.g. date) that has a list of resourceTypes entries
+    Copy all lists to a single list
+
+    entry should be:
+    {'entry': [{'2020-12-22T09:30:00+00:00': [{'resourceType': 'Encounter', 'id': ...
+    :param entry:
+    :return: big_entry
+    """
+
+    big_entry = []
+    if 'entry' not in entry:
+        return entry
+
+    # We have entries to deal with...
+    # {'entry': [{'2020-12-22T09:30:00+00:00': [{'resourceType': 'Encounter', 'id': '672',
+    for i in entry['entry']:
+        for k in i:
+            # print(k, "with value:", i[k])
+            big_entry.extend(i[k])
+    return {'entry': big_entry}
+
+
+def entry_check(entry):
+    """
+    check if entry is a dict and has a key entry.
+    If list return dict {'entry': entry}
+    :param entry
+    :return: entry_dict
+    """
+    if isinstance(entry, dict):
+        if 'entry' in entry:
+            return entry
+    else:
+        return {'entry': entry}

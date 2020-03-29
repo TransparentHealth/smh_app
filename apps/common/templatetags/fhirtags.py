@@ -87,6 +87,55 @@ def valueformat(value, key):
                 f_value += "%s %s %s" % (given_str,
                                          family_str,
                                          suffix_str)
+        elif key.lower() == 'dosage':
+            #  "doseQuantity": {
+            #                 "value": 200,
+            #                 "unit": "MG",
+            #                 "system": "http://unitsofmeasure.org/ucum.html"
+            #             }
+            f_value = ""
+            for i in value:
+                if isinstance(i, int):
+                    if i == 0:
+                        pass
+                    else:
+                        f_value += str(i) + " "
+                else:
+                    if 'http' in i.lower():
+                        pass
+                    else:
+                        f_value += str(i) + " "
+
+            return f_value
+        elif key.lower() == 'dataabsentreason':
+            if isinstance(value, dict):
+                return value['coding'][0]['display']
+            else:
+                return value
+        elif key.lower() == 'valuequantity':
+            return str(value['value']) + " " + value['unit']
+        elif key.lower() == 'valuestring':
+            return value
+        elif key.lower() == 'interpretation':
+            return value['coding'][0]['display']
+        elif key.lower() == 'referencerange':
+            f_value = ""
+            for i in value:
+                if isinstance(i, dict):
+                    for k in i.items():
+                        if k[0].lower() == 'text':
+                            f_value += str(k[1])
+                        else:
+                            f_value += str(k[0])
+                            f_value += ": " + str(k[1]['value'])
+                            f_value += " " + str(k[1]['unit']) + " "
+                elif isinstance(i, list):
+                    for ll in i:
+                        for d in ll:
+                            f_value += str(d.key())
+                            f_value += str(d['value'])
+                            f_value += " "
+                            f_value += d['unit'] + ", "
 
             return f_value
         else:

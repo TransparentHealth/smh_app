@@ -1,7 +1,7 @@
 # Copyright Videntity Systems, Inc.
 from django.conf.urls import url
 
-from .views import (
+from .views_new import (
     DashboardView,
     DataSourcesView,
     DataView,
