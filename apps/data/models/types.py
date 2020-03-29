@@ -87,15 +87,15 @@ class Identifier(DataModel):
     # period: Period = field(default_factory=Period)
     assigner: Reference = field(default_factory=Reference)
 
-    CONVERTERS = dict(
-        type=[CodeableConcept.from_data],
-    )
-
     # CONVERTERS = dict(
     #     type=[CodeableConcept.from_data],
-    #     period=[Period.from_data],
-    #     assigner=[Reference.from_data],
     # )
+
+    CONVERTERS = dict(
+        type=[CodeableConcept.from_data],
+        period=[Period.from_data],
+        assigner=[Reference.from_data],
+    )
 
 
 @dataclass
@@ -134,7 +134,7 @@ class HumanName(DataModel):
     suffix: list = field(default_factory=list)
     period: Period = None
 
-    # CONVERTERS = dict(period=[Period.from_data], given=[list])
+    CONVERTERS = dict(period=[Period.from_data], given=[list])
 
     def __post_init__(self):
         if not self.text:
@@ -152,7 +152,7 @@ class ContactPoint(DataModel):
     rank: int = None
     period: Period = None
 
-    # CONVERTERS = dict(period=[Period.from_data])
+    CONVERTERS = dict(period=[Period.from_data])
 
     def __str__(self):
         return f"{self.system or ''}{':' if self.system else ''} {self.value}".strip()
@@ -173,8 +173,8 @@ class Address(DataModel):
     country: str = None
     period: Period = None
 
-    CONVERTERS = dict(line=[list])
-    # CONVERTERS = dict(period=[Period.from_data], line=[list])
+    # CONVERTERS = dict(line=[list])
+    CONVERTERS = dict(period=[Period.from_data], line=[list])
 
     @property
     def lines(self):
