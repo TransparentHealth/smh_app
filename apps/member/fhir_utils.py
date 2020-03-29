@@ -70,7 +70,7 @@ def load_test_fhir_data(data):
                 f = open(patch_file, 'r')
                 fhir_data = json.load(f)
             else:
-            fhir_data = data.get('fhir_data')
+                fhir_data = data.get('fhir_data')
         else:
             fhir_data = data.get('fhir_data')
     return fhir_data
