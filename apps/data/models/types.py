@@ -84,7 +84,7 @@ class Identifier(DataModel):
     type: CodeableConcept = field(default_factory=CodeableConcept)
     system: str = None
     value: str = None
-    period: Period = field(default_factory=Period)
+    # period: Period = field(default_factory=Period)
     assigner: Reference = field(default_factory=Reference)
 
     CONVERTERS = dict(
