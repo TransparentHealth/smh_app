@@ -155,7 +155,7 @@ RECORDS_STU3 = [
      'exclude': ['meta', 'identifier', 'resourceType']
      },
     {'name': 'Encounter', 'slug': 'encounter', 'call_type': 'fhir', 'resources': ['Encounter'], 'display': 'Encounter',
-     'headers': ['id', 'type', 'participant', 'period', 'location', '*'],
+     'headers': ['id', 'type', 'period', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'status', 'subject'],
      'field_formats':[{'field': 'period', 'detail': '$.period.start', 'format': {'start': 0, 'end': 10}},
                       {"field": "location", "detail": "$.location[*].location.display", "format": ""},
@@ -268,13 +268,13 @@ RECORDS_STU3 = [
      },
     # Split to Lab Results
     {'name': 'LabResults', 'slug': 'labresults', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Lab Results',
-     'headers': ['id', 'status', 'code', 'effectivePeriod', '*'],
-     'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
+     'headers': ['id', 'code', 'effectivePeriod', '*'],
+     'exclude': ['meta', 'identifier', 'status', 'resourceType', 'subject'],
      'field_formats':[{"field": "code", "detail": "$.code.coding[*].display", "format": ''},
                       {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
                       ],
-     'sort': [],
-     'group': [],
+     'sort': ['-$.effectivePeriod[*]'],
+     'group': ['$.effectivePeriod[*]'],
      'views': ['record', 'records']
      },
     #

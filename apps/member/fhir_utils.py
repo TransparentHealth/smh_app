@@ -414,9 +414,9 @@ def groupsort(entry, resource):
         ct += 1
         jp_parsing = parse(resource['group'][0])
         result = jp_parsing.find(e)
-        print("count:", ct, "Result:", resource['group'][0], ">", result)
+        # print("count:", ct, "Result:", resource['group'][0], ">", result)
         group_key = [match.value for match in result]
-        print("group_key:", group_key)
+        # print("group_key:", group_key)
         if len(group_key) > 0:
             # we have group_key = ['key']
             if grouped == {}:
@@ -436,7 +436,7 @@ def groupsort(entry, resource):
     # sort_field = strip_sort_indicator(resource['sort'][0])
 
     group_entry['entry'].sort(key=lambda d: list(d.keys()), reverse=reverse)
-    print('group_entry[entry][0]:', group_entry['entry'][0])
+    # print('group_entry[entry][0]:', group_entry['entry'][0])
     return group_entry
 
 
