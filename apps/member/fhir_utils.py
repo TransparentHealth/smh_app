@@ -343,7 +343,7 @@ def view_filter(all_records, view=None):
     :param view:
     :return: view_records
     """
-    if view == None:
+    if view is None:
         # nothing to filter
         return all_records
     else:
@@ -356,6 +356,7 @@ def view_filter(all_records, view=None):
                     # print('found', view)
                     records.append(a)
         return records
+
 
 def value_in(resource, value):
     """

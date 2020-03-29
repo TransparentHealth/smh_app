@@ -17,10 +17,10 @@ from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import DeleteView
 from memoize import delete_memoized
 
-from apps.data.models.condition import Condition
+# from apps.data.models.condition import Condition
 from apps.data.models.encounter import Encounter
 from apps.data.models.procedure import Procedure
-from apps.data.models.observation import Observation
+# from apps.data.models.observation import Observation
 from apps.data.models.practitioner import Practitioner
 from apps.data.util import parse_timestamp
 from apps.notifications.models import Notification
@@ -36,7 +36,8 @@ from apps.org.models import (
 from apps.users.models import UserProfile
 from apps.users.utils import get_id_token_payload
 
-from .constants import RECORDS_STU3, FIELD_TITLES, PROVIDER_RESOURCES, RESOURCES
+from .constants import RECORDS_STU3, FIELD_TITLES, RESOURCES
+# PROVIDER_RESOURCES,
 # , VITALSIGNS
 from .forms import ResourceRequestForm
 from .utils import (
@@ -56,7 +57,7 @@ from .fhir_utils import (
     find_index,
     find_list_entry,
     path_extract,
-    sort_json,
+    # sort_json,
     view_filter,
     groupsort,
     concatenate_lists,
@@ -270,7 +271,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 # second_fields.append(exclude)
             else:
                 title = resource_name
-                headers = ['id', '*' ]
+                headers = ['id', '*']
                 exclude = ['']
                 # second_fields
 
@@ -286,7 +287,6 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
                 entries = groupsort(entries['entry'], resource_profile)
                 entries = concatenate_lists(entry_check(entries))
-
 
             content_list = path_extract(entries['entry'], resource_profile)
             context.setdefault('friendly_fields', find_list_entry(FIELD_TITLES, "profile", resource_profile['name']))

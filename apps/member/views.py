@@ -247,9 +247,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                     }
                     for observation in observation_data
                 ],
-                key=lambda observation: observation['Date']
-                                        or datetime(1, 1, 1, tzinfo=timezone.utc),
-                reverse=True,
+                key=lambda observation: observation['Date'] or datetime(1, 1, 1, tzinfo=timezone.utc), reverse=True,
             )
 
             context.setdefault('title', 'Lab Results')
@@ -312,10 +310,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                         (name, prescription)
                         for name, prescription in prescription_data.items()
                     ],
-                    key=lambda np: np[1]['statements']
-                                   and np[1]['statements'][0].effectivePeriod.start
-                                   or datetime(1, 1, 1, tzinfo=timezone.utc),
-                    reverse=True,
+                    key=lambda np: np[1]['statements'] and np[1]['statements'][0].effectivePeriod.start or datetime(1, 1, 1, tzinfo=timezone.utc), reverse=True,
                 )
             ]
             # set up the display data
@@ -323,8 +318,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 prescription = prescription_data[med_name]
                 record = {
                     'Date': prescription['statements']
-                            and prescription['statements'][0].effectivePeriod.start
-                            or None,
+                    and prescription['statements'][0].effectivePeriod.start or None,
                     'Medication': med_name,
                     'Provider(s)': ', '.join(
                         [
@@ -346,8 +340,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         elif resource_name == 'allergies':
             allergies = get_allergies(
                 fhir_data,
-                keys=['id', 'assertedDate', 'code']
-                     + ['clinicalStatus', 'verificationStatus', 'reaction'],
+                keys=['id', 'assertedDate', 'code'] + ['clinicalStatus', 'verificationStatus', 'reaction'],
             )
             headers = ['Asserted', 'Code', 'Status',
                        'Verification', 'Reaction']
@@ -368,10 +361,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                                         for manifestation in manifestations
                                     ]
                                 )
-                                for manifestations in [
-                                reaction.manifestation
-                                for reaction in allergy.reaction
-                            ]
+                                for manifestations in [reaction.manifestation for reaction in allergy.reaction]
                             ]
                         ),
                     }
