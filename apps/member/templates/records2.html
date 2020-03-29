@@ -74,9 +74,12 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr>
                                 {% for item in content_list %}
                                     <tr>
+
                                         {% for key, value in item.items %}
+
                                             {% if key in headers %}
                                             <td>{% if key == "id" %}
                                                 <a href="" class="modal-link" data-toggle="modal"
@@ -86,7 +89,7 @@
                                                 {% elif value %}
                                                     {{ value|valueformat:key }}
                                                 {% else %}
-
+                                                    No value found
                                                 {% endif %}
                                             </td>
                                             {% endif %}
