@@ -134,7 +134,7 @@ class HumanName(DataModel):
     suffix: list = field(default_factory=list)
     period: Period = None
 
-    CONVERTERS = dict(period=[Period.from_data], given=[list])
+    # CONVERTERS = dict(period=[Period.from_data], given=[list])
 
     def __post_init__(self):
         if not self.text:
