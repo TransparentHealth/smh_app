@@ -89,9 +89,14 @@ class Identifier(DataModel):
 
     CONVERTERS = dict(
         type=[CodeableConcept.from_data],
-        # period=[Period.from_data],
         assigner=[Reference.from_data],
     )
+
+    # CONVERTERS = dict(
+    #     type=[CodeableConcept.from_data],
+    #     period=[Period.from_data],
+    #     assigner=[Reference.from_data],
+    # )
 
 
 @dataclass
