@@ -173,7 +173,8 @@ class Address(DataModel):
     country: str = None
     period: Period = None
 
-    CONVERTERS = dict(period=[Period.from_data], line=[list])
+    CONVERTERS = dict(line=[list])
+    # CONVERTERS = dict(period=[Period.from_data], line=[list])
 
     @property
     def lines(self):
