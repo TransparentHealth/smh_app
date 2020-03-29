@@ -63,11 +63,14 @@ def load_test_fhir_data(data):
     if settings.VPC_ENV in ['prod', 'staging', 'dev']:
         fhir_data = data.get('fhir_data')
     else:
-        patch_file = env('FHIR_PATCH_FILE', None)
-        if patch_file:
-            # Only run this locally
-            f = open(patch_file, 'r')
-            fhir_data = json.load(f)
+        if settings.VPC_ENV.lower() == 'local':
+            patch_file = env('FHIR_PATCH_FILE', None)
+            if patch_file:
+                # Only run this locally
+                f = open(patch_file, 'r')
+                fhir_data = json.load(f)
+            else:
+            fhir_data = data.get('fhir_data')
         else:
             fhir_data = data.get('fhir_data')
     return fhir_data
