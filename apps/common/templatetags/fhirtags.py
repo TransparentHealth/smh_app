@@ -87,6 +87,24 @@ def valueformat(value, key):
                 f_value += "%s %s %s" % (given_str,
                                          family_str,
                                          suffix_str)
+        elif key.lower() == 'dosage':
+            #  "doseQuantity": {
+            #                 "value": 200,
+            #                 "unit": "MG",
+            #                 "system": "http://unitsofmeasure.org/ucum.html"
+            #             }
+            f_value = ""
+            for i in value:
+                if isinstance(i, int):
+                    if i == 0:
+                        pass
+                    else:
+                        f_value += str(i) + " "
+                else:
+                    if 'http' in i.lower():
+                        pass
+                    else:
+                        f_value += str(i) + " "
 
             return f_value
         else:
