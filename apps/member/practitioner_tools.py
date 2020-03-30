@@ -1,5 +1,6 @@
 from .fhir_utils import add_key
-from jsonpath_ng import parse
+# from jsonpath_ng import parse
+
 
 def practitioner_encounter(practitioner, encounter):
     """
@@ -20,7 +21,7 @@ def practitioner_encounter(practitioner, encounter):
 
             if 'id' in participant:
                 if participant['id'] == p['id']:
-                    print("matched on:", participant , "\nid:", p)
+                    print("matched on:", participant, "\nid:", p)
                     if active_date > p['latestDate']:
                         p['latestDate'] = active_date[0:10]
                     if active_date < p['earliestDate']:
@@ -28,6 +29,7 @@ def practitioner_encounter(practitioner, encounter):
 
                     p['location'].append(location)
     return practitioner
+
 
 def get_participant(encounter):
     """
@@ -96,6 +98,7 @@ def sort_extended_practitioner(practitioner):
         if find_uniques(p, uniques):
             uniques.append(p)
     return uniques
+
 
 def find_uniques(p, uniques):
     """

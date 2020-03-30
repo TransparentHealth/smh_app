@@ -40,12 +40,12 @@ from .constants import RECORDS_STU3, FIELD_TITLES, RESOURCES
 # PROVIDER_RESOURCES,
 # , VITALSIGNS
 from .forms import ResourceRequestForm
-from .utils import (
-    fetch_member_data,
-    # get_allergies,
-    get_prescriptions,
-    get_resource_data,
-)
+# from .utils import (
+#     fetch_member_data,
+#     # get_allergies,
+#     get_prescriptions,
+#     get_resource_data,
+# )
 from .fhir_requests import (
     get_converted_fhir_resource,
     get_lab_results,
