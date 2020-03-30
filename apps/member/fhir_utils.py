@@ -383,7 +383,7 @@ def value_in(resource, value):
         return False
 
 
-def dict_to_list_on_key(group_dict):
+def dict_to_list_on_key(group_dict, ungrouped=[]):
     """
     split a dict with a format of {'key0': [list of value 0 items], 'key1': [list of value1 items]}
     to entry = [{'key0': ['list', ' of', 'value0', ' items']},{'key1': ['list', ' of', 'value1', ' items']}]
@@ -391,6 +391,9 @@ def dict_to_list_on_key(group_dict):
     entry = []
     for key in group_dict:
         entry.append({key: group_dict[key]})
+    if ungrouped:
+        # Add on anything that wasn't grouped.
+        entry.extend(ungrouped)
     return {'entry': entry}
 
 
@@ -413,6 +416,7 @@ def groupsort(entry, resource):
     # print('group', resource['group'][0])
     # print(entry[0])
     ct = 0
+    ungrouped = []
     for e in entry:
         ct += 1
         jp_parsing = parse(resource['group'][0])
@@ -428,9 +432,12 @@ def groupsort(entry, resource):
                 grouped[group_key[0]] = [e, ]
             else:
                 grouped[group_key[0]].append(e)
+        else:
+            # No match on group_key
+            ungrouped.append(e)
 
     # print(type(grouped))
-    group_entry = dict_to_list_on_key(grouped)
+    group_entry = dict_to_list_on_key(grouped, ungrouped)
     if not value_in(resource, 'sort'):
         # nothing to sort
         return group_entry
@@ -457,7 +464,11 @@ def concatenate_lists(entry):
     big_entry = []
     if 'entry' not in entry:
         return entry
-
+    # check if we have a key of resourceType in entry. If we do then we don't a grouped key
+    # so we return entry
+    if len(entry['entry']) > 0 and 'resourceType' in entry['entry'][0].keys():
+        # print('not a grouped dict')
+        return entry
     # We have entries to deal with...
     # {'entry': [{'2020-12-22T09:30:00+00:00': [{'resourceType': 'Encounter', 'id': '672',
     for i in entry['entry']:
@@ -474,9 +485,15 @@ def entry_check(entry):
     :param entry
     :return: entry_dict
     """
+    # print("entry type:", type(entry))
     if isinstance(entry, dict):
+        # print("keys:", entry.keys())
         if 'entry' in entry:
+            # print("returning entry")
+            # print(entry)
             return entry
+        # print('not an entry list')
+        # print("entry:", entry)
     else:
         return {'entry': entry}
 

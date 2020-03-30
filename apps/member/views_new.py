@@ -287,11 +287,17 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 entries = {'entry': []}
             else:
                 entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
-                entries = groupsort(entries['entry'], resource_profile)
                 # if resource_profile['name'] == "Procedure":
                 #     print(len(entries['entry']))
                 #     print("Procedures:", entries['entry'])
+                entries = groupsort(entries['entry'], resource_profile)
+                # if resource_profile['name'] == "Procedure":
+                #     print(len(entries['entry']))
+                #     print("Procedures - post sort:", entries['entry'])
                 entries = concatenate_lists(entry_check(entries))
+                # if resource_profile['name'] == "Procedure":
+                #     print(len(entries['entry']))
+                #     print("Procedures - post concatenate:", entries['entry'])
 
             content_list = path_extract(entries['entry'], resource_profile)
             context.setdefault('friendly_fields', find_list_entry(FIELD_TITLES, "profile", resource_profile['name']))
