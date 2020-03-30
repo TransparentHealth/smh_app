@@ -41,11 +41,12 @@ from .constants import RECORDS_STU3, FIELD_TITLES, RESOURCES
 # , VITALSIGNS
 from .forms import ResourceRequestForm
 from .utils import (
-     fetch_member_data,
+     fetch_member_data
+)
 #     # get_allergies,
 #     get_prescriptions,
 #     get_resource_data,
-)
+
 from .fhir_requests import (
     get_converted_fhir_resource,
     get_lab_results,
@@ -336,10 +337,11 @@ class PrescriptionDetailModalView(
             delete_memoized(fetch_member_data, context[
                             'member'], 'sharemyhealth')
 
-        prescriptions = get_prescriptions(
-            fhir_data, id=context[
-                'resource_id'], incl_practitioners=True, json=True
-        )
+        prescriptions = []
+        # prescriptions = get_prescriptions(
+        #     fhir_data, id=context[
+        #         'resource_id'], incl_practitioners=True, json=True
+        # )
         if not prescriptions:
             return Http404()
         else:
@@ -364,10 +366,10 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, member, 'sharemyhealth')
 
-        if resource_type == 'prescriptions':
-            response_data = get_prescriptions(
-                fhir_data, id=resource_id, incl_practitioners=True, json=True
-            )
+        # if resource_type == 'prescriptions':
+        #     response_data = get_prescriptions(
+        #         fhir_data, id=resource_id, incl_practitioners=True, json=True
+        #     )
         elif resource_type in RESOURCES:
             resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_type.lower())]
             if resource_profile:
@@ -382,12 +384,13 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
 
         else:
             # fallback
-            data = {
-                resource['id']: resource
-                for resource in get_resource_data(
-                    fhir_data, kwargs['resource_type'], id=resource_id
-                )
-            }
+            data = []
+            # data = {
+            #     resource['id']: resource
+            #     for resource in get_resource_data(
+            #         fhir_data, kwargs['resource_type'], id=resource_id
+            #     )
+            # }
             response_data = json.dumps(data, indent=settings.JSON_INDENT)
             # print("httpResponse:", response_data, "-----")
 
@@ -462,7 +465,7 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
                     datetime.now(timezone.utc) - context['updated_at']
             )
         ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        # this will only pull a local fhir file if VPC_ENV is local
         fhir_data = load_test_fhir_data(data)
         # fhir_data = data.get('fhir_data')
 
@@ -470,7 +473,7 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
             delete_memoized(fetch_member_data, context[
                 'member'], 'sharemyhealth')
 
-        practitioner_set = get_converted_fhir_resource(fhir_data, "Practitioner")
+        practitioner_set = get_converted_fhir_resource(fhir_data, " Practitioner")
         context['practitioner'] = practitioner_set['entry']
 
         if not context['practitioner']:
