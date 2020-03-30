@@ -18,10 +18,10 @@ from django.views.generic.edit import DeleteView
 from memoize import delete_memoized
 
 # from apps.data.models.condition import Condition
-from apps.data.models.encounter import Encounter
-from apps.data.models.procedure import Procedure
+# from apps.data.models.encounter import Encounter
+# from apps.data.models.procedure import Procedure
 # from apps.data.models.observation import Observation
-from apps.data.models.practitioner import Practitioner
+# from apps.data.models.practitioner import Practitioner
 from apps.data.util import parse_timestamp
 from apps.notifications.models import Notification
 from apps.org.models import (
@@ -63,6 +63,7 @@ from .fhir_utils import (
     concatenate_lists,
     entry_check
 )
+from .practitioner_tools import practitioner_encounter, sort_extended_practitioner
 
 logger = logging.getLogger(__name__)
 
@@ -394,7 +395,7 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
 
 
 class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
-    template_name = "providers.html"
+    template_name = "providers2.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -406,9 +407,9 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                     datetime.now(timezone.utc) - context['updated_at']
             )
         ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
-        # fhir_data = load_test_fhir_data(data)
-        fhir_data = data.get('fhir_data')
+        # this will only pull a local fhir file if VPC_ENV is 'local'
+        fhir_data = load_test_fhir_data(data)
+        # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = fhir_data
 
@@ -416,28 +417,34 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             delete_memoized(fetch_member_data, context[
                 'member'], 'sharemyhealth')
 
-        encounters = get_resource_data(
-            fhir_data, 'Encounter', constructor=Encounter.from_data
-        )
-        encounters.sort(key=lambda e: e.period.start,
-                        reverse=True)  # latest ones first
-        practitioners = get_resource_data(
-            fhir_data, 'Practitioner', constructor=Practitioner.from_data
-        )
-        for index, practitioner in enumerate(practitioners):
-            practitioner.last_encounter = practitioner.next_encounter(
-                encounters)
-            practitioners[index] = practitioner
+        resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", 'encounter')]
+        encounters_set = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
 
-        practitioners.sort(
-            key=lambda p: (
-                p.last_encounter.period.start
-                if p.last_encounter
-                else datetime(1, 1, 1, tzinfo=timezone.utc)
-            ),
-            reverse=True,
-        )
+        print(len(encounters_set['entry']), " encounters")
+        encounters = groupsort(encounters_set['entry'], resource_profile)
+        context['encounters'] = encounters
 
+        resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", 'practitioner')]
+        practitioners_set = get_converted_fhir_resource(fhir_data, 'Practitioner')
+        practitioners = practitioner_encounter(practitioners_set['entry'], encounters_set['entry'])
+        # practitioners = groupsort(practitioners, resource_profile)
+
+        practitioners = sort_extended_practitioner(practitioners)
+        # for index, practitioner in enumerate(practitioners):
+        #     practitioner.last_encounter = practitioner.next_encounter(
+        #         encounters)
+        #     practitioners[index] = practitioner
+        #
+        # practitioners.sort(
+        #     key=lambda p: (
+        #         p.last_encounter.period.start
+        #         if p.last_encounter
+        #         else datetime(1, 1, 1, tzinfo=timezone.utc)
+        #     ),
+        #     reverse=True,
+        # )
+
+        print("Passing Practitioners to view:", len(practitioners))
         context['practitioners'] = practitioners
         return context
 
@@ -463,59 +470,11 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
             delete_memoized(fetch_member_data, context[
                 'member'], 'sharemyhealth')
 
-        context['practitioner'] = next(
-            iter(
-                get_resource_data(
-                    fhir_data,
-                    'Practitioner',
-                    constructor=Practitioner.from_data,
-                    id=self.kwargs['provider_id'],
-                )
-            ),
-            None,
-        )
+        practitioner_set = get_converted_fhir_resource(fhir_data, "Practitioner")
+        context['practitioner'] = practitioner_set['entry']
+
         if not context['practitioner']:
             raise Http404()
-
-        prescriptions = [
-            {
-                'date': next(
-                    iter(
-                        sorted(
-                            [
-                                statement.period.start
-                                for statement in prescription['statements']
-                            ],
-                            reverse=True,
-                        )
-                    ),
-                    None,
-                ),
-                'type': 'Prescription',
-                'display': prescription['medication'].code.text,
-                'prescription': prescription,
-            }
-            for prescription in get_prescriptions(
-                fhir_data, incl_practitioners=True
-            ).values()
-            if context['practitioner'].id in prescription['practitioners'].keys()
-        ]
-        procedures = [
-            {
-                'date': procedure.performedPeriod.start,
-                'type': 'Procedure',
-                'display': procedure.code.text,
-                'procedure': procedure,
-            }
-            for procedure in get_resource_data(
-                fhir_data, 'Procedure', constructor=Procedure.from_data
-            )
-        ]
-        context['records'] = sorted(
-            prescriptions + procedures,
-            key=lambda r: r['date'] or datetime(1, 1, 1, tzinfo=timezone.utc),
-            reverse=True,
-        )
 
         return context
 
