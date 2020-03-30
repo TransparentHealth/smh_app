@@ -8,8 +8,8 @@ def practitioner_encounter(practitioner, encounter):
     :param practitioner:
     :return: practitioner
     """
-    print("P", len(practitioner))
-    print("E", len(encounter))
+    # print("P", len(practitioner))
+    # print("E", len(encounter))
     for p in practitioner:
         p = add_key(p, [("earliestDate", str), ("latestDate", str), ("location", list)])
 
