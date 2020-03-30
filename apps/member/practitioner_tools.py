@@ -8,8 +8,8 @@ def practitioner_encounter(practitioner, encounter):
     :param practitioner:
     :return: practitioner
     """
-    print("P", len(practitioner))
-    print("E", len(encounter))
+    # print("P", len(practitioner))
+    # print("E", len(encounter))
     for p in practitioner:
         p = add_key(p, [("earliestDate", str), ("latestDate", str), ("location", list)])
 
@@ -21,7 +21,7 @@ def practitioner_encounter(practitioner, encounter):
 
             if 'id' in participant:
                 if participant['id'] == p['id']:
-                    print("matched on:", participant, "\nid:", p)
+                   #  print("matched on:", participant, "\nid:", p)
                     if active_date > p['latestDate']:
                         p['latestDate'] = active_date[0:10]
                     if active_date < p['earliestDate']:

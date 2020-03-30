@@ -420,7 +420,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", 'encounter')]
         encounters_set = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
 
-        print(len(encounters_set['entry']), " encounters")
+        # print(len(encounters_set['entry']), " encounters")
         encounters = groupsort(encounters_set['entry'], resource_profile)
         context['encounters'] = encounters
 
