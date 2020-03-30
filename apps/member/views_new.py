@@ -407,9 +407,9 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                     datetime.now(timezone.utc) - context['updated_at']
             )
         ###
-        # this will only pull a local fhir file if VPC_ENV is 'local'
-        fhir_data = load_test_fhir_data(data)
-        # fhir_data = data.get('fhir_data')
+        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        # fhir_data = load_test_fhir_data(data)
+        fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = fhir_data
 
