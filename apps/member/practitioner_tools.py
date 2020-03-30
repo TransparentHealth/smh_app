@@ -21,7 +21,7 @@ def practitioner_encounter(practitioner, encounter):
 
             if 'id' in participant:
                 if participant['id'] == p['id']:
-                    #print("matched on:", participant, "\nid:", p)
+                    # print("matched on:", participant, "\nid:", p)
                     if active_date > p['latestDate']:
                         p['latestDate'] = active_date[0:10]
                     if active_date < p['earliestDate']:
