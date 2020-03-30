@@ -95,7 +95,7 @@ def valueformat(value, key):
             #             }
             f_value = ""
             for i in value:
-                if isinstance(i, int):
+                if isinstance(i, int) or isinstance(i, float):
                     if i == 0:
                         pass
                     else:
