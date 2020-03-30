@@ -270,7 +270,7 @@ RECORDS_STU3 = [
     {'name': 'LabResults', 'slug': 'labresults', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Lab Results',
      'headers': ['id', 'code', 'effectivePeriod', '*'],
      'exclude': ['meta', 'identifier', 'status', 'resourceType', 'subject'],
-     'field_formats':[{"field": "code", "detail": "$.code.coding[*].display", "format": ''},
+     'field_formats':[{"field": "code", "detail": "$.code.text", "format": ''},
                       {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
                       ],
      'sort': ['-$.effectivePeriod[*]'],
