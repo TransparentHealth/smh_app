@@ -63,11 +63,14 @@ def load_test_fhir_data(data):
     if settings.VPC_ENV in ['prod', 'staging', 'dev']:
         fhir_data = data.get('fhir_data')
     else:
-        patch_file = env('FHIR_PATCH_FILE', None)
-        if patch_file:
-            # Only run this locally
-            f = open(patch_file, 'r')
-            fhir_data = json.load(f)
+        if settings.VPC_ENV.lower() == 'local':
+            patch_file = env('FHIR_PATCH_FILE', None)
+            if patch_file:
+                # Only run this locally
+                f = open(patch_file, 'r')
+                fhir_data = json.load(f)
+            else:
+                fhir_data = data.get('fhir_data')
         else:
             fhir_data = data.get('fhir_data')
     return fhir_data
@@ -476,3 +479,28 @@ def entry_check(entry):
             return entry
     else:
         return {'entry': entry}
+
+
+def add_key(resource, key=[]):
+    """
+    Add a key to a resource if it does not exist
+    key contains tuples (fieldname, instancetype)
+    :param resource:
+    :param key: list
+    :return: resource
+    """
+
+    if isinstance(resource, dict):
+        for k in key:
+            if k[0] in resource:
+                pass
+            else:
+                if k[1] == str:
+                    resource[k[0]] = ""
+                elif k[1] == list:
+                    resource[k[0]] = []
+                elif k[1] == dict:
+                    resource[k[0]] = {}
+    return resource
+
+

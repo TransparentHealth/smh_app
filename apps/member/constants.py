@@ -310,7 +310,7 @@ RECORDS_STU3 = [
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats': [{"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
                       ],
-    'sort': ['name',],
+     'sort': ['-$.latestDate',],
      'group': [],
      'views': ['provider', 'providers']
      },

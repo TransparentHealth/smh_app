@@ -10,7 +10,7 @@
         <div role="tabpanel" aria-hidden="true" class=" tab-pane">
             <!-- showing the list of providers based on encounters here -->
             <div class="heading-with-sort d-flex justify-content-between align-items-center mt-5 mb-3">
-                <h2>Physician Providers HELLO</h2>
+                <h2>Physician Providers</h2>
                 <form class="mb-2 form-inline">
                     <div class="form-group">
                         <label for="sortOption" class="mr-2 mb-0 form-label">Sort by</label>
@@ -25,9 +25,9 @@
             <table class="table table--records mt-2 table-hover">
                 <thead>
                     <tr>
-                        <th width="34%">Provider’s Name</th>
-                        <th width="33%">Date Last Seen</th>
-                        <th width="33%">Location</th>
+                        <th width="35%">Provider’s Name</th>
+                        <th width="20%">Date:Last Seen</th>
+                        <th width="30%">Location</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,12 +35,12 @@
                     <tr>
                         <td>
                             <a class="modal-link"
-                                href="{% url 'member:provider_detail' pk=member.id provider_id=practitioner.id %}">
-                                {{ practitioner.names_text }}
+                                href="{% url 'member:provider_detail' pk=member.id provider_id=47 %}">
+                                {{ practitioner.name.0.family }}, {{ practitioner.name.0.given.0 }}
                             </a>
                         </td>
-                        <td>{% firstof practitioner.last_encounter.period.start '—' %}</td>
-                        <td>{% firstof practitioner.last_encounter.locations_display '—' %}</td>
+                        <td>{% firstof practitioner.latestDate  %}</td>
+                        <td>{% firstof practitioner.location.0.display '—' %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
