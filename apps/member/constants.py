@@ -197,7 +197,7 @@ RECORDS_STU3 = [
     {'name': 'Measure', 'slug': 'measure', 'call_type': 'fhir', 'resources': ['Measure'], 'display': 'Measure', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'MeasureReport', 'slug': 'measurereport', 'call_type': 'fhir', 'resources': ['MeasureReport'], 'display': 'Measure Report', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Media', 'slug': 'media', 'call_type': 'fhir', 'resources': ['Media'], 'display': 'Media', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'Medication', 'slug': 'medication', 'call_type': 'fhir', 'resources': ['Medication'], 'display': 'Medication',
+    {'name': 'Medication', 'slug': 'medication', 'call_type': 'skip', 'resources': ['Medication'], 'display': 'Medication',
      'headers': ['id', 'code', '*'],
      'exclude': ['meta', 'resourceType'],
      'field_formats':[{"field": "code", "detail": "$.code.text", "format": ''}],
@@ -206,7 +206,7 @@ RECORDS_STU3 = [
      'views': ['record', 'records']
      },
     {'name': 'MedicationAdministration', 'slug': 'medicationadministration', 'call_type': 'fhir', 'resources': ['MedicationAdministration'], 'display': 'Medication Administration', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'MedicationDispense', 'slug': 'medicationdispense', 'call_type': 'fhir', 'resources': ['MedicationDispense'], 'display': 'Medication Dispense',
+    {'name': 'MedicationDispense', 'slug': 'medicationdispense', 'call_type': 'skip', 'resources': ['MedicationDispense'], 'display': 'Medication Dispense',
      'headers': ['id', 'medicationReference', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'status', 'subject'],
      'field_formats': [
@@ -401,3 +401,16 @@ RESOURCES = ['Account', 'ActivityDefinition', 'AllergyIntolerance', 'AdverseEven
 
 VITALSIGNS = ['3141-9', '8302-2', '39156-5',
               '8480-6', '8462-4', '8867-4', '8310-5', '9279-1']
+
+TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
+            {'name': 'Condition', 'datefield': ''},
+            {'name': 'Encounter', 'datefield': '$.period.start'},
+            # {'name': 'Medication', 'datefield': ''},
+            # {'name': 'MedicationDispense', 'datefield': ''},
+            # {'name': 'MedicationRequest', 'datefield': ''},
+            {'name': 'MedicationStatement', 'datefield': '$.effectivePeriod.start'},
+            {'name': 'Observation', 'datefield': '$.effectivePeriod.start'},
+            {'name': 'Practitioner', 'datefield': ''},
+            {'name': 'PractitionerRole', 'datefield': ''},
+            {'name': 'Procedure', 'datefield': '$.performedDateTime'}
+           ]
