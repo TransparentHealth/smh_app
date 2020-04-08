@@ -248,12 +248,3 @@ def resourceview(resource, member_id, viewer="default"):
     html_output += "</td></tr>"
 
     return html_output
-
-
-
-
-
-
-
-
-
