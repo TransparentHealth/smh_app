@@ -19,9 +19,9 @@ from memoize import delete_memoized
 
 # from apps.data.models.condition import Condition
 # from apps.data.models.encounter import Encounter
-# from apps.data.models.procedure import Procedure
+from apps.data.models.procedure import Procedure
 # from apps.data.models.observation import Observation
-#from apps.data.models.practitioner import Practitioner
+from apps.data.models.practitioner import Practitioner
 from apps.data.util import parse_timestamp
 from apps.notifications.models import Notification
 from apps.org.models import (

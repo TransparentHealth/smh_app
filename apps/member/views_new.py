@@ -153,7 +153,7 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         # all_records = RECORDS
         all_records = RECORDS_STU3
         context.setdefault('all_headers', all_records)
-        summarized_records = []
+        # summarized_records = []
 
         entries = dated_bundle(entries)
         print(len(entries['entry']))
