@@ -87,6 +87,10 @@ class Identifier(DataModel):
     period: Period = field(default_factory=Period)
     assigner: Reference = field(default_factory=Reference)
 
+    # CONVERTERS = dict(
+    #     type=[CodeableConcept.from_data],
+    # )
+
     CONVERTERS = dict(
         type=[CodeableConcept.from_data],
         period=[Period.from_data],
@@ -169,6 +173,7 @@ class Address(DataModel):
     country: str = None
     period: Period = None
 
+    # CONVERTERS = dict(line=[list])
     CONVERTERS = dict(period=[Period.from_data], line=[list])
 
     @property

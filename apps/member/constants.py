@@ -65,7 +65,10 @@ RECORDS_STU3 = [
                      {"field": "onsetDateTime", "detail": "$.onsetDateTime[*]", "format": {"start": 0, "end": 10}},
                      {"field": "assertedDate", "detail": "$.assertedDate[*]", "format": {"start": 0, "end": 10}}
                      ],
-     'sort': ['-onsetDateTime']},
+     'sort': ['-$.assertedDate[*]'],
+     'group': ['$.assertedDate[*]'],
+     'views': ['records', 'record']
+     },
     {'name': 'AdverseEvent', 'slug': 'adverseevent', 'call_type': 'fhir', 'resources': ['AdverseEvent'], 'display': 'Adverse Event', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Appointment', 'slug': 'appointment', 'call_type': 'fhir', 'resources': ['Appointment'], 'display': 'Appointment', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'AppointmentResponse', 'slug': 'appointmentresponse', 'call_type': 'fhir', 'resources': ['AppointmentResponse'], 'display': 'Appointment Response', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
@@ -85,7 +88,7 @@ RECORDS_STU3 = [
     {'name': 'Communication', 'slug': 'communication', 'call_type': 'fhir', 'resources': ['Communication'], 'display': 'Communication', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'CommunicationRequest', 'slug': 'communicationrequest', 'call_type': 'fhir', 'resources': ['CommunicationRequest'], 'display': 'Communication Response', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'CompartmentDefinition', 'slug': 'compartmentdefinition', 'call_type': 'fhir', 'resources': ['CompartmentDefinition'], 'display': 'Compartment Definition', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'Composition', 'slug': 'composition', 'call_type': 'fhir', 'resources': ['Composition'],
+    {'name': 'Composition', 'slug': 'composition', 'call_type': 'skip', 'resources': ['Composition'],
      'display': 'Composition',
      'headers': ['id', 'status', 'type', 'date', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'class', 'subject', 'author', 'title', 'attester', 'custodian', 'event'],
@@ -99,60 +102,70 @@ RECORDS_STU3 = [
      'headers': ['id', '*'],
      'exclude': ['meta', 'resourceType'],
      'field_formats':[],
-     'sort': ['-id']
+     'sort': ['-id'],
+     'group': [],
+     'views': []
      },
     {'name': 'Condition', 'slug': 'condition', 'call_type': 'fhir', 'resources': ['Condition'],
      'display': 'Condition',
      'headers': ['id', 'clinicalStatus', 'verificationStatus', 'code'],
      'exclude': ['meta', 'resourceType', 'category', 'subject'],
      'field_formats': [{'field': 'code', 'detail': '$.code.text', 'format': ''}],
-     'sort': ['-id']
+     'sort': ['-$.code.text'],
+     'group': ['$.code.text'],
+     'views': ['record', 'records']
      },
     {'name': 'Consent', 'slug': 'consent', 'call_type': 'fhir', 'resources': ['Consent'], 'display': 'Consent', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Contract', 'slug': 'contract', 'call_type': 'fhir', 'resources': ['Contract'], 'display': 'Contract', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Coverage', 'slug': 'coverage', 'call_type': 'fhir', 'resources': ['Coverage'], 'display': 'Coverage', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'DataElement', 'slug': 'dataelement', 'call_type': 'fhir', 'resources': ['DataElement'], 'display': 'Data Element', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'DetectedIssue', 'slug': 'detectedissue', 'call_type': 'fhir', 'resources': ['DetectedIssue'], 'display': 'Detected Issue', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'Device', 'slug': 'device', 'call_type': 'fhir', 'resources': ['Device'], 'display': 'Device', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'Device', 'slug': 'device', 'call_type': 'skip', 'resources': ['Device'], 'display': 'Device', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'DeviceComponent', 'slug': 'devicecomponent', 'call_type': 'fhir', 'resources': ['DeviceComponent'], 'display': 'Device Component', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'DeviceMetric', 'slug': 'devicemetric', 'call_type': 'fhir', 'resources': ['DeviceMetric'], 'display': 'Device Metric', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'DeviceRequest', 'slug': 'devicerequest', 'call_type': 'fhir', 'resources': ['DeviceRequest'], 'display': 'Device Request', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'DeviceUseStatement', 'slug': 'deviceusestatement', 'call_type': 'fhir', 'resources': ['DeviceUseStatement'], 'display': 'Device Use Statement', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'DeviceMetric', 'slug': 'devicemetric', 'call_type': 'skip', 'resources': ['DeviceMetric'], 'display': 'Device Metric', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'DeviceRequest', 'slug': 'devicerequest', 'call_type': 'skip', 'resources': ['DeviceRequest'], 'display': 'Device Request', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'DeviceUseStatement', 'slug': 'deviceusestatement', 'call_type': 'skip', 'resources': ['DeviceUseStatement'], 'display': 'Device Use Statement', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'DiagnosticReport', 'slug': 'diagnosticreport', 'call_type': 'fhir', 'resources': ['DiagnosticReport'],
      'display': 'Diagnostic Report',
-     'headers': ['id', 'status', 'result', '*'],
+     'headers': ['id', 'status', 'effectivePeriod', 'result', '*'],
      'exclude': ['resourceType', 'meta', 'identifier', 'subject'],
      'field_formats':[{"field": "result", "detail": "$.result[*].display", "format": ""},
                      {"field": "code", "detail": "$.code.coding[*].display", "format": ""},
                      {"field": "effectivePeriod", "detail": "$.effectivePeriod[*]", "format": {"start": 0, "end": 10}}],
-     'sort': ['-effectivePeriod']
+     'sort': ['-$.effectivePeriod[*].start'],
+     'group': ['$.effectivePeriod[*].start'],
+     'views': ['record', 'records']
      },
-    {'name': 'DocumentManifest', 'slug': 'documentmanifest', 'call_type': 'fhir', 'resources': ['DocumentManifest'], 'display': 'Document Manifest', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'DocumentReference', 'slug': 'documentreference', 'call_type': 'fhir', 'resources': ['DocumentReference'], 'display': 'Document Reference',
+    {'name': 'DocumentManifest', 'slug': 'documentmanifest', 'call_type': 'skip', 'resources': ['DocumentManifest'], 'display': 'Document Manifest', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'DocumentReference', 'slug': 'documentreference', 'call_type': 'skip', 'resources': ['DocumentReference'], 'display': 'Document Reference',
      'headers': ['id', 'status', 'type', 'indexed', '*'],
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats':[{'field': 'type', 'detail': '$.type.coding[*].display', 'format': ''},
                       {"field": "indexed", "detail": "$.indexed", "format": {"start": 0, "end": 10}}],
-     'sort': ['-indexed']
+     'sort': ['-indexed'],
+     'group': [],
+     'views': []
      },
-    {'name': 'EligibilityRequest', 'slug': 'eligibilityrequest', 'call_type': 'fhir', 'resources': ['EligibilityRequest'], 'display': 'Eligibility Request',
+    {'name': 'EligibilityRequest', 'slug': 'eligibilityrequest', 'call_type': 'skip', 'resources': ['EligibilityRequest'], 'display': 'Eligibility Request',
      'headers': ['id', 'status', '*'],
      'exclude': ['meta', 'identifier', 'resourceType']
      },
-    {'name': 'EligibilityResponse', 'slug': 'eligibilityresponse', 'call_type': 'fhir', 'resources': ['EligibilityResponse'], 'display': 'Eligibility Response',
+    {'name': 'EligibilityResponse', 'slug': 'eligibilityresponse', 'call_type': 'skip', 'resources': ['EligibilityResponse'], 'display': 'Eligibility Response',
      'headers': ['id', '*'],
      'exclude': ['meta', 'identifier', 'resourceType']
      },
     {'name': 'Encounter', 'slug': 'encounter', 'call_type': 'fhir', 'resources': ['Encounter'], 'display': 'Encounter',
-     'headers': ['id', 'status', 'type', 'period', '*'],
-     'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
+     'headers': ['id', 'type', 'period', '*'],
+     'exclude': ['meta', 'identifier', 'resourceType', 'status', 'subject'],
      'field_formats':[{'field': 'period', 'detail': '$.period.start', 'format': {'start': 0, 'end': 10}},
                       {"field": "location", "detail": "$.location[*].location.display", "format": ""},
                       {"field": "type", "detail": "$.type[*].text", "format": ""},
                       {"field": "participant", "detail": "$.participant[*].individual.display", "format": ""}],
-     'sort': ['-period[0]',]
+     'sort': ['-$.period[*].start', ],
+     'group': ['$.period[*].start', ],
+     'views': ['record', 'records']
      },
-    {'name': 'Endpoint', 'slug': 'endpoint', 'call_type': 'fhir', 'resources': ['Endpoint'], 'display': 'Endpoint', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'Endpoint', 'slug': 'endpoint', 'call_type': 'skip', 'resources': ['Endpoint'], 'display': 'Endpoint', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'EnrollmentRequest', 'slug': 'enrollmentrequest', 'call_type': 'fhir', 'resources': ['EnrollmentRequest'], 'display': 'Enrollment Request', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'EnrollmentResponse', 'slug': 'enrollmentresponse', 'call_type': 'fhir', 'resources': ['EnrollmentResponse'], 'display': 'Enrollment Response', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'EpisodeOfCare', 'slug': 'episodeofcare', 'call_type': 'fhir', 'resources': ['EpisodeOfCare'], 'display': 'Episode Of Care', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
@@ -177,80 +190,95 @@ RECORDS_STU3 = [
      'headers': ['id', 'name', '*'],
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats': [],
-     'sort': ['name']
+     'sort': ['name'],
+     'group': [],
+     'views': ['provider', 'providers']
      },
     {'name': 'Measure', 'slug': 'measure', 'call_type': 'fhir', 'resources': ['Measure'], 'display': 'Measure', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'MeasureReport', 'slug': 'measurereport', 'call_type': 'fhir', 'resources': ['MeasureReport'], 'display': 'Measure Report', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Media', 'slug': 'media', 'call_type': 'fhir', 'resources': ['Media'], 'display': 'Media', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'Medication', 'slug': 'medication', 'call_type': 'fhir', 'resources': ['Medication'], 'display': 'Medication',
+    {'name': 'Medication', 'slug': 'medication', 'call_type': 'skip', 'resources': ['Medication'], 'display': 'Medication',
      'headers': ['id', 'code', '*'],
      'exclude': ['meta', 'resourceType'],
      'field_formats':[{"field": "code", "detail": "$.code.text", "format": ''}],
-     'sort': ['code',]
+     'sort': ['$.code.text'],
+     'group': ['$.code.text'],
+     'views': ['record', 'records']
      },
     {'name': 'MedicationAdministration', 'slug': 'medicationadministration', 'call_type': 'fhir', 'resources': ['MedicationAdministration'], 'display': 'Medication Administration', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'MedicationDispense', 'slug': 'medicationdispense', 'call_type': 'fhir', 'resources': ['MedicationDispense'], 'display': 'Medication Dispense',
-     'headers': ['id', 'status', 'medicationReference', '*'],
-     'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
+    {'name': 'MedicationDispense', 'slug': 'medicationdispense', 'call_type': 'skip', 'resources': ['MedicationDispense'], 'display': 'Medication Dispense',
+     'headers': ['id', 'medicationReference', '*'],
+     'exclude': ['meta', 'identifier', 'resourceType', 'status', 'subject'],
      'field_formats': [
                        {'field': 'medicationReference', 'detail': '$.medicationReference.display', 'format': ''},
      ],
-     'sort': ['name']
+     'sort': ['$.medicationReference.display'],
+     'group': ['$.medicationReference.display'],
+     'views': ['record', 'records']
      },
     {'name': 'MedicationRequest', 'slug': 'medicationrequest', 'call_type': 'fhir', 'resources': ['MedicationRequest'], 'display': 'Medication Request',
-     'headers': ['id', 'status', 'intent', 'medicationReference', '*'],
-     'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
+     'headers': ['id', 'medicationReference', '*'],
+     'exclude': ['meta', 'identifier', 'resourceType', 'status', 'intent', 'subject'],
      'field_formats': [{'field': 'medicationReference', 'detail': '$.medicationReference.display', 'format': ''},
                        {'field': 'requester', 'detail': '$.requester.agent.display', 'format': ''},
                        {'field': 'dispenseRequest', 'detail': '$.dispenseRequest.numberOfRepeatsAllowed', 'format': ''}
       ],
-     'sort': []
+     'sort': ['$.medicationReference.display'],
+     'group': ['$.medicationReference.display'],
+     'views': ['record', 'records']
      },
     {'name': 'MedicationStatement', 'slug': 'medicationstatement', 'call_type': 'fhir', 'resources': ['MedicationStatement'], 'display': 'Medication Statement',
-     'headers': ['id', 'status', 'medicationReference', '*'],
-     'exclude': ['meta', 'identifier', 'resourceType', 'subject', 'taken'],
+     'headers': ['id', 'medicationReference', 'dosage', '*'],
+     'exclude': ['meta', 'identifier', 'resourceType', 'status', 'effectivePeriod', 'subject', 'taken'],
      'field_formats': [
          {'field': 'medicationReference', 'detail': '$.medicationReference.display', 'format': ''},
          {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
          {'field': 'informationSource', 'detail': '$.informationSource.display', 'format': ''},
          {'field': 'dosage', 'detail': '$.dosage[*].doseQuantity', 'format': ''},
      ],
-     'sort': ['name']
-
+     'sort': ['$.medicationReference.display'],
+     'group': ['$.medicationReference.display'],
+     'views': ['record', 'records']
      },
-    {'name': 'MessageDefinition', 'slug': 'messagedefinition', 'call_type': 'fhir', 'resources': ['MessageDefinition'], 'display': 'Message Definition', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'MessageHeader', 'slug': 'messageheader', 'call_type': 'fhir', 'resources': ['MessageHeader'], 'display': 'Message Header', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'NamingSystem', 'slug': 'namingsystem', 'call_type': 'fhir', 'resources': ['NamingSystem'], 'display': 'Naming System', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'MessageDefinition', 'slug': 'messagedefinition', 'call_type': 'skip', 'resources': ['MessageDefinition'], 'display': 'Message Definition', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'MessageHeader', 'slug': 'messageheader', 'call_type': 'skip', 'resources': ['MessageHeader'], 'display': 'Message Header', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'NamingSystem', 'slug': 'namingsystem', 'call_type': 'skip', 'resources': ['NamingSystem'], 'display': 'Naming System', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'NutritionOrder', 'slug': 'nutritionorder', 'call_type': 'fhir', 'resources': ['NutritionOrder'], 'display': 'Nutrition Order', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     # Observation mixes labs and vital-signs
-    {'name': 'Observation', 'slug': 'observation', 'call_type': 'fhir', 'resources': ['Observation'], 'display': 'Observation',
+    {'name': 'Observation', 'slug': 'observation', 'call_type': 'skip', 'resources': ['Observation'], 'display': 'Observation',
      'headers': ['id', 'status', 'code', 'effectivePeriod', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
      'field_formats':[{"field": "code", "detail": "$.code.coding[*].display", "format": ''},
                       {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
                       ],
-     'sort': []
+     'sort': [],
+     'group': [],
+     'views': ['record', 'records']
      },
     # Split to vital-signs
-    {'name': 'VitalSigns', 'slug': 'vitalsigns', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Vital Signs',
+    {'name': 'VitalSigns', 'slug': 'vitalsigns', 'call_type': 'skip', 'resources': ['Observation'], 'display': 'Vital Signs',
      'headers': ['id', 'status', 'code', 'effectivePeriod', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
      'field_formats':[{"field": "code", "detail": "$.code.coding[*].display", "format": ''},
                       {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
                       ],
-     'sort': []
+     'sort': [],
+     'group': [],
+     'views': ['record', 'records']
      },
     # Split to Lab Results
     {'name': 'LabResults', 'slug': 'labresults', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Lab Results',
-     'headers': ['id', 'status', 'code', 'effectivePeriod', '*'],
-     'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
-     'field_formats':[{"field": "code", "detail": "$.code.coding[*].display", "format": ''},
+     'headers': ['id', 'code', 'effectivePeriod', '*'],
+     'exclude': ['meta', 'identifier', 'status', 'resourceType', 'subject'],
+     'field_formats':[{"field": "code", "detail": "$.code.text", "format": ''},
                       {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
                       ],
-     'sort': []
+     'sort': ['-$.effectivePeriod[*]'],
+     'group': ['$.effectivePeriod[*]'],
+     'views': ['record', 'records']
      },
     #
-    {'name': 'OperationDefinition', 'slug': 'operationdefinition', 'call_type': 'fhir', 'resources': ['OperationDefinition'], 'display': 'Operation Definition', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'OperationDefinition', 'slug': 'operationdefinition', 'call_type': 'skip', 'resources': ['OperationDefinition'], 'display': 'Operation Definition', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'OperationOutcome', 'slug': 'operationoutcome', 'call_type': 'fhir', 'resources': ['OperationOutcome'], 'display': 'Operation Outcome', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Organization', 'slug': 'organization', 'call_type': 'fhir', 'resources': ['Organization'], 'display': 'Organization',
      'headers': ['id', 'name', 'telecom', 'address', '*'],
@@ -258,16 +286,20 @@ RECORDS_STU3 = [
      'field_formats': [{"field": "telecom", "detail": "$.telecom[*].value", "format": ''},
                        {"field": "address", "detail": "$.address[*]", "format": ''}
                        ],
-     'sort': ['name',]
+     'sort': ['name',],
+     'group': [],
+     'views': ['provider', 'providers']
      },
-    {'name': 'Parameters', 'slug': 'parameters', 'call_type': 'fhir', 'resources': ['Parameters'], 'display': 'Parameters', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
+    {'name': 'Parameters', 'slug': 'parameters', 'call_type': 'skip', 'resources': ['Parameters'], 'display': 'Parameters', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Patient', 'slug': 'patient', 'call_type': 'fhir', 'resources': ['Patient'], 'display': 'Patient',
      'headers': ['id', 'name', 'telecom', 'gender', 'birthDate', '*'],
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats':[{'field': 'birthDate', 'detail': '$.birthDate', 'format': {'start': 0, 'end': 10}},
                       {'field': 'communication', 'detail': '$.communication[*].language.coding[*].code', 'format': ''}
                       ],
-     'sort': []
+     'sort': ['$.id'],
+     'group': ['$.id'],
+     'views': ['record', 'records']
      },
     {'name': 'PaymentNotice', 'slug': 'paymentnotice', 'call_type': 'fhir', 'resources': ['PaymentNotice'], 'display': 'Payment Notice', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'PaymentReconciliation', 'slug': 'paymentreconciliation', 'call_type': 'fhir', 'resources': ['PaymentReconciliation'], 'display': 'Payment Reconciliation', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
@@ -278,7 +310,9 @@ RECORDS_STU3 = [
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats': [{"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
                       ],
-    'sort': ['name',]
+     'sort': ['-$.latestDate',],
+     'group': [],
+     'views': ['provider', 'providers']
      },
     {'name': 'PractitionerRole', 'slug': 'practitionerrole', 'call_type': 'fhir', 'resources': ['PractitionerRole'], 'display': 'Practitioner Role',
      'headers': ['id', 'practitioner', 'organization', '*'],
@@ -286,26 +320,32 @@ RECORDS_STU3 = [
      'field_formats': [{"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
                        {"field": "organization", "detail": "$.organization.display", "format": ''},
                        ],
-     'sort': ['practitioner']
+     'sort': ['practitioner'],
+     'group': [],
+     'views': ['provider', 'providers']
      },
     {'name': 'Procedure', 'slug': 'procedure', 'call_type': 'fhir', 'resources': ['Procedure'], 'display': 'Procedure',
-     'headers': ['id', 'status', 'code', '*'],
+     'headers': ['id', 'status', 'code', 'performedPeriod', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
      'field_formats': [{"field": "code", "detail": "$.code.coding[*].display", "format": ''},
-                       {'field': 'performedPeriod', 'detail': '$.performedPeriod[*]', 'format': {'start': 0, 'end': 10}},
+                       {'field': 'performedPeriod', 'detail': '$.performedPeriod.start', 'format': {'start': 0, 'end': 10}},
                        ],
-     'sort': []
+     'sort': ['-$.performedPeriod.start'],
+     'group': ['$.performedPeriod.start'],
+     'views': ['record', 'records']
      },
     {'name': 'ProcedureRequest', 'slug': 'procedurerequest', 'call_type': 'fhir', 'resources': ['ProcedureRequest'], 'display': 'Procedure Request', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'ProcessRequest', 'slug': 'processrequest', 'call_type': 'fhir', 'resources': ['ProcessRequest'], 'display': 'Process Request', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'ProcessResponse', 'slug': 'processresponse', 'call_type': 'fhir', 'resources': ['ProcessResponse'], 'display': 'Process Response', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'Provenance', 'slug': 'provenance', 'call_type': 'fhir', 'resources': ['Provenance'], 'display': 'Provenance',
+    {'name': 'Provenance', 'slug': 'provenance', 'call_type': 'skip', 'resources': ['Provenance'], 'display': 'Provenance',
      'headers': ['id', 'recorded', '*'],
      'exclude': ['meta', 'resourceType', 'target', 'agent'],
      'field_formats': [{"field": "entity", "detail": "$.entity[*].whatReference.display", "format": ''},
                        {"field": "recorded", "detail": "$.recorded", 'format': {'start': 0, 'end': 10}}
                        ],
-     'sort': ['-recorded']
+     'sort': ['-recorded'],
+     'group': [],
+     'views': ['record', 'records']
      },
     {'name': 'Questionnaire', 'slug': 'questionnaire', 'call_type': 'fhir', 'resources': ['Questionnaire'], 'display': 'Questionnaire', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'QuestionnaireResponse', 'slug': 'questionnaireresponse', 'call_type': 'fhir', 'resources': ['QuestionnaireResponse'], 'display': 'Questionnaire Response', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
@@ -361,3 +401,16 @@ RESOURCES = ['Account', 'ActivityDefinition', 'AllergyIntolerance', 'AdverseEven
 
 VITALSIGNS = ['3141-9', '8302-2', '39156-5',
               '8480-6', '8462-4', '8867-4', '8310-5', '9279-1']
+
+TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
+            {'name': 'Condition', 'datefield': ''},
+            {'name': 'Encounter', 'datefield': '$.period.start'},
+            # {'name': 'Medication', 'datefield': ''},
+            # {'name': 'MedicationDispense', 'datefield': ''},
+            # {'name': 'MedicationRequest', 'datefield': ''},
+            {'name': 'MedicationStatement', 'datefield': '$.effectivePeriod.start'},
+            {'name': 'Observation', 'datefield': '$.effectivePeriod.start'},
+            {'name': 'Practitioner', 'datefield': ''},
+            {'name': 'PractitionerRole', 'datefield': ''},
+            {'name': 'Procedure', 'datefield': '$.performedDateTime'}
+           ]
