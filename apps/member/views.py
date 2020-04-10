@@ -1,25 +1,26 @@
 import json
+
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.staticfiles.templatetags.staticfiles import static
-from django.http.response import Http404, HttpResponse, JsonResponse
+from django.templatetags.static import static
+from django.http.response import Http404, HttpResponse   # , JsonResponse
 from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
-from django.utils.html import mark_safe
+# from django.utils.html import mark_safe
 from django.views.decorators.http import require_POST
 from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import DeleteView
 from memoize import delete_memoized
 
-from apps.data.models.condition import Condition
-from apps.data.models.encounter import Encounter
+# from apps.data.models.condition import Condition
+# from apps.data.models.encounter import Encounter
 from apps.data.models.procedure import Procedure
-from apps.data.models.observation import Observation
+# from apps.data.models.observation import Observation
 from apps.data.models.practitioner import Practitioner
 from apps.data.util import parse_timestamp
 from apps.notifications.models import Notification
@@ -35,13 +36,28 @@ from apps.org.models import (
 from apps.users.models import UserProfile
 from apps.users.utils import get_id_token_payload
 
-from .constants import RECORDS
+from .constants import RECORDS_STU3, FIELD_TITLES, PROVIDER_RESOURCES, RESOURCES
+# , VITALSIGNS
 from .forms import ResourceRequestForm
 from .utils import (
     fetch_member_data,
-    get_allergies,
+    # get_allergies,
     get_prescriptions,
     get_resource_data,
+)
+from .fhir_requests import (
+    get_converted_fhir_resource,
+    get_lab_results,
+    get_vital_signs,
+)
+from .fhir_utils import (
+    resource_count,
+    load_test_fhir_data,
+    find_index,
+    find_list_entry,
+    path_extract,
+    sort_json,
+    create_vital_sign_view_by_date
 )
 
 logger = logging.getLogger(__name__)
@@ -86,7 +102,7 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
 
 
 class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
-    template_name = "summary.html"
+    template_name = "summary2.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -100,35 +116,72 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                     datetime.now(timezone.utc) - context['updated_at']
             )
             context['updated_at'] = context['updated_at'].timestamp()
-        fhir_data = data.get('fhir_data')
+
+        fhir_data = load_test_fhir_data(data)
+        # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
+        #
+        # get resource bundles
+        #
+        resource_list = RESOURCES
+        # Observation mixes lab results and vital signs
+        resource_list.remove('Observation')
 
+        resources = get_converted_fhir_resource(fhir_data)
+        if len(resources.entry) > 0:
+            resources = resources.entry
+        else:
+            resources = []
+        context.setdefault('resources', resources)
+        labs = get_lab_results(fhir_data)
+        if len(labs.entry) > 0:
+            labs = labs.entry
+        else:
+            labs = []
+        context.setdefault('labs', labs)
+        vitals = get_vital_signs(fhir_data)
+        if len(vitals.entry) > 0:
+            vitals = vitals.entry
+        else:
+            vitals = []
+        context.setdefault('vitals', vitals)
+
+        counts = resource_count(resources)
+        context.setdefault('counts', counts)
+        # print(counts)
+        #
+        #####
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context[
                 'member'], 'sharemyhealth')
 
-        # put the current resources in the summary tab.  We will not show the
-        # other options in this tab.
-        conditions_data = get_resource_data(fhir_data, 'Condition')
-        prescription_data = get_prescriptions(data)
-
-        all_records = RECORDS
+        # all_records = RECORDS
+        all_records = RECORDS_STU3
         summarized_records = []
         notes_headers = ['Agent Name', 'Organization', 'Date']
         for record in all_records:
-            # adding data for each resourceType in response from endpoint
-            if record['name'] == 'Diagnoses':
-                record['count'] = len(conditions_data)
-                record['data'] = conditions_data
-                summarized_records.append(record)
 
-            if record['name'] == 'Prescriptions':
-                record['count'] = len(prescription_data)
-                record['data'] = prescription_data
+            if record['call_type'].lower() == "fhir":
+                entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                record['data'] = entries['entry']
+                record['count'] = len(entries['entry'])
                 summarized_records.append(record)
+            elif record['call_type'].lower() == 'custom':
+                if record['name'] == 'VitalSigns':
+                    entries = get_vital_signs(fhir_data)
+                    record['data'] = entries['entry']
+                    record['count'] = len(entries['entry'])
+                    summarized_records.append(record)
+                elif record['name'] == 'LabResults':
+                    entries = get_lab_results(fhir_data)
+                    record['data'] = entries['entry']
+                    record['count'] = len(entries['entry'])
+                    summarized_records.append(record)
+            else:   # skip
+                pass
 
-            context.setdefault('summarized_records', summarized_records)
+        context.setdefault('summarized_records', summarized_records)
 
         context.setdefault('notes_headers', notes_headers)
         # TODO: include notes in the context data.
@@ -137,7 +190,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
 
 class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
-    template_name = "records.html"
+    template_name = "records2.html"
     default_resource_name = 'sharemyhealth'
     default_record_type = 'Condition'
 
@@ -155,8 +208,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context['time_since_update'] = (
                     datetime.now(timezone.utc) - context['updated_at']
             )
-
-        fhir_data = data.get('fhir_data')
+        fhir_data = load_test_fhir_data(data)
+        # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
             context['data'] = data
 
@@ -171,208 +224,82 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 'member'], 'sharemyhealth')
 
         if resource_name == 'list':
-            conditions_data = get_resource_data(fhir_data, 'Condition')
-            observation_data = get_resource_data(fhir_data, 'Observation')
-            procedure_data = get_resource_data(fhir_data, 'Procedure')
-            prescription_data = get_prescriptions(fhir_data)
-            allergies = get_allergies(fhir_data, keys=['id'])
-            all_records = RECORDS
+            all_records = RECORDS_STU3
+            summarized_records = []
             for record in all_records:
-                # adding data for each resoureType in response from
-                # endpoint
-                if record['name'] == 'Diagnoses':
-                    record['count'] = len(conditions_data)
-                    record['data'] = conditions_data
+                if record['call_type'].lower() == "fhir":
+                    # print("record processing for ", record['name'])
+                    entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                    record['data'] = entries['entry']
+                    record['count'] = len(entries['entry'])
+                    summarized_records.append(record)
+                elif record['call_type'].lower() == 'custom':
+                    if record['name'] == 'VitalSigns':
+                        entries = get_vital_signs(fhir_data, record)
+                        record['data'] = entries['entry']
+                        record['count'] = len(entries['entry'])
+                        summarized_records.append(record)
+                    elif record['name'] == 'LabResults':
+                        entries = get_lab_results(fhir_data, record)
+                        record['data'] = entries['entry']
+                        record['count'] = len(entries['entry'])
+                        summarized_records.append(record)
+                else:  # skip
+                    pass
 
-                if record['name'] == 'Lab Results':
-                    record['count'] = len(observation_data)
-                    record['data'] = observation_data
+            context.setdefault('all_records', summarized_records)
 
-                if record['name'] == 'Prescriptions':
-                    record['count'] = len(prescription_data)
-                    record['data'] = prescription_data
+        else:
+            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_name)]
 
-                if record['name'] == 'Procedures':
-                    record['count'] = len(procedure_data)
-                    record['data'] = procedure_data
+            # print("Resource Profile", resource_profile)
 
-                if record['name'] == 'Allergies':
-                    record['count'] = len(allergies)
-                    record['data'] = allergies
+            if resource_profile:
+                title = resource_profile['display']
+                headers = resource_profile['headers']
+                exclude = resource_profile['exclude']
+                # second_fields = headers
+                # second_fields.append(exclude)
+            else:
+                title = resource_name
+                headers = ['id', ]
+                exclude = ['']
+                # second_fields
 
-            context.setdefault('all_records', all_records)
+            # ff = find_list_entry(FIELD_TITLES, "profile", resource_profile['name'])
+            # print("Friendly:", ff)
+            # print("headers:", headers)
+            # print("Exclude:", exclude)
+            # print("second_fields:", second_fields)
+            if "sort" in resource_profile:
+                sort_field = resource_profile['sort']
+            else:
+                sort_field = ""
 
-        elif resource_name == 'diagnoses':
-            conditions_data = get_resource_data(
-                fhir_data, 'Condition', Condition.from_data
-            )
-            headers = ['Diagnosis', 'Status', 'Verification']
-            diagnoses = sorted(
-                [
-                    dict(
-                        Diagnosis=condition.code.text,
-                        Status=condition.clinicalStatus,
-                        Verification=condition.verificationStatus,
-                    )
-                    for condition in conditions_data
-                ],
-                key=lambda diagnosis: (
-                    ['active', 'recurrence', 'inactive', 'remission', 'resolved', ''].index(
-                        diagnosis['Status']
-                    ),
-                    diagnosis['Diagnosis'],
-                ),
-            )
+            title = resource_profile['display']
+            if resource_profile['call_type'] == 'custom':
+                if resource_profile['slug'] == 'labresults':
+                    entries = get_lab_results(fhir_data, resource_profile)
+                elif resource_profile['slug'] == 'vitalsigns':
+                    entries = get_vital_signs(fhir_data, resource_profile)
+                    vitalsigns = create_vital_sign_view_by_date(entries['entry'])
 
-            context.setdefault('title', 'Diagnoses')
+                    print("vitalsigns:", vitalsigns)
+
+                    context.setdefault('vitalsigns', vitalsigns)
+            elif resource_profile['call_type'] == 'skip':
+                entries = {'entry': []}
+            else:
+                entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+            content_list = path_extract(entries['entry'], resource_profile)
+            context.setdefault('friendly_fields', find_list_entry(FIELD_TITLES, "profile", resource_profile['name']))
+            context.setdefault('title', title)
             context.setdefault('headers', headers)
-            context.setdefault('content_list', diagnoses)
-
-        elif resource_name == 'lab-results':
-            observation_data = get_resource_data(
-                fhir_data, 'Observation', constructor=Observation.from_data
-            )
-            headers = ['Date', 'Code', 'Display', 'Lab Result']
-            lab_results = sorted(
-                [
-                    {
-                        'Date': observation.effectivePeriod.start,
-                        'Code': (
-                            observation.code.coding[0].code
-                            if len(observation.code.coding) > 0
-                            else None
-                        ),
-                        'Display': observation.code.text,
-                        'Lab Result': observation.valueQuantity,
-                    }
-                    for observation in observation_data
-                ],
-                key=lambda observation: observation['Date'] or datetime(1, 1, 1, tzinfo=timezone.utc), reverse=True,
-            )
-
-            context.setdefault('title', 'Lab Results')
-            context.setdefault('headers', headers)
-            context.setdefault('content_list', lab_results)
-
-        elif resource_name == 'procedures':
-            procedures_data = sorted(
-                get_resource_data(
-                    fhir_data, 'Procedure', constructor=Procedure.from_data
-                ),
-                key=lambda procedure: (
-                        procedure.performedPeriod.start
-                        or datetime(1, 1, 1, tzinfo=timezone.utc)
-                ),
-                reverse=True,
-            )
-            headers = ['Date', 'Status', 'Description', 'Provider']
-            procedures = [
-                {
-                    'Date': procedure.performedPeriod.start,
-                    'Status': procedure.status,
-                    'Description': procedure.code.text,
-                    'Provider': mark_safe(
-                        '; '.join(
-                            [
-                                '<a class="modal-link" href="{url}">{name}</a>'.format(
-                                    name=performer.actor.display,
-                                    url=reverse_lazy(
-                                        'member:provider_detail',
-                                        kwargs={
-                                            'pk': context['member'].id,
-                                            'provider_id': performer.actor.id,
-                                        },
-                                    ),
-                                )
-                                for performer in procedure.performer
-                                if 'Practitioner' in performer.actor.reference
-                            ]
-                        )
-                    ),
-                }
-                for procedure in procedures_data
-            ]
-
-            context.setdefault('title', 'Procedures')
-            context.setdefault('headers', headers)
-            context.setdefault('content_list', procedures)
-
-        elif resource_name == 'prescriptions':
-            prescription_data = get_prescriptions(fhir_data)
-            headers = ['Date', 'Medication', 'Provider(s)']
-            all_records = []
-
-            # sort prescriptions by start date descending
-            med_names = [
-                np[0]
-                for np in sorted(
-                    [
-                        (name, prescription)
-                        for name, prescription in prescription_data.items()
-                    ],
-                    key=lambda np: np[1]['statements'] and np[1]['statements'][0].effectivePeriod.start or datetime(1, 1, 1, tzinfo=timezone.utc), reverse=True,
-                )
-            ]
-            # set up the display data
-            for med_name in med_names:
-                prescription = prescription_data[med_name]
-                record = {
-                    'Date': prescription['statements']
-                    and prescription['statements'][0].effectivePeriod.start or None,
-                    'Medication': med_name,
-                    'Provider(s)': ', '.join(
-                        [
-                            request.requester.agent.display
-                            for request in prescription['requests']
-                        ]
-                    ),
-                }
-                record['links'] = {
-                    'Medication': f"/member/{context['member'].id}"
-                                  + f"/modal/prescription/{prescription['medication'].id}"
-                }
-                all_records.append(record)
-
-            context.setdefault('title', 'Prescriptions')
-            context.setdefault('headers', headers)
-            context.setdefault('content_list', all_records)
-
-        elif resource_name == 'allergies':
-            allergies = get_allergies(
-                fhir_data,
-                keys=['id', 'assertedDate', 'code'] + ['clinicalStatus', 'verificationStatus', 'reaction'],
-            )
-            headers = ['Asserted', 'Code', 'Status',
-                       'Verification', 'Reaction']
-            default_timestamp = datetime(
-                1, 1, 1, tzinfo=timezone(timedelta(0)))
-            all_records = sorted(
-                [
-                    {
-                        'Asserted': allergy.assertedDate,
-                        'Code': allergy.code.text,
-                        'Status': allergy.clinicalStatus.text,
-                        'Verification': allergy.verificationStatus.text,
-                        'Reaction': ', '.join(
-                            [
-                                ', '.join(
-                                    [
-                                        manifestation.text
-                                        for manifestation in manifestations
-                                    ]
-                                )
-                                for manifestations in [reaction.manifestation for reaction in allergy.reaction]
-                            ]
-                        ),
-                    }
-                    for allergy in allergies
-                ],
-                key=lambda r: r.get('Asserted') or default_timestamp,
-                reverse=True,
-            )
-            context.setdefault('title', 'Allergies')
-            context.setdefault('headers', headers)
-            context.setdefault('content_list', all_records)
+            context.setdefault('exclude', exclude)
+            # context.setdefault('content_list', content_list)
+            context.setdefault('resource_profile', resource_profile)
+            sorted_content = sort_json(content_list, sort_field)
+            context.setdefault('content_list', sorted_content)
 
         return context
 
@@ -426,7 +353,11 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
         resource_type = kwargs['resource_type']
         resource_id = kwargs['resource_id']
         data = fetch_member_data(member, 'sharemyhealth')
-        fhir_data = data.get('fhir_data')
+
+        ###
+        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        fhir_data = load_test_fhir_data(data)
+        # fhir_data = data.get('fhir_data')
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, member, 'sharemyhealth')
@@ -435,60 +366,146 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
             response_data = get_prescriptions(
                 fhir_data, id=resource_id, incl_practitioners=True, json=True
             )
+        elif resource_type in RESOURCES:
+            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_type.lower())]
+            if resource_profile:
+                bundle = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+                for entry in bundle['entry']:
+                    if 'id' in entry:
+                        if entry['id'] == resource_id:
+                            data = entry
+
+            response_data = json.dumps(data, indent=settings.JSON_INDENT)
+            return HttpResponse(response_data)
+
         else:
             # fallback
-            response_data = {
+            data = {
                 resource['id']: resource
                 for resource in get_resource_data(
                     fhir_data, kwargs['resource_type'], id=resource_id
                 )
             }
-        return JsonResponse(response_data)
+            response_data = json.dumps(data, indent=settings.JSON_INDENT)
+            # print("httpResponse:", response_data, "-----")
+
+        return HttpResponse(response_data)
 
 
 class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
-    template_name = "providers.html"
+    template_name = "records2.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        print(context)
+
         context['member'] = self.get_member()
+        resource_name = self.kwargs.get('resource_name') or 'list'
         data = fetch_member_data(context['member'], 'sharemyhealth')
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
         if context['updated_at']:
             context['time_since_update'] = (
                     datetime.now(timezone.utc) - context['updated_at']
             )
-        fhir_data = data.get('fhir_data')
+        context['back_to'] = 'member:providers'
+
+        ####
+        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        fhir_data = load_test_fhir_data(data)
+        # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
-            context['data'] = fhir_data
+            context['data'] = data
+
+        logging.debug(
+            "fhir_data records: %r",
+            fhir_data and fhir_data.get(
+                'entry') and len(fhir_data.get('entry')),
+        )
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context[
                 'member'], 'sharemyhealth')
 
-        encounters = get_resource_data(
-            fhir_data, 'Encounter', constructor=Encounter.from_data
-        )
-        encounters.sort(key=lambda e: e.period.start,
-                        reverse=True)  # latest ones first
-        practitioners = get_resource_data(
-            fhir_data, 'Practitioner', constructor=Practitioner.from_data
-        )
-        for index, practitioner in enumerate(practitioners):
-            practitioner.last_encounter = practitioner.next_encounter(
-                encounters)
-            practitioners[index] = practitioner
+        if resource_name == 'list':
+            provider_related = []
+            for r in RECORDS_STU3:
+                if r['name'] in PROVIDER_RESOURCES:
+                    provider_related.append(r)
+            all_records = provider_related
+            summarized_records = []
+            for record in all_records:
+                if record['call_type'].lower() == "fhir":
+                    # print("record processing for ", record['name'])
+                    entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                    record['data'] = entries['entry']
+                    record['count'] = len(entries['entry'])
+                    summarized_records.append(record)
+                elif record['call_type'].lower() == 'custom':
+                    pass
+                else:  # skip
+                    pass
 
-        practitioners.sort(
-            key=lambda p: (
-                p.last_encounter.period.start
-                if p.last_encounter
-                else datetime(1, 1, 1, tzinfo=timezone.utc)
-            ),
-            reverse=True,
-        )
+            context['back_to'] = 'member:providers'
+            context.setdefault('all_records', summarized_records)
 
-        context['practitioners'] = practitioners
+        else:
+            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_name)]
+
+            # print("Resource Profile", resource_profile)
+
+            if resource_profile:
+                title = resource_profile['display']
+                headers = resource_profile['headers']
+                exclude = resource_profile['exclude']
+                # second_fields = headers
+                # second_fields.append(exclude)
+            else:
+                title = resource_name
+                headers = ['id', ]
+                exclude = ['']
+                # second_fields
+
+            # ff = find_list_entry(FIELD_TITLES, "profile", resource_profile['name'])
+            # print("Friendly:", ff)
+            # print("headers:", headers)
+            # print("Exclude:", exclude)
+            # print("second_fields:", second_fields)
+            if "sort" in resource_profile:
+                sort_field = resource_profile['sort']
+            else:
+                sort_field = ""
+
+            title = resource_profile['display']
+            if resource_profile['call_type'] == 'custom':
+                if resource_profile['slug'] == 'labresults':
+                    entries = get_lab_results(fhir_data, resource_profile)
+                elif resource_profile['slug'] == 'vitalsigns':
+                    entries = get_vital_signs(fhir_data, resource_profile)
+            elif resource_profile['call_type'] == 'skip':
+                entries = {'entry': []}
+            else:
+                entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+            content_list = path_extract(entries['entry'], resource_profile)
+            context.setdefault('friendly_fields',
+                               find_list_entry(FIELD_TITLES, "profile", resource_profile['name']))
+            context.setdefault('title', title)
+            context.setdefault('headers', headers)
+            context.setdefault('exclude', exclude)
+            # context.setdefault('content_list', content_list)
+            context.setdefault('resource_profile', resource_profile)
+            sorted_content = sort_json(content_list, sort_field)
+            context.setdefault('content_list', sorted_content)
+            context['back_to'] = 'member:providers'
+
+        return context
+
+    def render_to_response(self, context, **kwargs):
+        if context.get('redirect_url'):
+            return redirect(context.get('redirect_url'))
+        else:
+            return super().render_to_response(context, **kwargs)
+
+        #######
         return context
 
 

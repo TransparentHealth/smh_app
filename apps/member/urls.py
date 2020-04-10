@@ -12,6 +12,7 @@ from .views_new import (
     ProvidersView,
     ProviderDetailView,
     RecordsView,
+    TimelineView,
     RequestAccessView,
     DeleteMemberView,
     # SummaryView,
@@ -38,6 +39,12 @@ urlpatterns = [
         r'^(?P<pk>[0-9]+)/records/(?P<resource_name>[\w-]+)?/?$',
         RecordsView.as_view(),
         name='records',
+    ),
+    # Timeline view using Summary
+    url(
+        r'^(?P<pk>[0-9]+)/timeline/$',
+        TimelineView.as_view(),
+        name='timeline',
     ),
     # JSON to medical data
     url(

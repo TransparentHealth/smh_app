@@ -12,6 +12,7 @@ __pycache__/
 
 # intellij
 .idea/
+/.idea/
 
 # Distribution / packaging
 .Python
@@ -117,3 +118,5 @@ testdata
 src
 .vs
 /.vs
+
+/changes/

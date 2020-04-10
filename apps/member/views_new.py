@@ -1,7 +1,7 @@
 import json
 
 import logging
-from datetime import datetime, timezone
+# from datetime import datetime, timezone
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -37,7 +37,8 @@ from apps.users.models import UserProfile
 from apps.users.utils import get_id_token_payload
 
 from .constants import RECORDS_STU3, FIELD_TITLES, RESOURCES
-# PROVIDER_RESOURCES,
+# , TIMELINE
+# , PROVIDER_RESOURCES,
 # , VITALSIGNS
 from .forms import ResourceRequestForm
 from .utils import (
@@ -62,7 +63,9 @@ from .fhir_utils import (
     view_filter,
     groupsort,
     concatenate_lists,
-    entry_check
+    entry_check,
+    context_updated_at,
+    dated_bundle
 )
 from .practitioner_tools import practitioner_encounter, sort_extended_practitioner
 
@@ -107,8 +110,8 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
         return True
 
 
-class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
-    template_name = "summary2.html"
+class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
+    template_name = "timeline.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -117,11 +120,59 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         data = fetch_member_data(context['member'], 'sharemyhealth')
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
         context['timestamp'] = data.get('updated_at', "No timestamp")
-        if context['updated_at']:
-            context['time_since_update'] = (
-                datetime.now(timezone.utc) - context['updated_at']
-            )
-            context['updated_at'] = context['updated_at'].timestamp()
+        context = context_updated_at(context)
+
+        ###
+        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        fhir_data = load_test_fhir_data(data)
+        # fhir_data = data.get('fhir_data')
+        if settings.DEBUG:
+            context['data'] = data
+        #
+        # get resource bundles
+        #
+        # resource_list = RESOURCES
+        # Observation mixes lab results and vital signs
+        # resource_list.remove('Observation')
+
+        entries = get_converted_fhir_resource(fhir_data)
+        # print('Resources:', len(entries['entry']))
+
+        context.setdefault('resources', entries['entry'])
+
+        counts = resource_count(entries['entry'])
+        context.setdefault('counts', counts)
+        #
+        # print(counts)
+        #
+        #####
+        if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
+            delete_memoized(fetch_member_data, context[
+                            'member'], 'sharemyhealth')
+
+        # all_records = RECORDS
+        all_records = RECORDS_STU3
+        context.setdefault('all_headers', all_records)
+        # summarized_records = []
+
+        entries = dated_bundle(entries)
+        print(len(entries['entry']))
+        context.setdefault('summarized_records', entries['entry'])
+
+        return context
+
+
+class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
+    template_name = "summary.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['member'] = self.get_member()
+        # Get the data for the member, and set it in the context
+        data = fetch_member_data(context['member'], 'sharemyhealth')
+        context['updated_at'] = parse_timestamp(data.get('updated_at'))
+        context['timestamp'] = data.get('updated_at', "No timestamp")
+        context = context_updated_at(context)
 
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
@@ -212,10 +263,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         data = fetch_member_data(context['member'], 'sharemyhealth')
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
         context['timestamp'] = data.get('updated_at', "No timestamp")
-        if context['updated_at']:
-            context['time_since_update'] = (
-                datetime.now(timezone.utc) - context['updated_at']
-            )            
+        context = context_updated_at(context)
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
         fhir_data = load_test_fhir_data(data)
@@ -331,10 +379,7 @@ class PrescriptionDetailModalView(
         context['member'] = self.get_member()
         data = fetch_member_data(context['member'], 'sharemyhealth')
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
-        if context['updated_at']:
-            context['time_since_update'] = (
-                datetime.now(timezone.utc) - context['updated_at']
-            )
+        context = context_updated_at(context)
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
         fhir_data = load_test_fhir_data(data)
@@ -414,10 +459,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context['member'] = self.get_member()
         data = fetch_member_data(context['member'], 'sharemyhealth')
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
-        if context['updated_at']:
-            context['time_since_update'] = (
-                    datetime.now(timezone.utc) - context['updated_at']
-            )
+        context = context_updated_at(context)
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
         # fhir_data = load_test_fhir_data(data)
@@ -469,10 +511,7 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
         context['member'] = self.get_member()
         data = fetch_member_data(context['member'], 'sharemyhealth')
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
-        if context['updated_at']:
-            context['time_since_update'] = (
-                    datetime.now(timezone.utc) - context['updated_at']
-            )
+        context = context_updated_at(context)
         ###
         # this will only pull a local fhir file if VPC_ENV is local
         fhir_data = load_test_fhir_data(data)
