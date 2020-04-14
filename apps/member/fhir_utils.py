@@ -642,3 +642,28 @@ def dated_bundle(entries):
     print('entries-0:', sorted_entry[0])
     print('entries-1:', sorted_entry[1])
     return {'entry': sorted_entry}
+
+
+def filter_list(full_list, inc_list=['*'], exc_list=[]):
+    """
+    Filter the full_list using the exc_list
+    then check inc_list for "*" (include everything)
+    If no "*" then filter full_list using inc_list
+
+    return the filtered_list
+
+    """
+    filtered_list = full_list
+    for exc in exc_list:
+        filtered_list.remove(exc)
+
+    if "*" in inc_list:
+        return filtered_list
+    else:
+        for inc in inc_list:
+            if inc in filtered_list:
+                pass
+            else:
+                filtered_list.remove(inc)
+        return filtered_list
+

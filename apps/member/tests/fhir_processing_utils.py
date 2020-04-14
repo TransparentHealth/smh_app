@@ -2,9 +2,8 @@ from django.test import TestCase
 # from django.test.client import Client
 # from django.urls import reverse
 from ..constants import RECORDS_STU3
-from ..fhir_utils import find_list_entry
+from ..fhir_utils import find_list_entry, filter_list
 from ..fhir_requests import get_converted_fhir_resource
-import json
 
 
 class ExtractFromFHIRTests(TestCase):
@@ -28,3 +27,61 @@ class ExtractFromFHIRTests(TestCase):
         selected_resources = get_converted_fhir_resource(self.fhir_data, [resource['name'], ])
         print("getting Observations")
         self.assertEqual(len(selected_resources), 290)
+
+
+class ManipulateListTests(TestCase):
+    # Testing filter list on include/exclude
+
+    def test_filter_list_good_exclude_no_wildcard(self):
+        f_list = ['a', 'b', 'c', 'd']
+        incld = ['a', 'c']
+        excld = ['b']
+
+        good_result = ['a', 'c', 'd']
+        result_list = filter_list(f_list, incld, excld)
+        self.assertEqual(good_result, result_list)
+
+    def test_filter_list_good_exclude_with_wildcard(self):
+        f_list = ['a', 'b', 'c', 'd']
+        incld = ['a', '*']
+        excld = ['b']
+
+        good_result = ['a', 'c', 'd']
+        result_list = filter_list(f_list, incld, excld)
+        self.assertEqual(good_result, result_list)
+
+    def test_filter_list_bad_exclude_no_wildcard(self):
+        f_list = ['a', 'b', 'c', 'd']
+        incld = ['a', 'c']
+        excld = ['b', 'e']
+
+        good_result = ['a', 'c', 'd']
+        result_list = filter_list(f_list, incld, excld)
+        self.assertEqual(good_result, result_list)
+
+    def test_filter_list_bad_exclude_wildcard(self):
+        f_list = ['a', 'b', 'c', 'd']
+        incld = ['a', '*']
+        excld = ['e']
+
+        good_result = ['a', 'b', 'c', 'd']
+        result_list = filter_list(f_list, incld, excld)
+        self.assertEqual(good_result, result_list)
+
+    def test_filter_list_bad_include_no_wildcard(self):
+        f_list = ['a', 'b', 'c', 'd']
+        incld = ['e', 'c']
+        excld = ['b']
+
+        good_result = ['c']
+        result_list = filter_list(f_list, incld, excld)
+        self.assertEqual(good_result, result_list)
+
+    def test_filter_list_bad_exclude_wildcard(self):
+        f_list = ['a', 'b', 'c', 'd']
+        incld = ['e', '*']
+        excld = ['b']
+
+        good_result = ['a', 'c', 'd']
+        result_list = filter_list(f_list, incld, excld)
+        self.assertEqual(good_result, result_list)

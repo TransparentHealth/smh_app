@@ -111,7 +111,7 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
 
 
 class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
-    template_name = "timeline.html"
+    template_name = "timeline2.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
