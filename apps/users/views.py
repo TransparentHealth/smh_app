@@ -46,6 +46,7 @@ def mylogout(request):
                 _("%s remote logout of %s failed: Multiple Objects Returned")
                 % (request.user, settings.REMOTE_LOGOUT_ENDPOINT)
             )
+            # print(request.user, "social:", request.user.social_auth)
             logout(request)
 
         logger.info(_("$s logged out."), request.user)

@@ -197,8 +197,10 @@ def resourceview(resource, member_id, viewer="default"):
     :return: None or html_output string
     """
 
+    # get the FHIR resourceType from the record
     resourceType = resource['resourceType']
 
+    # Use the resourceType to lookup the view controller for the resource
     view_format = find_key_value_in_list(RECORDS_STU3, 'name', resourceType)
     # print("viewport:", view_format)
 
@@ -229,7 +231,7 @@ def resourceview(resource, member_id, viewer="default"):
             if key == "id":
                 html_output += "<a href='' class='modal-link' data-toggle='modal' data-target='#record-detail--modal' " \
                                "data-url='/member/{}/data/{}/{}'>" \
-                               "{}</a> ".format('1', resourceType, value, value)
+                               "{}</a> ".format(member_id, resourceType, value, value)
             else:
                 if key == 'dosage':
                     if isinstance(value, list):
