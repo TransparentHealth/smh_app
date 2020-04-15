@@ -58,7 +58,8 @@ urlpatterns = [
         PrescriptionDetailModalView.as_view(),
         name='prescription-modal',
     ),
-    url(r'^(?P<pk>[0-9]+)/providers/$', ProvidersView.as_view(), name='providers'),
+    url(r'^(?P<pk>[0-9]+)/providers/(?P<resource_name>[\w-]+)?/?$', ProvidersView.as_view(), name='providers'),
+
     url(
         r'^(?P<pk>[0-9]+)/providers/(?P<provider_id>[0-9]+)/$',
         ProviderDetailView.as_view(),

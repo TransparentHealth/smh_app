@@ -334,7 +334,13 @@ def find_key_value_in_list(listing, key, value):
     :param value:
     :return: dict_found
     """
-    dict_found = next(filter(lambda obj: obj.get(key) == value, listing), None)
+    # for l in listing:
+    #     if key in l.keys():
+    #         if l[key] == value:
+    #             print("l[key = ", value)
+    #             return l
+
+    dict_found = next(filter(lambda obj: obj[key] == value, listing), None)
     if dict_found:
         return dict_found
     else:
@@ -653,9 +659,11 @@ def filter_list(full_list, inc_list=['*'], exc_list=[]):
     return the filtered_list
 
     """
+
     filtered_list = full_list
     for exc in exc_list:
-        filtered_list.remove(exc)
+        if exc in filtered_list:
+            filtered_list.remove(exc)
 
     if "*" in inc_list:
         return filtered_list
@@ -666,4 +674,3 @@ def filter_list(full_list, inc_list=['*'], exc_list=[]):
             else:
                 filtered_list.remove(inc)
         return filtered_list
-

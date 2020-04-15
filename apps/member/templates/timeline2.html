@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load smhtags %}
 
 {% block content %}
 <div class="row mr-0 ml-0">
@@ -9,7 +10,16 @@
         {% include "member_tabbed_nav.html" with member=member %}
          <div role="tabpanel" aria-hidden="true" class=" tab-pane">
             <!-- showing the list of resources summarized here -->
-            <h2 class="member-tabs__title mt-5">Timeline</h2>
+            <div class="record-heading-wrapper d-flex justify-content-between align-items-center pt-5 pb-2 mb-3">
+
+                        <h2 class="m-0">
+                            <img src="{% static 'images/icons/timeline.png' %}" alt="Timeline" height="70" width="70">
+                            &nbsp&nbspTimeline</h2>
+                        <a href="{% url return_to_view member.id  %}" class="button--reset">
+                            <img src="{% static 'images/icons/arrow-back.png' %}" alt="" class="mr-2">
+                            Go back to records
+                        </a>
+                    </div>
             {% for content_list in summarized_records %}
                 {% include "timeline_detail2.html" %}
             {% endfor %}

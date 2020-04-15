@@ -1,7 +1,7 @@
 import json
 
 import logging
-# from datetime import datetime, timezone
+from datetime import datetime, timezone
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -121,6 +121,9 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
         context['timestamp'] = data.get('updated_at', "No timestamp")
         context = context_updated_at(context)
+        return_to_view = "member:timeline"
+        context.setdefault('return_to_view', return_to_view)
+
 
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
@@ -158,7 +161,6 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         entries = dated_bundle(entries)
         print(len(entries['entry']))
         context.setdefault('summarized_records', entries['entry'])
-
         return context
 
 
@@ -264,6 +266,9 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
         context['timestamp'] = data.get('updated_at', "No timestamp")
         context = context_updated_at(context)
+        return_to_view = "member:records"
+        context.setdefault('return_to_view', return_to_view)
+
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
         fhir_data = load_test_fhir_data(data)
@@ -452,54 +457,120 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
 
 
 class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
-    template_name = "providers2.html"
+    template_name = "records2.html"
+    default_resource_name = 'sharemyhealth'
+    default_record_type = 'Condition'
 
     def get_context_data(self, **kwargs):
+        """Add records data into the context."""
         context = super().get_context_data(**kwargs)
         context['member'] = self.get_member()
+        resource_name = self.kwargs.get('resource_name') or 'list'
+
+        # Get the data for the member, and set it in the context
         data = fetch_member_data(context['member'], 'sharemyhealth')
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
+        context['timestamp'] = data.get('updated_at', "No timestamp")
         context = context_updated_at(context)
+        return_to_view = "member:providers"
+        context.setdefault('return_to_view', return_to_view)
+
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
-        # fhir_data = load_test_fhir_data(data)
-        fhir_data = data.get('fhir_data')
+        fhir_data = load_test_fhir_data(data)
+        # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
-            context['data'] = fhir_data
+            context['data'] = data
+
+        logging.debug(
+            "fhir_data records: %r",
+            fhir_data and fhir_data.get(
+                'entry') and len(fhir_data.get('entry')),
+        )
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context[
-                'member'], 'sharemyhealth')
+                            'member'], 'sharemyhealth')
 
-        resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", 'encounter')]
-        encounters_set = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+        if resource_name == 'list':
+            # all_records = RECORDS_STU3
+            all_records = view_filter(RECORDS_STU3, 'provider')
+            summarized_records = []
+            for record in all_records:
+                if record['call_type'].lower() == "fhir":
+                    # print("record processing for ", record['name'])
+                    entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                    record['data'] = entries['entry']
+                    record['count'] = len(entries['entry'])
+                    summarized_records.append(record)
+                elif record['call_type'].lower() == 'custom':
+                    if record['name'] == 'VitalSigns':
+                        entries = get_vital_signs(fhir_data, record)
+                        record['data'] = entries['entry']
+                        record['count'] = len(entries['entry'])
+                        summarized_records.append(record)
+                    elif record['name'] == 'LabResults':
+                        entries = get_lab_results(fhir_data, record)
+                        record['data'] = entries['entry']
+                        record['count'] = len(entries['entry'])
+                        summarized_records.append(record)
+                else:  # skip
+                    pass
 
-        # print(len(encounters_set['entry']), " encounters")
-        encounters = groupsort(encounters_set['entry'], resource_profile)
-        context['encounters'] = encounters
+            context.setdefault('return_to_view', return_to_view)
+            context.setdefault('all_records', summarized_records)
 
-        resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", 'practitioner')]
-        practitioners_set = get_converted_fhir_resource(fhir_data, 'Practitioner')
-        practitioners = practitioner_encounter(practitioners_set['entry'], encounters_set['entry'])
-        # practitioners = groupsort(practitioners, resource_profile)
+        else:
+            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_name)]
 
-        practitioners = sort_extended_practitioner(practitioners)
-        # for index, practitioner in enumerate(practitioners):
-        #     practitioner.last_encounter = practitioner.next_encounter(
-        #         encounters)
-        #     practitioners[index] = practitioner
-        #
-        # practitioners.sort(
-        #     key=lambda p: (
-        #         p.last_encounter.period.start
-        #         if p.last_encounter
-        #         else datetime(1, 1, 1, tzinfo=timezone.utc)
-        #     ),
-        #     reverse=True,
-        # )
+            # print("Resource Profile", resource_profile)
 
-        print("Passing Practitioners to view:", len(practitioners))
-        context['practitioners'] = practitioners
+            if resource_profile:
+                title = resource_profile['display']
+                headers = resource_profile['headers']
+                exclude = resource_profile['exclude']
+                # second_fields = headers
+                # second_fields.append(exclude)
+            else:
+                title = resource_name
+                headers = ['id', '*']
+                exclude = ['']
+                # second_fields
+
+            title = resource_profile['display']
+            if resource_profile['call_type'] == 'custom':
+                if resource_profile['slug'] == 'labresults':
+                    entries = get_lab_results(fhir_data, resource_profile)
+                elif resource_profile['slug'] == 'vitalsigns':
+                    entries = get_vital_signs(fhir_data, resource_profile)
+            elif resource_profile['call_type'] == 'skip':
+                entries = {'entry': []}
+            else:
+                entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+                # if resource_profile['name'] == "Procedure":
+                #     print(len(entries['entry']))
+                #     print("Procedures:", entries['entry'])
+                entries = groupsort(entries['entry'], resource_profile)
+                # if resource_profile['name'] == "Procedure":
+                #     print(len(entries['entry']))
+                #     print("Procedures - post sort:", entries['entry'])
+                entries = concatenate_lists(entry_check(entries))
+                # if resource_profile['name'] == "Procedure":
+                #     print(len(entries['entry']))
+                #     print("Procedures - post concatenate:", entries['entry'])
+
+            content_list = path_extract(entries['entry'], resource_profile)
+            context.setdefault('friendly_fields', find_list_entry(FIELD_TITLES, "profile", resource_profile['name']))
+            context.setdefault('title', title)
+            context.setdefault('headers', headers)
+            context.setdefault('exclude', exclude)
+            # context.setdefault('content_list', content_list)
+            context.setdefault('resource_profile', resource_profile)
+            # sorted_content = sort_json(content_list, sort_field)
+            # context.setdefault('content_list', sorted_content)
+            context.setdefault('content_list', content_list)
+            context.setdefault('return_to_view', return_to_view)
+
         return context
 
 
@@ -521,6 +592,7 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
             delete_memoized(fetch_member_data, context[
                 'member'], 'sharemyhealth')
 
+        all_records = view_filter(RECORDS_STU3, 'provider')
         practitioner_set = get_converted_fhir_resource(fhir_data, " Practitioner")
         context['practitioner'] = practitioner_set['entry']
 
