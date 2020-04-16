@@ -2,7 +2,10 @@
 from django.template.defaulttags import register
 from ...member.constants import FIELD_TITLES, RECORDS_STU3
 from ...member.fhir_custom_formats import address
-from ...member.fhir_utils import find_key_value_in_list
+from ...member.fhir_utils import (find_key_value_in_list,
+                                  filter_list,
+                                  # path_extract
+                                  )
 
 # register = template.Library()
 
@@ -90,9 +93,10 @@ def valueformat(value, key):
                     suffix_str = ','.join([str(x) for x in n['suffix']])
                 if 'family' in n:
                     family_str = n['family']
-                f_value += "%s %s %s" % (given_str,
-                                         family_str,
-                                         suffix_str)
+                f_value += "{first} {surname} {suffix}".format(first=given_str,
+                                                               surname=family_str,
+                                                               suffix=suffix_str)
+            return f_value
         elif key.lower() == 'dosage':
             #  "doseQuantity": {
             #                 "value": 200,
@@ -124,7 +128,8 @@ def valueformat(value, key):
                             else:
                                 f_value += str(vv) + " "
             return f_value
-        elif key.lower() == 'medicationreference':
+        elif key == 'medicationReference':
+            print("Working on", key)
             f_value = value
             # lookup field_formats
             # concat_key should have a resource name
@@ -132,10 +137,18 @@ def valueformat(value, key):
                 resource = concat_key[0]
             else:
                 resource = None
+            print("\n\nRESOURCE:", resource)
             if resource:
+                print("Value:", value)
                 # look up field_format in RECORDS_STU3
-
-                f_value = "Medication: " + value['display']
+                if type(value) == list:
+                    f_value = "Medication: "
+                    for v_l in value:
+                        if 'display' in v_l:
+                            f_value += v_l['display'] + " "
+                elif type(value) == dict:
+                    if 'display' in value:
+                        f_value = "Medication: " + value['display']
             return f_value
         elif key.lower() == 'dataabsentreason':
             if isinstance(value, dict):
@@ -169,14 +182,26 @@ def valueformat(value, key):
 
             return f_value
         else:
+            print("some other key:", key, " and value:", value)
             return value
 
 
 @register.filter
-def resourceview(resource, member_id, viewer="default"):
+def repeat_resourceview(resource, member_id):
+    """
+    Call resourceview with changed=False
+    :param resource:
+    :param member_id:
+    """
+    return resourceview(resource, member_id, changed=False)
+
+
+@register.filter
+def resourceview(resource, member_id, changed=True):
     """
     Take a resource and display it
     use RECORDS_STU3 to control display
+    If changed = True we can repeat
 
     {'name': 'MedicationStatement', 'slug': 'medicationstatement', 'call_type': 'fhir', 'resources': ['MedicationStatement'], 'display': 'Medication Statement',
      'headers': ['id', 'medicationReference', 'dosage', '*'],
@@ -193,58 +218,91 @@ def resourceview(resource, member_id, viewer="default"):
      },
 
     :param resource:
+    :param member_id:
+    :param changed: 0 | 1
     :param viewer:
     :return: None or html_output string
     """
 
+    # get the FHIR resourceType from the record
     resourceType = resource['resourceType']
 
+    # Use the resourceType to lookup the view controller for the resource
     view_format = find_key_value_in_list(RECORDS_STU3, 'name', resourceType)
     # print("viewport:", view_format)
 
     if not view_format:
         return
     # We can format output
+
+    titles_line = ""
+    # Use the view_format to tailor the resource display
+    # get the fields to display
+    fields = filter_list(list(resource.keys()),
+                         view_format['headers'],
+                         view_format['exclude'])
+
+    # print("display fields:", fields)
+    # Get the friendly names for fields
+    if changed:
+        # this is a new resource
+        friendly_field_def = find_key_value_in_list(FIELD_TITLES, 'profile', resourceType)
+        ffd = not friendly_field_def
+        # ffd is True if friendly_field_def is empty
+        title_fields = []
+        title_fields.extend(fields)
+        if ffd:
+            pass
+        else:
+            for e in friendly_field_def['elements']:
+                if e['system_name'] in title_fields:
+                    ix = title_fields.index(e['system_name'])
+                    title_fields[ix] = e['show_name']
+
+        # create the titles_line
+        for t in title_fields:
+            if t == title_fields[0]:
+                titles_line += "<td><b>{r_type}<br/>{title}</b></td>".format(r_type=resource['resourceType'],
+                                                                             title=t)
+            else:
+                titles_line += "<td><b>{title}</b></td>".format(title=t)
+    # convert the fields from the resource based on format rules
+    # res = path_extract([resource, ], view_format)
+    # and insert the resulting content into html output
+
+    # and return to the view
+
     html_output = ""
 
-    html_output += "<td><img src='/static/images/icons/{}.png' alt='{}' height='14' width='14'>" \
-                   "&nbsp&nbsp{}".format(view_format['name'],
-                                         view_format['display'],
-                                         view_format['display'])
+    html_output += "<td><a href='' class='modal-link' data-toggle='modal' data-target='#record-detail--modal'"
+    html_output += "       data-url='/member/{member_id}/data/{resource_type}/{resource_id}'>" \
+                   "       <img src='/static/images/icons/{resource_type}.png' " \
+                   "            alt='{resource_type}' height='20' width='20'> " \
+                   "       <img src='/static/images/icons/popup.png' " \
+                   "            alt='More info' height='20' width='20'> " \
+                   "</a> </td>".format(member_id=member_id,
+                                       resource_type=resourceType,
+                                       resource_id=resource['id'],)
 
-    html_output += "</td><tr><td>"
+#     print("Titles=", title_fields, "\n", "Fields:", fields)
     for key, value in resource.items():
-        show = False
-        if key in view_format['headers']:
-            show = True
-        elif key in view_format['exclude']:
-            show = False
-        elif "*" in view_format['headers']:
-            show = True
+        if resourceType == "MedicationStatement":
+            print("resource:", resource, "\n", "key:", key, "value:", value)
+        if key in fields:
+            if key != 'id':
+                # We want to process the field
+                print("KEY:", key)
+                html_output += "<td>{result}</td>".format(result=valueformat(value, "medicationStatement." + key))
         else:
-            show = False
-        if show:
-            if value == resourceType:
-                pass
-            if key == "id":
-                html_output += "<a href='' class='modal-link' data-toggle='modal' data-target='#record-detail--modal' " \
-                               "data-url='/member/{}/data/{}/{}'>" \
-                               "{}</a> ".format('1', resourceType, value, value)
-            else:
-                if key == 'dosage':
-                    if isinstance(value, list):
-                        html_output += key + ": "
-                        for ii in value:
-                            for kk, vv in ii.items():
-                                if kk.lower() == 'dosequantity':
-                                    html_output += str(vv['value']) + " " + vv['unit'] + " "
-                                elif kk.lower() == 'timing':
-                                    html_output += str(vv) + " "
-                else:
-                    html_output += "{}".format(valueformat(value, "medicationReference." + key))
+            print("no match for key in fields:", key, "/", fields)
 
-            # html_output += "{}:{} ".format(key, value)
+    template_html = """
+    <tr>{}
+    </tr>
+    <tr>
+    {}
+    </tr>
+    """.format(titles_line, html_output)
 
-    html_output += "</td></tr>"
+    return template_html
 
-    return html_output

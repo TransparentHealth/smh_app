@@ -34,23 +34,29 @@ RECORDS = [
     },
 ]
 
-PROVIDER_RESOURCES = ['Location', 'Organization', 'Practitioner', 'PractitionerRole', 'CareTEam']
+PROVIDER_RESOURCES = ['Encounter', 'Location', 'Organization', 'Practitioner', 'PractitionerRole', 'CareTeam']
 
 FIELD_TITLES = [
     {'profile': 'AllergyIntolerance',
      'elements': [
-        {'system_name': 'id', 'show_name': 'Ref#'},
-        {'system_name': 'clinicalStatus', 'show_name': 'Status'},
-        {'system_name': 'verificationStatus', 'show_name': 'Verified'},
-        {'system_name': 'onsetDateTime', 'show_name': 'Onset'},
-        {'system_name': 'assertedDate', 'show_name': 'Asserted'},
-        {'system_name': 'code', 'show_name': 'Info'},
-        {'system_name': 'type', 'show_name': 'Severity'},
+         {'system_name': 'id', 'show_name': 'Ref#'},
+         {'system_name': 'clinicalStatus', 'show_name': 'CStatus'},
+         {'system_name': 'verificationStatus', 'show_name': 'Verified'},
+         {'system_name': 'onsetDateTime', 'show_name': 'Onset'},
+         {'system_name': 'assertedDate', 'show_name': 'Asserted'},
+         {'system_name': 'code', 'show_name': 'Info'},
+         {'system_name': 'type', 'show_name': 'Severity'},
      ]},
     {'profile': 'medicationRequest',
      'elements': [
-        {'system_name': 'dispenseRequest', 'show_name': 'Refills'},
+         {'system_name': 'dispenseRequest', 'show_name': 'Refills'},
      ]},
+    {'profile': 'MedicationStatement',
+     'elements': [
+         {'system_name': 'id', 'show_name': 'Ref#'},
+         {'system_name': 'medicationReference', 'show_name': 'Medication'},
+     ]
+    }
 ]
 
 RECORDS_STU3 = [
@@ -163,7 +169,7 @@ RECORDS_STU3 = [
                       {"field": "participant", "detail": "$.participant[*].individual.display", "format": ""}],
      'sort': ['-$.period[*].start', ],
      'group': ['$.period[*].start', ],
-     'views': ['record', 'records']
+     'views': ['record', 'records', 'provider', 'providers']
      },
     {'name': 'Endpoint', 'slug': 'endpoint', 'call_type': 'skip', 'resources': ['Endpoint'], 'display': 'Endpoint', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'EnrollmentRequest', 'slug': 'enrollmentrequest', 'call_type': 'fhir', 'resources': ['EnrollmentRequest'], 'display': 'Enrollment Request', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
@@ -216,7 +222,7 @@ RECORDS_STU3 = [
      'group': ['$.medicationReference.display'],
      'views': ['record', 'records']
      },
-    {'name': 'MedicationRequest', 'slug': 'medicationrequest', 'call_type': 'fhir', 'resources': ['MedicationRequest'], 'display': 'Medication Request',
+    {'name': 'MedicationRequest', 'slug': 'medicationrequest', 'call_type': 'fhir', 'resources': ['MedicationRequest'], 'display': 'Prescriptions',
      'headers': ['id', 'medicationReference', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'status', 'intent', 'subject'],
      'field_formats': [{'field': 'medicationReference', 'detail': '$.medicationReference.display', 'format': ''},
@@ -227,7 +233,7 @@ RECORDS_STU3 = [
      'group': ['$.medicationReference.display'],
      'views': ['record', 'records']
      },
-    {'name': 'MedicationStatement', 'slug': 'medicationstatement', 'call_type': 'fhir', 'resources': ['MedicationStatement'], 'display': 'Medication Statement',
+    {'name': 'MedicationStatement', 'slug': 'medicationstatement', 'call_type': 'skip', 'resources': ['MedicationStatement'], 'display': 'Medication Statement',
      'headers': ['id', 'medicationReference', 'dosage', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'status', 'effectivePeriod', 'subject', 'taken'],
      'field_formats': [
@@ -248,7 +254,7 @@ RECORDS_STU3 = [
     {'name': 'Observation', 'slug': 'observation', 'call_type': 'skip', 'resources': ['Observation'], 'display': 'Observation',
      'headers': ['id', 'status', 'code', 'effectivePeriod', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
-     'field_formats':[{"field": "code", "detail": "$.code.coding[*].display", "format": ''},
+     'field_formats':[{"field": "code", "detail": "$.code.coding[0].display", "format": ''},
                       {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
                       ],
      'sort': [],
@@ -291,7 +297,7 @@ RECORDS_STU3 = [
      'views': ['provider', 'providers']
      },
     {'name': 'Parameters', 'slug': 'parameters', 'call_type': 'skip', 'resources': ['Parameters'], 'display': 'Parameters', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'Patient', 'slug': 'patient', 'call_type': 'fhir', 'resources': ['Patient'], 'display': 'Patient',
+    {'name': 'Patient', 'slug': 'patient', 'call_type': 'fhir', 'resources': ['Patient'], 'display': 'HIXNY Patient Record',
      'headers': ['id', 'name', 'telecom', 'gender', 'birthDate', '*'],
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats':[{'field': 'birthDate', 'detail': '$.birthDate', 'format': {'start': 0, 'end': 10}},
