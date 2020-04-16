@@ -305,4 +305,3 @@ def resourceview(resource, member_id, changed=True):
     """.format(titles_line, html_output)
 
     return template_html
-
