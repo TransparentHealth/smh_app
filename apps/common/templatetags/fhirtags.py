@@ -4,7 +4,8 @@ from ...member.constants import FIELD_TITLES, RECORDS_STU3
 from ...member.fhir_custom_formats import address
 from ...member.fhir_utils import (find_key_value_in_list,
                                   filter_list,
-                                  path_extract)
+                                  # path_extract
+                                  )
 
 # register = template.Library()
 
@@ -262,11 +263,11 @@ def resourceview(resource, member_id, changed=True):
         for t in title_fields:
             if t == title_fields[0]:
                 titles_line += "<td><b>{r_type}<br/>{title}</b></td>".format(r_type=resource['resourceType'],
-                                                                         title=t)
+                                                                             title=t)
             else:
                 titles_line += "<td><b>{title}</b></td>".format(title=t)
     # convert the fields from the resource based on format rules
-    res = path_extract([resource, ], view_format)
+    # res = path_extract([resource, ], view_format)
     # and insert the resulting content into html output
 
     # and return to the view
@@ -294,7 +295,6 @@ def resourceview(resource, member_id, changed=True):
                 html_output += "<td>{result}</td>".format(result=valueformat(value, "medicationStatement." + key))
         else:
             print("no match for key in fields:", key, "/", fields)
-
 
     template_html = """
     <tr>{}

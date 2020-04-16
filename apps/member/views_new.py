@@ -67,7 +67,7 @@ from .fhir_utils import (
     context_updated_at,
     dated_bundle
 )
-from .practitioner_tools import practitioner_encounter, sort_extended_practitioner
+# from .practitioner_tools import practitioner_encounter, sort_extended_practitioner
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +123,6 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context = context_updated_at(context)
         return_to_view = "member:timeline"
         context.setdefault('return_to_view', return_to_view)
-
 
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
@@ -645,7 +644,7 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
             delete_memoized(fetch_member_data, context[
                 'member'], 'sharemyhealth')
 
-        all_records = view_filter(RECORDS_STU3, 'provider')
+        # all_records = view_filter(RECORDS_STU3, 'provider')
         practitioner_set = get_converted_fhir_resource(fhir_data, " Practitioner")
         context['practitioner'] = practitioner_set['entry']
 

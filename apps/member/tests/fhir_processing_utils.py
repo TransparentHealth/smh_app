@@ -1,3 +1,4 @@
+import json
 from django.test import TestCase
 # from django.test.client import Client
 # from django.urls import reverse
@@ -77,7 +78,7 @@ class ManipulateListTests(TestCase):
         result_list = filter_list(f_list, incld, excld)
         self.assertEqual(good_result, result_list)
 
-    def test_filter_list_bad_exclude_wildcard(self):
+    def test_filter_list_include_bad_exclude_wildcard(self):
         f_list = ['a', 'b', 'c', 'd']
         incld = ['e', '*']
         excld = ['b']
