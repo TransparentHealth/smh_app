@@ -119,7 +119,6 @@
             if(data.includes('<html')) {
                 window.location = "{% url 'login' %}";
                 return;
-            }
             modal.find('#record-detail--content').html(data);
           }).fail(function() {
             modal.find('#record-detail--body').html("<p><em>Data could not be loaded.</em></p>");

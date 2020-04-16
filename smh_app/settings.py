@@ -275,6 +275,8 @@ RESOURCE_NAME_AND_CLASS_MAPPING = {
 
 
 CREATE_MEMBER_ACCOUNT_URI = "%s/home/select-org-for-account-create/member" % (SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
+CREATE_AGENT_ACCOUNT_URI = "%s/home/select-org-for-account-create/agent" % (SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
+SEARCH_FOR_MEMBER_URI = "%s/search" % (SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
 
 # Valid record types for member data
 VALID_MEMBER_DATA_RECORD_TYPES = [
@@ -396,6 +398,8 @@ SETTINGS_EXPORT = [
     'REMOTE_ACCOUNT_SETTINGS_ENDPOINT',
     'REMOTE_ACCOUNT_SET_PICTURE_ENDPOINT',
     'CREATE_MEMBER_ACCOUNT_URI',
+    'CREATE_AGENT_ACCOUNT_URI',
+    'SEARCH_FOR_MEMBER_URI',
 ]
 
 # Django-phonenumber-field settings
@@ -411,8 +415,74 @@ SESSION_COOKIE_SAMESITE = None
 # Using django-session-security to manage session timeout
 SESSION_SECURITY_EXPIRE_AFTER = 30 * 60  # 30 min inactivity
 
+# CDAs and FHIR Resources can be large. Editing in Admin can fail
+# If we don't update the max limit (in bytes)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
+#  2621440 = 2.5Mb
+
+# Used for Pretty Printing JSON
+JSON_INDENT = 4
+
 # AWS Settings -------------------------------------------
 AWS_DEFAULT_REGION = env('AWS_DEFAULT_REGION', 'us-east-1')
 
 EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES = env(
     'EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES', "EC2_PARAMSTORE")
+
+VPC_ENV = env('VPC_ENV', "UNKNOWN")
+ROLE_TYPE = env('ROLE_TYPE', "NOT_SET")
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(process)-5d %(thread)d %(name)-50s env:' + VPC_ENV + ':' + ROLE_TYPE + ' %(levelname)-8s %(message)s'
+        },
+        'simple': {
+            'format': '[%(asctime)s] %(name)s env:' + VPC_ENV + ':' + ROLE_TYPE + '%(levelname)s %(message)s',
+            'datefmt': '%d/%b/%Y %H:%M:%S'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'logging.handlers.SysLogHandler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.SysLogHandler',
+            'facility': 'local7',
+            'formatter': 'verbose',
+            'address': '/dev/log',
+        }
+    },
+    'loggers': {
+        # root logger
+        'smh': {
+            'handlers': ['console', 'logging.handlers.SysLogHandler'],
+            'propagate': True,
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'disabled': False,
+        },
+        'smh_debug': {
+            'handlers': ['console', 'logging.handlers.SysLogHandler'],
+            'level': 'DEBUG',
+            'formatter': 'verbose',
+            'propagate': True,
+
+        },
+    },
+}

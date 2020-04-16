@@ -10,6 +10,10 @@ __pycache__/
 .DS_Store
 *.komodoproject
 
+# intellij
+.idea/
+/.idea/
+
 # Distribution / packaging
 .Python
 build/
@@ -112,3 +116,7 @@ collectedstatic
 coverage
 testdata
 src
+.vs
+/.vs
+
+/changes/
