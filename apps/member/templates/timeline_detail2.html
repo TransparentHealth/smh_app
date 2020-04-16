@@ -1,0 +1,24 @@
+{% load static %}
+<div class="table-responsive">
+    <table class="table table--records table-hover">
+        {% for activity_date, item in content_list.items %}
+
+            <tr>
+                <td>{{ activity_date }}</td>
+            </tr>
+
+                {%  autoescape off %}
+                    {% for r in item %}
+                        {% if r %}
+                            {% ifchanged r.resourceType %}
+                                {{ r|resourceview:member.id }}
+                            {% else %}
+                                {{ r|repeat_resourceview:member.id }}
+                            {% endifchanged %}
+                        {% endif %}
+                    {% endfor %}
+                {% endautoescape %}
+
+        {% endfor %}
+    </table>
+</div>

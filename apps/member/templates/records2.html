@@ -33,7 +33,7 @@
                     <a
                         class="tile tile-flex__item {% if not record.count %} disabled {% endif %}"
                         {% if record.count %}
-                            href="{% url 'member:records' member.id record.slug %}"
+                            href="{% url return_to_view member.id record.slug %}"
                         {% else %}
                             href="#"
                         {% endif %}
@@ -56,7 +56,7 @@
                         <h2 class="m-0">{% with 'images/icons/'|add:resource_profile.slug|add:".png" as source %}
                             <img src="{% static source %}" alt="record.name" height="70" width="70">
                         {% endwith %}&nbsp&nbsp{{ title }}</h2>
-                        <a href="{% url 'member:records' member.id 'list' %}" class="button--reset">
+                        <a href="{% url return_to_view member.id 'list' %}" class="button--reset">
                             <img src="{% static 'images/icons/arrow-back.png' %}" alt="" class="mr-2">
                             Go back to records
                         </a>
@@ -82,7 +82,8 @@
                                                 <a href="" class="modal-link" data-toggle="modal"
                                                     data-target="#record-detail--modal"
                                                     data-url="/member/{{ member.id }}/data/{{ item.resourceType }}/{{ item.id }}">
-                                                    {{ value }}</a>
+                                                   <img src='/static/images/icons/popup.png' alt='More info' height='20' width='20'>
+                                                </a>
                                                 {% elif value %}
                                                     {{ value|valueformat:key }}
                                                 {% else %}

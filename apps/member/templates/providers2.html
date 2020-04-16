@@ -20,14 +20,14 @@
                     </div>
                 </form>
             </div>
-
+            HELLO PROVIDERS2
             {% if practitioners %}
             <table class="table table--records mt-2 table-hover">
                 <thead>
                     <tr>
-                        <th width="34%">Provider’s Name</th>
-                        <th width="33%">Date Last Seen</th>
-                        <th width="33%">Location</th>
+                        <th width="35%">Provider’s Name</th>
+                        <th width="20%">Date:Last Seen</th>
+                        <th width="30%">Location</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,12 +35,12 @@
                     <tr>
                         <td>
                             <a class="modal-link"
-                                href="{% url 'member:provider_detail' pk=member.id provider_id=practitioner.id %}">
-                                {{ practitioner.names_text }}
+                                href="{% url 'member:provider_detail' pk=member.id provider_id=47 %}">
+                                {{ practitioner.name.0.family }}, {{ practitioner.name.0.given.0 }}
                             </a>
                         </td>
-                        <td>{% firstof practitioner.last_encounter.period.start '—' %}</td>
-                        <td>{% firstof practitioner.last_encounter.locations_display '—' %}</td>
+                        <td>{% firstof practitioner.latestDate  %}</td>
+                        <td>{% firstof practitioner.location.0.display '—' %}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
