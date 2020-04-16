@@ -34,7 +34,7 @@ RECORDS = [
     },
 ]
 
-PROVIDER_RESOURCES = ['Location', 'Organization', 'Practitioner', 'PractitionerRole', 'CareTEam']
+PROVIDER_RESOURCES = ['Encounter', 'Location', 'Organization', 'Practitioner', 'PractitionerRole', 'CareTeam']
 
 FIELD_TITLES = [
     {'profile': 'AllergyIntolerance',
@@ -169,7 +169,7 @@ RECORDS_STU3 = [
                       {"field": "participant", "detail": "$.participant[*].individual.display", "format": ""}],
      'sort': ['-$.period[*].start', ],
      'group': ['$.period[*].start', ],
-     'views': ['record', 'records']
+     'views': ['record', 'records', 'provider', 'providers']
      },
     {'name': 'Endpoint', 'slug': 'endpoint', 'call_type': 'skip', 'resources': ['Endpoint'], 'display': 'Endpoint', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'EnrollmentRequest', 'slug': 'enrollmentrequest', 'call_type': 'fhir', 'resources': ['EnrollmentRequest'], 'display': 'Enrollment Request', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
@@ -203,7 +203,7 @@ RECORDS_STU3 = [
     {'name': 'Measure', 'slug': 'measure', 'call_type': 'fhir', 'resources': ['Measure'], 'display': 'Measure', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'MeasureReport', 'slug': 'measurereport', 'call_type': 'fhir', 'resources': ['MeasureReport'], 'display': 'Measure Report', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'Media', 'slug': 'media', 'call_type': 'fhir', 'resources': ['Media'], 'display': 'Media', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'Medication', 'slug': 'medication', 'call_type': 'fhir', 'resources': ['Medication'], 'display': 'Medication',
+    {'name': 'Medication', 'slug': 'medication', 'call_type': 'skip', 'resources': ['Medication'], 'display': 'Medication',
      'headers': ['id', 'code', '*'],
      'exclude': ['meta', 'resourceType'],
      'field_formats':[{"field": "code", "detail": "$.code.text", "format": ''}],
@@ -222,7 +222,7 @@ RECORDS_STU3 = [
      'group': ['$.medicationReference.display'],
      'views': ['record', 'records']
      },
-    {'name': 'MedicationRequest', 'slug': 'medicationrequest', 'call_type': 'fhir', 'resources': ['MedicationRequest'], 'display': 'Medication Request',
+    {'name': 'MedicationRequest', 'slug': 'medicationrequest', 'call_type': 'fhir', 'resources': ['MedicationRequest'], 'display': 'Prescriptions',
      'headers': ['id', 'medicationReference', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'status', 'intent', 'subject'],
      'field_formats': [{'field': 'medicationReference', 'detail': '$.medicationReference.display', 'format': ''},
@@ -233,7 +233,7 @@ RECORDS_STU3 = [
      'group': ['$.medicationReference.display'],
      'views': ['record', 'records']
      },
-    {'name': 'MedicationStatement', 'slug': 'medicationstatement', 'call_type': 'fhir', 'resources': ['MedicationStatement'], 'display': 'Medication Statement',
+    {'name': 'MedicationStatement', 'slug': 'medicationstatement', 'call_type': 'skip', 'resources': ['MedicationStatement'], 'display': 'Medication Statement',
      'headers': ['id', 'medicationReference', 'dosage', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'status', 'effectivePeriod', 'subject', 'taken'],
      'field_formats': [
@@ -297,7 +297,7 @@ RECORDS_STU3 = [
      'views': ['provider', 'providers']
      },
     {'name': 'Parameters', 'slug': 'parameters', 'call_type': 'skip', 'resources': ['Parameters'], 'display': 'Parameters', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'Patient', 'slug': 'patient', 'call_type': 'fhir', 'resources': ['Patient'], 'display': 'Patient',
+    {'name': 'Patient', 'slug': 'patient', 'call_type': 'fhir', 'resources': ['Patient'], 'display': 'HIXNY Patient Record',
      'headers': ['id', 'name', 'telecom', 'gender', 'birthDate', '*'],
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats':[{'field': 'birthDate', 'detail': '$.birthDate', 'format': {'start': 0, 'end': 10}},

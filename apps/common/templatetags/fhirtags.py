@@ -276,10 +276,12 @@ def resourceview(resource, member_id, changed=True):
     html_output += "<td><a href='' class='modal-link' data-toggle='modal' data-target='#record-detail--modal'"
     html_output += "       data-url='/member/{member_id}/data/{resource_type}/{resource_id}'>" \
                    "       <img src='/static/images/icons/{resource_type}.png' " \
-                   "            alt='{resource_type}' height='14' width='14'> " \
-                   "{resource_id}</a> </td>".format(member_id=member_id,
-                                                    resource_type=resourceType,
-                                                    resource_id=resource['id'],)
+                   "            alt='{resource_type}' height='20' width='20'> " \
+                   "       <img src='/static/images/icons/popup.png' " \
+                   "            alt='More info' height='20' width='20'> " \
+                   "</a> </td>".format(member_id=member_id,
+                                       resource_type=resourceType,
+                                       resource_id=resource['id'],)
 
 #     print("Titles=", title_fields, "\n", "Fields:", fields)
     for key, value in resource.items():
