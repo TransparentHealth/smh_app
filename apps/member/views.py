@@ -68,8 +68,8 @@ class SelfOrApprovedOrgMixin(UserPassesTestMixin):
     def get_login_url(self):
         """Org agents can request access, others go home (login or member:dashboard)."""
         if (
-                not self.request.user.is_anonymous
-                and self.request.user.user_type == self.request.user.UserType.ORG_AGENT
+            not self.request.user.is_anonymous
+            and self.request.user.user_type == self.request.user.UserType.ORG_AGENT
         ):
             return reverse('member:request-access', args=[self.kwargs['pk']])
         else:
@@ -113,7 +113,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context['timestamp'] = data.get('updated_at', "No timestamp")
         if context['updated_at']:
             context['time_since_update'] = (
-                    datetime.now(timezone.utc) - context['updated_at']
+                datetime.now(timezone.utc) - context['updated_at']
             )
             context['updated_at'] = context['updated_at'].timestamp()
 
@@ -154,7 +154,7 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         #####
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context[
-                'member'], 'sharemyhealth')
+                            'member'], 'sharemyhealth')
 
         # all_records = RECORDS
         all_records = RECORDS_STU3
@@ -206,7 +206,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context['timestamp'] = data.get('updated_at', "No timestamp")
         if context['updated_at']:
             context['time_since_update'] = (
-                    datetime.now(timezone.utc) - context['updated_at']
+                datetime.now(timezone.utc) - context['updated_at']
             )
         fhir_data = load_test_fhir_data(data)
         # fhir_data = data.get('fhir_data')
@@ -221,7 +221,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context[
-                'member'], 'sharemyhealth')
+                            'member'], 'sharemyhealth')
 
         if resource_name == 'list':
             all_records = RECORDS_STU3
@@ -324,7 +324,7 @@ class PrescriptionDetailModalView(
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
         if context['updated_at']:
             context['time_since_update'] = (
-                    datetime.now(timezone.utc) - context['updated_at']
+                datetime.now(timezone.utc) - context['updated_at']
             )
         fhir_data = data.get('fhir_data')
         if settings.DEBUG:
@@ -332,7 +332,7 @@ class PrescriptionDetailModalView(
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context[
-                'member'], 'sharemyhealth')
+                            'member'], 'sharemyhealth')
 
         prescriptions = get_prescriptions(
             fhir_data, id=context[
@@ -405,7 +405,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
         if context['updated_at']:
             context['time_since_update'] = (
-                    datetime.now(timezone.utc) - context['updated_at']
+                datetime.now(timezone.utc) - context['updated_at']
             )
         context['back_to'] = 'member:providers'
 
@@ -519,13 +519,13 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
         if context['updated_at']:
             context['time_since_update'] = (
-                    datetime.now(timezone.utc) - context['updated_at']
+                datetime.now(timezone.utc) - context['updated_at']
             )
         fhir_data = data.get('fhir_data')
 
         if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
             delete_memoized(fetch_member_data, context[
-                'member'], 'sharemyhealth')
+                            'member'], 'sharemyhealth')
 
         context['practitioner'] = next(
             iter(
@@ -706,9 +706,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             notify_id=self.request.user.id, dismissed=False
         ).order_by('-created')[:4]
         organizations = [
-                            resource_grant.organization
-                            for resource_grant in self.request.user.resource_grants.all()
-                        ][:4]
+            resource_grant.organization
+            for resource_grant in self.request.user.resource_grants.all()
+        ][:4]
         kwargs.setdefault('notifications', notifications)
         kwargs.setdefault('organizations', organizations)
         id_token_payload = get_id_token_payload(self.request.user)
@@ -822,12 +822,12 @@ def resource_request_response(request):
         }
     )
     if form.is_valid() and (
-            form.cleaned_data['member'] == request.user
-            or (
-                    form.cleaned_data[
-                        'organization'] in request.user.agent_organizations.all()
-                    and form.cleaned_data['status'] in [REQUEST_DENIED, REQUEST_REQUESTED]
-            )
+        form.cleaned_data['member'] == request.user
+        or (
+            form.cleaned_data[
+                'organization'] in request.user.agent_organizations.all()
+            and form.cleaned_data['status'] in [REQUEST_DENIED, REQUEST_REQUESTED]
+        )
     ):
         resource_request = ResourceRequest.objects.filter(
             member=form.cleaned_data['member'],
