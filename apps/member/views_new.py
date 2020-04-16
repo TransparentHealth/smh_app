@@ -1,7 +1,7 @@
 import json
 
 import logging
-from datetime import datetime, timezone
+# from datetime import datetime, timezone
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -161,6 +161,7 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         entries = dated_bundle(entries)
         print(len(entries['entry']))
         context.setdefault('summarized_records', entries['entry'])
+
         return context
 
 
