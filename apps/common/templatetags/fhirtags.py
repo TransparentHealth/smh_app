@@ -123,6 +123,12 @@ def valueformat(value, format_list):
                 return dt_reference(value, member_id)
         # elif key.lower() == "result":
         #     return dt_reference(value[0], member_id)
+        elif key.lower() == 'practitioner':
+            if 'display' in value:
+                return dt_reference(value, member_id)
+        elif key.lower() == 'organization':
+            if 'display' in value:
+                return dt_reference(value, member_id)
         elif key.lower() == 'participant':
             if 'display' in value[0]['individual']:
                 return dt_reference(value[0]['individual'], member_id)
@@ -218,6 +224,7 @@ def resourceview(resource, member_id, changed=True):
                 titles_line += "<td><b>{title}</b></td>".format(title=t)
     # convert the fields from the resource based on format rules
     res = path_extract([resource, ], view_format)[0]
+
     # and insert the resulting content into html output
 
     # and return to the view
@@ -262,3 +269,16 @@ def resourceview(resource, member_id, changed=True):
     # print("\nTEMPLATE HTML:\n", template_html)
 
     return template_html
+
+
+@register.filter
+def collect(listing, item):
+    """
+    add item to listing
+    :param listing:
+    :param item:
+    :return listing:
+    """
+
+    listing.extend(item)
+    return listing

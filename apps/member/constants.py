@@ -338,8 +338,9 @@ RECORDS_STU3 = [
     {'name': 'PractitionerRole', 'slug': 'practitionerrole', 'call_type': 'fhir', 'resources': ['PractitionerRole'], 'display': 'Practitioner Role',
      'headers': ['id', 'practitioner', 'organization', '*'],
      'exclude': ['meta', 'identifier', 'resourceType'],
-     'field_formats': [{"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
-                       {"field": "organization", "detail": "$.organization.display", "format": ''},
+     'field_formats': [
+                       # {"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
+                       # {"field": "organization", "detail": "$.organization.display", "format": ''},
                        ],
      'sort': ['practitioner'],
      'group': [],
