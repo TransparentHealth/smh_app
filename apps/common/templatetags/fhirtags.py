@@ -268,7 +268,6 @@ def collect(listing, item):
 
     listing.extend(item)
     return listing
-=======
 
     titles_line = ""
     # Use the view_format to tailor the resource display
