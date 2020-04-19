@@ -1,10 +1,16 @@
 # from django import template
 from django.template.defaulttags import register
 from ...member.constants import FIELD_TITLES, RECORDS_STU3
-from ...member.fhir_custom_formats import address
+from ...member.fhir_custom_formats import (dt_address,
+                                           dt_telecom,
+                                           dt_name,
+                                           dt_dosage,
+                                           dt_medicationreference,
+                                           dt_referencerange,
+                                           dt_reference)
 from ...member.fhir_utils import (find_key_value_in_list,
                                   filter_list,
-                                  # path_extract
+                                  path_extract
                                   )
 
 # register = template.Library()
@@ -38,118 +44,61 @@ def friendlyfield(value, resource):
 
 
 @register.filter
-def valueformat(value, key):
+def valueformat(value, format_list):
     """
     Receive value and name of field.
     Check for special formatting for Name, Address or Telecom otherwise return value
+
+    format_list = "member." + member_id + "." + resourceType + "." + key
+    key is a field name or is a resourceType.key structure.
+    If resourceType.key then lookup resourceType in RECORDS_STU3
     [{'system': 'phone', 'value': '+1-518-438-4483', 'use': 'work'}]
     name: [{'use': 'usual', 'family': 'Randaisi', 'given': ['Deborah', 'L'], 'suffix': ['P.A.C']}]
     :param value:
-    :param key:
+    :param format_list:
     :return: value | formatted value based on key
     """
 
-    # print(key, value)
-    concat_key = key.split('.')
-    if len(concat_key) > 1:
-        # Pass in either the key of the field
-        # or pass in resource.key to enable a resource lookup.
-        key = concat_key[1]
+    # print("\n", format_list, value)
+    concat_key = format_list.split('.')
+    # Pass in either the key of the field
+    # or pass in resource.key to enable a resource lookup.
+    key = ""
+    resource = ""
+    member_id = ""
+    key_sequence = [key, resource, member_id]
+    count = 0
+    for r in reversed(concat_key):
+        key_sequence[count] = r
+        count += 1
+
+    # print("Concat_key:", concat_key)
+    key = key_sequence[0]
+    resource = key_sequence[1]
+    member_id = key_sequence[2]
+
+    # print("Key:", key)
+
     if key:
         if key.lower() == "address":
-            f_value = address(value)
-            return f_value
+            return dt_address(value)
 
         elif key.lower() == "telecom":
-            if isinstance(value, str):
-                return value
-            f_value = ""
+            return dt_telecom(value)
 
-            for t in value:
-                use_str = ""
-                sys_str = ""
-                val_str = ""
-                if 'system' in t:
-                    sys_str = t['system']
-                if 'use' in t:
-                    use_str = t['use']
-                if 'value' in t:
-                    val_str = t['value']
-                f_value += "%s - %s: %s. " % (sys_str,
-                                              use_str,
-                                              val_str)
-            return f_value
         elif key.lower() == "name":
-            if isinstance(value, str):
-                return value
-            f_value = ""
-            for n in value:
-                family_str = ""
-                given_str = ""
-                suffix_str = ""
-                if 'given' in n:
-                    given_str = ' '.join([str(x) for x in n['given']])
-                if 'suffix' in n:
-                    suffix_str = ','.join([str(x) for x in n['suffix']])
-                if 'family' in n:
-                    family_str = n['family']
-                f_value += "{first} {surname} {suffix}".format(first=given_str,
-                                                               surname=family_str,
-                                                               suffix=suffix_str)
-            return f_value
+            return dt_name(value)
         elif key.lower() == 'dosage':
-            #  "doseQuantity": {
-            #                 "value": 200,
-            #                 "unit": "MG",
-            #                 "system": "http://unitsofmeasure.org/ucum.html"
-            #             }
-            f_value = ""
-            for v in value:
-                if isinstance(v, int) or isinstance(v, float):
-                    if v == 0:
-                        pass
-                    else:
-                        f_value += str(v) + " "
-                elif isinstance(v, str):
-                    if 'http' in v.lower():
-                        pass
-                    else:
-                        f_value += str(v) + " "
-                elif isinstance(v, list):
-                    for d, vv in v.items():
-                        if isinstance(vv, int) or isinstance(vv, float):
-                            if vv == 0:
-                                pass
-                            else:
-                                f_value += str(vv) + " "
-                        elif isinstance(vv, str):
-                            if 'http' in vv.lower():
-                                pass
-                            else:
-                                f_value += str(vv) + " "
-            return f_value
-        elif key == 'medicationReference':
-            print("Working on", key)
-            f_value = value
+            return dt_dosage(value)
+        elif key.lower() == 'medicationreference':
+            # print("Working on", key, ": ", value)
+            # f_value = value
             # lookup field_formats
             # concat_key should have a resource name
-            if len(concat_key) > 1:
-                resource = concat_key[0]
-            else:
-                resource = None
-            print("\n\nRESOURCE:", resource)
-            if resource:
-                print("Value:", value)
-                # look up field_format in RECORDS_STU3
-                if type(value) == list:
-                    f_value = "Medication: "
-                    for v_l in value:
-                        if 'display' in v_l:
-                            f_value += v_l['display'] + " "
-                elif type(value) == dict:
-                    if 'display' in value:
-                        f_value = "Medication: " + value['display']
-            return f_value
+            # print("\n\nRESOURCE:", resource)
+            # print("calling dt_medicationreference with Resource:", resource, ", value:", value)
+            return dt_medicationreference(value, member_id, resource)
+
         elif key.lower() == 'dataabsentreason':
             if isinstance(value, dict):
                 return value['coding'][0]['display']
@@ -162,27 +111,26 @@ def valueformat(value, key):
         elif key.lower() == 'interpretation':
             return value['coding'][0]['display']
         elif key.lower() == 'referencerange':
-            f_value = ""
-            for i in value:
-                if isinstance(i, dict):
-                    for k in i.items():
-                        if k[0].lower() == 'text':
-                            f_value += str(k[1])
-                        else:
-                            f_value += str(k[0])
-                            f_value += ": " + str(k[1]['value'])
-                            f_value += " " + str(k[1]['unit']) + " "
-                elif isinstance(i, list):
-                    for ll in i:
-                        for d in ll:
-                            f_value += str(d.key())
-                            f_value += str(d['value'])
-                            f_value += " "
-                            f_value += d['unit'] + ", "
-
-            return f_value
+            return dt_referencerange(value)
+        elif key.lower() == 'requester':
+            if 'display' in value['agent']:
+                return dt_reference(value['agent'], member_id)
+        elif key.lower() == 'practitioner':
+            if 'display' in value:
+                return dt_reference(value, member_id)
+        elif key.lower() == 'organization':
+            if 'display' in value:
+                return dt_reference(value, member_id)
+        # elif key.lower() == "result":
+        #     return dt_reference(value[0], member_id)
+        elif key.lower() == 'participant':
+            if 'display' in value[0]['individual']:
+                return dt_reference(value[0]['individual'], member_id)
+        elif key.lower() == 'location':
+            if 'display' in value[0]['location']:
+                return dt_reference(value[0]['location'], member_id)
         else:
-            print("some other key:", key, " and value:", value)
+            # print("value:", value, " type:", type(value), " for: ", key)
             return value
 
 
@@ -202,6 +150,8 @@ def resourceview(resource, member_id, changed=True):
     Take a resource and display it
     use RECORDS_STU3 to control display
     If changed = True we can repeat
+
+    resource is a complete FHIR resource
 
     {'name': 'MedicationStatement', 'slug': 'medicationstatement', 'call_type': 'fhir', 'resources': ['MedicationStatement'], 'display': 'Medication Statement',
      'headers': ['id', 'medicationReference', 'dosage', '*'],
@@ -267,7 +217,7 @@ def resourceview(resource, member_id, changed=True):
             else:
                 titles_line += "<td><b>{title}</b></td>".format(title=t)
     # convert the fields from the resource based on format rules
-    # res = path_extract([resource, ], view_format)
+    res = path_extract([resource, ], view_format)[0]
     # and insert the resulting content into html output
 
     # and return to the view
@@ -276,32 +226,39 @@ def resourceview(resource, member_id, changed=True):
 
     html_output += "<td><a href='' class='modal-link' data-toggle='modal' data-target='#record-detail--modal'"
     html_output += "       data-url='/member/{member_id}/data/{resource_type}/{resource_id}'>" \
-                   "       <img src='/static/images/icons/{resource_type}.png' " \
+                   "       <img src='/static/images/icons/{resource_type_file}.png' " \
                    "            alt='{resource_type}' height='20' width='20'> " \
                    "       <img src='/static/images/icons/popup.png' " \
                    "            alt='More info' height='20' width='20'> " \
                    "</a> </td>".format(member_id=member_id,
                                        resource_type=resourceType,
-                                       resource_id=resource['id'],)
+                                       resource_type_file=resourceType.lower(),
+                                       resource_id=res['id'],)
 
 #     print("Titles=", title_fields, "\n", "Fields:", fields)
-    for key, value in resource.items():
-        if resourceType == "MedicationStatement":
-            print("resource:", resource, "\n", "key:", key, "value:", value)
+    for key, value in res.items():
         if key in fields:
             if key != 'id':
                 # We want to process the field
-                print("KEY:", key)
-                html_output += "<td>{result}</td>".format(result=valueformat(value, "medicationStatement." + key))
+                # print("KEY:", key, ":", value)
+                html_output += "<td>{result}</td>".format(result=valueformat(value, str(member_id) + '.' + resourceType + '.' + key))
+                # print("Here is html_output:", html_output)
+                # if "{member_id}" in html_output:
+                #     print("got to replace {member_id} with ", member_id)
+                #     html_output.replace("_-_member_id_-_", str(member_id))
         else:
-            print("no match for key in fields:", key, "/", fields)
+            pass
+            # print("no match for key in fields:", key, "/", fields)
 
     template_html = """
-    <tr>{}
+    <tr>{t}
     </tr>
     <tr>
-    {}
+    {h}
     </tr>
-    """.format(titles_line, html_output)
+    """.format(t=titles_line, h=html_output)
+
+    # template_html.replace("_-_member_id_-_", str(member_id))
+    # print("\nTEMPLATE HTML:\n", template_html)
 
     return template_html
