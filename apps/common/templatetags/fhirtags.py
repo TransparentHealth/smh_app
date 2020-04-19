@@ -117,6 +117,12 @@ def valueformat(value, format_list):
                 return dt_reference(value['agent'], member_id)
         # elif key.lower() == "result":
         #     return dt_reference(value[0], member_id)
+        elif key.lower() == 'practitioner':
+            if 'display' in value:
+                return dt_reference(value, member_id)
+        elif key.lower() == 'organization':
+            if 'display' in value:
+                return dt_reference(value, member_id)
         elif key.lower() == 'participant':
             if 'display' in value[0]['individual']:
                 return dt_reference(value[0]['individual'], member_id)
