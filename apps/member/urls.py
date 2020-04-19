@@ -5,7 +5,7 @@ from .views_new import (
     DashboardView,
     DataSourcesView,
     DataView,
-    ReferenceView,
+    # ReferenceView,
     NotificationsView,
     OrganizationsView,
     PrescriptionDetailModalView,
