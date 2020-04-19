@@ -5,7 +5,6 @@ from .views_new import (
     DashboardView,
     DataSourcesView,
     DataView,
-    ReferenceView,
     NotificationsView,
     OrganizationsView,
     PrescriptionDetailModalView,
@@ -52,12 +51,6 @@ urlpatterns = [
         r'^(?P<pk>[0-9]+)/data/(?P<resource_type>[\w-]+)/(?P<resource_id>[\w-]+)$',
         DataView.as_view(),
         name='data',
-    ),
-    # HTML formatted FHIR Resource data
-    url(
-        r'^(?P<pk>[0-9]+)/reference/(?P<resource_type>[\w-]+)/(?P<resource_id>[\w-]+)$',
-        ReferenceView.as_view(),
-        name='reference',
     ),
 
     # modal HTML content
