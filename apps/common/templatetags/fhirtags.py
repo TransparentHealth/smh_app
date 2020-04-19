@@ -98,7 +98,8 @@ def valueformat(value, format_list):
             # print("\n\nRESOURCE:", resource)
             # print("calling dt_medicationreference with Resource:", resource, ", value:", value)
             return dt_medicationreference(value, member_id, resource)
-        elif key.lower() == 'dataabsentreason':
+
+          elif key.lower() == 'dataabsentreason':
             if isinstance(value, dict):
                 return value['coding'][0]['display']
             else:
@@ -211,6 +212,7 @@ def resourceview(resource, member_id, changed=True):
                 titles_line += "<td><b>{title}</b></td>".format(title=t)
     # convert the fields from the resource based on format rules
     res = path_extract([resource, ], view_format)[0]
+
     # and insert the resulting content into html output
 
     # and return to the view
