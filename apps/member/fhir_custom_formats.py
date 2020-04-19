@@ -2,6 +2,7 @@
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 
+
 def dt_address(address, member_id=None):
     """
     Address as List convert to strings
@@ -89,6 +90,7 @@ def dt_name(value, member_id=None):
                                                        surname=family_str,
                                                        suffix=suffix_str)
     return f_value
+
 
 def dt_dosage(value, member_id=None):
     """

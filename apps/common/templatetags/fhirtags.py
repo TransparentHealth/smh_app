@@ -92,7 +92,7 @@ def valueformat(value, format_list):
             return dt_dosage(value)
         elif key.lower() == 'medicationreference':
             # print("Working on", key, ": ", value)
-            f_value = value
+            # f_value = value
             # lookup field_formats
             # concat_key should have a resource name
             # print("\n\nRESOURCE:", resource)
