@@ -163,6 +163,7 @@ def resourceview(resource, member_id, changed=True):
     :param resource:
     :param member_id:
     :param changed: 0 | 1
+    :param viewer:
     :return: None or html_output string
     """
 
@@ -266,4 +267,3 @@ def collect(listing, item):
 
     listing.extend(item)
     return listing
-
