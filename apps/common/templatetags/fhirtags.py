@@ -99,7 +99,7 @@ def valueformat(value, format_list):
             # print("calling dt_medicationreference with Resource:", resource, ", value:", value)
             return dt_medicationreference(value, member_id, resource)
 
-          elif key.lower() == 'dataabsentreason':
+        elif key.lower() == 'dataabsentreason':
             if isinstance(value, dict):
                 return value['coding'][0]['display']
             else:
