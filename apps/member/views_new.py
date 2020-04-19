@@ -464,58 +464,6 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
         return HttpResponse(response_data)
 
 
-class ReferenceView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
-    """
-     Return HTML containing the requested member data.
-     This is a prettier view than the Data View which returns JSON.
-     This view should use the template formatting used for the various FHIR Resource views.
-    """
-
-    def get(self, request, *args, **kwargs):
-        member = self.get_member()
-        resource_type = kwargs['resource_type']
-        resource_id = kwargs['resource_id']
-        data = fetch_member_data(member, 'sharemyhealth')
-
-        ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
-        fhir_data = load_test_fhir_data(data)
-        # fhir_data = data.get('fhir_data')
-
-        if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
-            delete_memoized(fetch_member_data, member, 'sharemyhealth')
-
-        # if resource_type == 'prescriptions':
-        #     response_data = get_prescriptions(
-        #         fhir_data, id=resource_id, incl_practitioners=True, json=True
-        #     )
-        elif resource_type in RESOURCES:
-            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_type.lower())]
-            if resource_profile:
-                bundle = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
-                for entry in bundle['entry']:
-                    if 'id' in entry:
-                        if entry['id'] == resource_id:
-                            data = entry
-
-            response_data = json.dumps(data, indent=settings.JSON_INDENT)
-            return HttpResponse(response_data)
-
-        else:
-            # fallback
-            data = []
-            # data = {
-            #     resource['id']: resource
-            #     for resource in get_resource_data(
-            #         fhir_data, kwargs['resource_type'], id=resource_id
-            #     )
-            # }
-            response_data = json.dumps(data, indent=settings.JSON_INDENT)
-            # print("httpResponse:", response_data, "-----")
-
-        return HttpResponse(response_data)
-
-
 class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
     template_name = "records2.html"
     default_resource_name = 'sharemyhealth'
