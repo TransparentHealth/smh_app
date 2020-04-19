@@ -115,6 +115,12 @@ def valueformat(value, format_list):
         elif key.lower() == 'requester':
             if 'display' in value['agent']:
                 return dt_reference(value['agent'], member_id)
+        elif key.lower() == 'practitioner':
+            if 'display' in value:
+                return dt_reference(value, member_id)
+        elif key.lower() == 'organization':
+            if 'display' in value:
+                return dt_reference(value, member_id)
         # elif key.lower() == "result":
         #     return dt_reference(value[0], member_id)
         elif key.lower() == 'participant':
@@ -220,12 +226,13 @@ def resourceview(resource, member_id, changed=True):
 
     html_output += "<td><a href='' class='modal-link' data-toggle='modal' data-target='#record-detail--modal'"
     html_output += "       data-url='/member/{member_id}/data/{resource_type}/{resource_id}'>" \
-                   "       <img src='/static/images/icons/{resource_type}.png' " \
+                   "       <img src='/static/images/icons/{resource_type_file}.png' " \
                    "            alt='{resource_type}' height='20' width='20'> " \
                    "       <img src='/static/images/icons/popup.png' " \
                    "            alt='More info' height='20' width='20'> " \
                    "</a> </td>".format(member_id=member_id,
                                        resource_type=resourceType,
+                                       resource_type_file=resourceType.lower(),
                                        resource_id=res['id'],)
 
 #     print("Titles=", title_fields, "\n", "Fields:", fields)
