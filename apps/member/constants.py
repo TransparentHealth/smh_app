@@ -79,7 +79,8 @@ RECORDS_STU3 = [
      'field_formats':[{"field": "category", "detail": "$.category[*]", "format": ""},
                      {"field": "code", "detail": "$.code.text", "format": ""},
                      {"field": "onsetDateTime", "detail": "$.onsetDateTime[*]", "format": {"start": 0, "end": 10}},
-                     {"field": "assertedDate", "detail": "$.assertedDate[*]", "format": {"start": 0, "end": 10}}
+                     {"field": "assertedDate", "detail": "$.assertedDate[*]", "format": {"start": 0, "end": 10}},
+                     {"field": "reaction", "detail": "$.reaction[*].manifestation[*].text", "format": ""}
                      ],
      'sort': ['-$.assertedDate[*]'],
      # 'group': ['$.assertedDate[*]'],
