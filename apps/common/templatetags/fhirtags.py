@@ -238,6 +238,7 @@ def resourceview(resource, member_id, changed=True):
                    "       <img src='/static/images/icons/popup.png' " \
                    "            alt='More info' height='20' width='20'> " \
                    "</a> </td>".format(member_id=member_id,
+                                       resource_type_file=resourceType.lower(),
                                        resource_type=resourceType,
                                        resource_type_file=resourceType.lower(),
                                        resource_id=res['id'],)

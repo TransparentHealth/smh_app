@@ -426,6 +426,7 @@ VITALSIGNS = ['3141-9', '8302-2', '39156-5',
 
 TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
             {'name': 'Condition', 'datefield': ''},
+            {'name': 'DiagnosticReport', 'datefield': '$.effectivePeriod.start'},
             {'name': 'Encounter', 'datefield': '$.period.start'},
             # {'name': 'Medication', 'datefield': ''},
             # {'name': 'MedicationDispense', 'datefield': ''},
@@ -435,4 +436,4 @@ TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
             {'name': 'Practitioner', 'datefield': ''},
             {'name': 'PractitionerRole', 'datefield': ''},
             {'name': 'Procedure', 'datefield': '$.performedDateTime'}
-           ]
+            ]
