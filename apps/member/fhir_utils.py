@@ -98,6 +98,8 @@ def path_extract(entry, resource_spec):
     """
     Experiment with jsonpath
 
+    pass in dict from RECORDS_STU3
+
     field_formats = [{"field": "result", "detail": "$.result[*].display", "format": ""},
                      {"field": "code", "detail": "$.code.coding[*].display", "format": ""},
                      {"field": "effectivePeriod", "detail": "$.effectivePeriod[*]", "format": {"start": 0, "end": 10}}
@@ -106,13 +108,15 @@ def path_extract(entry, resource_spec):
     :param resource_spec:
     :return:
     """
-
+    # print("\nresource spec:", resource_spec)
+    # print('entry:', entry)
     if 'field_formats' in resource_spec:
         field_formats = resource_spec['field_formats']
     else:
         field_formats = []
     if field_formats:
         for e in entry:
+            # print("e:", e)
             for ff in field_formats:
                 fld = ff['field']
                 det = ff['detail']
@@ -398,9 +402,9 @@ def dict_to_list_on_key(group_dict, ungrouped=[]):
     """
     # print("G  Dict:", group_dict)
     entry = []
-    print("isinstance:", type(group_dict))
+    # print("isinstance:", type(group_dict))
     for key in group_dict:
-        print("Key:", key, "Value:", group_dict[key])
+        # print("Key:", key, "Value:", group_dict[key])
         entry.append({key: group_dict[key]})
     if ungrouped:
         # Add on anything that wasn't grouped.
@@ -640,13 +644,13 @@ def dated_bundle(entries):
             else:
                 ungrouped.append(e)
 
-    print("grouped is pre-sort:", type(grouped_entries))
+    # print("grouped is pre-sort:", type(grouped_entries))
     entries = dict_to_list_on_key(grouped_entries)
     entry = entries['entry']
     # sorted_entry = sorted(entry, key=lambda se: se.keys(), reverse=True)
     sorted_entry = sorted(entry, key=lambda entry: entry.keys(), reverse=True)
-    print('entries-0:', sorted_entry[0])
-    print('entries-1:', sorted_entry[1])
+    # print('entries-0:', sorted_entry[0])
+    # print('entries-1:', sorted_entry[1])
     return {'entry': sorted_entry}
 
 

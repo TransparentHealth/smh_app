@@ -67,6 +67,7 @@ from .fhir_utils import (
     context_updated_at,
     dated_bundle
 )
+from ..common.templatetags.fhirtags import resourceview
 # from .practitioner_tools import practitioner_encounter, sort_extended_practitioner
 
 logger = logging.getLogger(__name__)
@@ -158,7 +159,7 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         # summarized_records = []
 
         entries = dated_bundle(entries)
-        print(len(entries['entry']))
+        # print(len(entries['entry']))
         context.setdefault('summarized_records', entries['entry'])
 
         return context
@@ -339,17 +340,19 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             elif resource_profile['call_type'] == 'skip':
                 entries = {'entry': []}
             else:
+                print("Get, sort, join")
                 entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
                 # if resource_profile['name'] == "Procedure":
-                #     print(len(entries['entry']))
+                print(len(entries['entry']))
                 #     print("Procedures:", entries['entry'])
+                # print(entries['entry'])
                 entries = groupsort(entries['entry'], resource_profile)
                 # if resource_profile['name'] == "Procedure":
-                #     print(len(entries['entry']))
+                print(len(entries))
                 #     print("Procedures - post sort:", entries['entry'])
                 entries = concatenate_lists(entry_check(entries))
                 # if resource_profile['name'] == "Procedure":
-                #     print(len(entries['entry']))
+                print(len(entries['entry']))
                 #     print("Procedures - post concatenate:", entries['entry'])
 
             content_list = path_extract(entries['entry'], resource_profile)
@@ -363,6 +366,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             # context.setdefault('content_list', sorted_content)
             context.setdefault('content_list', content_list)
 
+            print("Content_List:", content_list)
         return context
 
     def render_to_response(self, context, **kwargs):
@@ -413,9 +417,15 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
 
     def get(self, request, *args, **kwargs):
         member = self.get_member()
+        print(member.pk)
         resource_type = kwargs['resource_type']
         resource_id = kwargs['resource_id']
         data = fetch_member_data(member, 'sharemyhealth')
+        pretty = False
+        pretty_text = request.GET.get('pretty')
+        if pretty_text:
+            if pretty_text.lower() == "true":
+                pretty = True
 
         ###
         # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
@@ -437,72 +447,19 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
                     if 'id' in entry:
                         if entry['id'] == resource_id:
                             data = entry
+            if not pretty:
+                response_data = json.dumps(data, indent=settings.JSON_INDENT)
+            else:
+                response_data = "<table>" + resourceview(data, member.pk) + "</table><hr/>"
+                response_data += json.dumps(data, indent=settings.JSON_INDENT)
+                # print(response_data)
 
-            response_data = json.dumps(data, indent=settings.JSON_INDENT)
             return HttpResponse(response_data)
 
         else:
             # fallback
-            data = []
-            # data = {
-            #     resource['id']: resource
-            #     for resource in get_resource_data(
-            #         fhir_data, kwargs['resource_type'], id=resource_id
-            #     )
-            # }
-            response_data = json.dumps(data, indent=settings.JSON_INDENT)
-            # print("httpResponse:", response_data, "-----")
-
-        return HttpResponse(response_data)
-
-
-class ReferenceView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
-    """
-     Return HTML containing the requested member data.
-     This is a prettier view than the Data View which returns JSON.
-     This view should use the template formatting used for the various FHIR Resource views.
-    """
-
-    def get(self, request, *args, **kwargs):
-        member = self.get_member()
-        resource_type = kwargs['resource_type']
-        resource_id = kwargs['resource_id']
-        data = fetch_member_data(member, 'sharemyhealth')
-
-        ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
-        fhir_data = load_test_fhir_data(data)
-        # fhir_data = data.get('fhir_data')
-
-        if fhir_data is None or 'entry' not in fhir_data or not fhir_data['entry']:
-            delete_memoized(fetch_member_data, member, 'sharemyhealth')
-
-        # if resource_type == 'prescriptions':
-        #     response_data = get_prescriptions(
-        #         fhir_data, id=resource_id, incl_practitioners=True, json=True
-        #     )
-        elif resource_type in RESOURCES:
-            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_type.lower())]
-            if resource_profile:
-                bundle = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
-                for entry in bundle['entry']:
-                    if 'id' in entry:
-                        if entry['id'] == resource_id:
-                            data = entry
-
-            response_data = json.dumps(data, indent=settings.JSON_INDENT)
-            return HttpResponse(response_data)
-
-        else:
-            # fallback
-            data = []
-            # data = {
-            #     resource['id']: resource
-            #     for resource in get_resource_data(
-            #         fhir_data, kwargs['resource_type'], id=resource_id
-            #     )
-            # }
-            response_data = json.dumps(data, indent=settings.JSON_INDENT)
+            data = ["we shall show the pretty view for ", resource_type, "[", resource_id, "]"]
+            response_data = resourceview()
             # print("httpResponse:", response_data, "-----")
 
         return HttpResponse(response_data)
