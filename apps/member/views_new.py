@@ -160,7 +160,10 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         # summarized_records = []
 
         entries = dated_bundle(entries)
+<<<<<<< .merge_file_ALdguy
 
+=======
+>>>>>>> .merge_file_xQJV2T
         # print(len(entries['entry']))
         context.setdefault('summarized_records', entries['entry'])
 
@@ -369,6 +372,7 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             dated_resources = sort_date(content_list, resource_profile)
             context.setdefault('content_list', dated_resources)
 
+            print("Content_List:", content_list)
         return context
 
     def render_to_response(self, context, **kwargs):

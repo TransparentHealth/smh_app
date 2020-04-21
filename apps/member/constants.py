@@ -51,10 +51,13 @@ FIELD_TITLES = [
      'elements': [
          {'system_name': 'participant', 'show_name': 'Provider'},
      ]},
+<<<<<<< .merge_file_vetWBD
     {'profile': 'LabResults',
      'elements': [
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
      ]},
+=======
+>>>>>>> .merge_file_V0jZTR
 
     {'profile': 'medicationRequest',
      'elements': [
@@ -244,7 +247,11 @@ RECORDS_STU3 = [
      'headers': ['id', 'medicationReference', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'status', 'intent', 'subject'],
      'field_formats': [
+<<<<<<< .merge_file_vetWBD
                        # {'field': 'medicationReference', 'detail': '$.medicationReference.display', 'format': ''},
+=======
+#                       {'field': 'medicationReference', 'detail': '$.medicationReference.display', 'format': ''},
+>>>>>>> .merge_file_V0jZTR
                        # {'field': 'requester', 'detail': '$.requester.agent.display', 'format': ''},
                        {'field': 'dispenseRequest', 'detail': '$.dispenseRequest.numberOfRepeatsAllowed', 'format': ''}
      ],

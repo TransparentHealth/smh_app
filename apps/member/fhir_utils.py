@@ -9,7 +9,8 @@ from jsonpath_ng import parse    # , jsonpath
 from operator import itemgetter
 # from operator import itemgetter as i
 # from functools import cmp_to_key
-from .constants import VITALSIGNS, TIMELINE, RECORDS_STU3
+from .constants import VITALSIGNS, TIMELINE
+# RECORDS_STU3
 
 
 def resource_count(entries=[]):
@@ -718,7 +719,7 @@ def sort_date(entries, resource_spec=None):
         print("{rt}, {id}: {pd}".format(rt=rt, id=id, pd=pd))
 
 #     sort_list = sorted(entries, key=lambda entry: entry[sort_date_field], reverse=True)
-    sort_list = sorted(sortable, key=lambda entry: entry[sort_date_field], reverse=True)
+    sort_list = sorted(sortable, key=lambda entry: entry[sort_date_field], reverse=reverse)
 
     if len(un_sortable) > 0:
         sort_list.extend(un_sortable)
