@@ -16,6 +16,13 @@
             aria-selected="false"
             class="nav-item nav-link {% if url_name == 'records' %}active{% endif %}">Records</a>
         <a
+            href="{% url 'member:timeline' member.id %}"
+            role="tab"
+            data-rb-event-key="timeline"
+            tabindex="-1"
+            aria-selected="false"
+            class="nav-item nav-link {% if url_name == 'timeline' %}active{% endif %}">Timeline</a>
+        <a
             href="{% url 'member:providers' member.id %}"
             role="tab"
             data-rb-event-key="addSource"

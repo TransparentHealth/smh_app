@@ -2,13 +2,15 @@
 # import logging
 import json
 
+from datetime import datetime, timezone
 from django.conf import settings
 from getenv import env
 from jsonpath_ng import parse    # , jsonpath
 from operator import itemgetter
 # from operator import itemgetter as i
 # from functools import cmp_to_key
-from .constants import VITALSIGNS
+from .constants import VITALSIGNS, TIMELINE
+# , RECORDS_STU3
 
 
 def resource_count(entries=[]):
@@ -96,6 +98,8 @@ def path_extract(entry, resource_spec):
     """
     Experiment with jsonpath
 
+    pass in dict from RECORDS_STU3
+
     field_formats = [{"field": "result", "detail": "$.result[*].display", "format": ""},
                      {"field": "code", "detail": "$.code.coding[*].display", "format": ""},
                      {"field": "effectivePeriod", "detail": "$.effectivePeriod[*]", "format": {"start": 0, "end": 10}}
@@ -104,13 +108,15 @@ def path_extract(entry, resource_spec):
     :param resource_spec:
     :return:
     """
-
+    # print("\nresource spec:", resource_spec)
+    # print('entry:', entry)
     if 'field_formats' in resource_spec:
         field_formats = resource_spec['field_formats']
     else:
         field_formats = []
     if field_formats:
         for e in entry:
+            # print("e:", e)
             for ff in field_formats:
                 fld = ff['field']
                 det = ff['detail']
@@ -332,7 +338,13 @@ def find_key_value_in_list(listing, key, value):
     :param value:
     :return: dict_found
     """
-    dict_found = next(filter(lambda obj: obj.get(key) == value, listing), None)
+    # for l in listing:
+    #     if key in l.keys():
+    #         if l[key] == value:
+    #             print("l[key = ", value)
+    #             return l
+
+    dict_found = next(filter(lambda obj: obj[key] == value, listing), None)
     if dict_found:
         return dict_found
     else:
@@ -388,8 +400,11 @@ def dict_to_list_on_key(group_dict, ungrouped=[]):
     split a dict with a format of {'key0': [list of value 0 items], 'key1': [list of value1 items]}
     to entry = [{'key0': ['list', ' of', 'value0', ' items']},{'key1': ['list', ' of', 'value1', ' items']}]
     """
+    # print("G  Dict:", group_dict)
     entry = []
+    # print("isinstance:", type(group_dict))
     for key in group_dict:
+        # print("Key:", key, "Value:", group_dict[key])
         entry.append({key: group_dict[key]})
     if ungrouped:
         # Add on anything that wasn't grouped.
@@ -506,18 +521,160 @@ def add_key(resource, key=[]):
     :param key: list
     :return: resource
     """
-
     if isinstance(resource, dict):
+        if isinstance(key, str):
+            key = [(key, "")]
         for k in key:
             if k[0] in resource:
                 pass
             else:
-                if k[1] == str:
+                # print("k[0], k[1]", k[0], ",", k[1])
+                if type(k[1]) == str:
                     resource[k[0]] = ""
-                elif k[1] == list:
+                elif type(k[1]) == list:
                     resource[k[0]] = []
-                elif k[1] == dict:
+                elif type(k[1]) == dict:
                     resource[k[0]] = {}
+                else:
+                    # print('adding ', k[0])
+                    resource[k[0]] = ""
+        # print("resource keys", resource.keys())
+        # print("TYPE:", type(resource))
     return resource
 
 
+def context_updated_at(context):
+    """
+    Update Context
+    :param context:
+    :return context:
+    """
+
+    if context['updated_at']:
+        context['time_since_update'] = (datetime.now(timezone.utc) - context['updated_at'])
+        context['updated_at'] = context['updated_at'].timestamp()
+
+    return context
+
+
+def timeline_names(timeline):
+    """
+    Get the names from timeline and return as list
+    :param timeline:
+    :return: t_names
+    """
+
+    t_names = []
+    for t in timeline:
+        t_names.append(t['name'])
+
+    return t_names
+
+
+def get_date_from_path(e_item, path_field):
+    """
+    get the date and return it
+    :param e_item:
+    :return:
+    """
+
+    jp_parsing = parse(path_field)
+    result = jp_parsing.find(e_item)
+    sort_date = [match.value for match in result]
+
+    if sort_date:
+        return sort_date[0:10]
+    return "undated"
+
+
+def date_key(datekey):
+    """
+    get YYYY-MM-DD from ISO string
+
+    :param datekey:
+    :return:
+    """
+    if isinstance(datekey, list):
+        dkey = datekey[0][0:10]
+        return dkey
+    if isinstance(datekey, str):
+        dkey = datekey[0:10]
+        return dkey
+
+
+def dated_bundle(entries):
+    """
+    get a bundle with 'entry' list
+    evaluate using TIMELINE to extract resources with dates
+    Create a dict with a key of Date and a value of []
+    append record to dict with date key
+
+    sort dict on key with reverse sort by date
+
+    convert dict to list with date as key and list as value
+
+    :param entries:
+    :return:
+    """
+    grouped_entries = {}
+    ungrouped = []
+    if 'entry' not in entries:
+        return entries
+
+    t_names = timeline_names(TIMELINE)
+
+    # We have an entry list to process
+    for e in entries['entry']:
+        if e['resourceType'] in t_names:
+
+            t = next(filter(lambda obj: obj.get('name') == e['resourceType'], TIMELINE), None)
+
+            if t['datefield']:
+                # We have a jsonpath definition to extract a date field from e
+                date_k = get_date_from_path(e, t['datefield'])
+                # now use the date_key to append e to grouped_entries[date_key]
+                if date_k:
+                    d_key = date_key(date_k)
+
+                    grouped_entries = add_key(grouped_entries, [(d_key, [])])
+                    # print("grouped_entries:", grouped_entries )
+                    grouped_entries[d_key].append(e)
+                else:
+                    ungrouped.append(e)
+            else:
+                ungrouped.append(e)
+
+    # print("grouped is pre-sort:", type(grouped_entries))
+    entries = dict_to_list_on_key(grouped_entries)
+    entry = entries['entry']
+    # sorted_entry = sorted(entry, key=lambda se: se.keys(), reverse=True)
+    sorted_entry = sorted(entry, key=lambda entry: entry.keys(), reverse=True)
+    # print('entries-0:', sorted_entry[0])
+    # print('entries-1:', sorted_entry[1])
+    return {'entry': sorted_entry}
+
+
+def filter_list(full_list, inc_list=['*'], exc_list=[]):
+    """
+    Filter the full_list using the exc_list
+    then check inc_list for "*" (include everything)
+    If no "*" then filter full_list using inc_list
+
+    return the filtered_list
+
+    """
+
+    filtered_list = full_list
+    for exc in exc_list:
+        if exc in filtered_list:
+            filtered_list.remove(exc)
+
+    if "*" in inc_list:
+        return filtered_list
+    else:
+        for inc in inc_list:
+            if inc in filtered_list:
+                pass
+            else:
+                filtered_list.remove(inc)
+        return filtered_list

@@ -33,7 +33,7 @@
                     <a
                         class="tile tile-flex__item {% if not record.count %} disabled {% endif %}"
                         {% if record.count %}
-                            href="{% url 'member:records' member.id record.slug %}"
+                            href="{% url return_to_view member.id record.slug %}"
                         {% else %}
                             href="#"
                         {% endif %}
@@ -56,7 +56,7 @@
                         <h2 class="m-0">{% with 'images/icons/'|add:resource_profile.slug|add:".png" as source %}
                             <img src="{% static source %}" alt="record.name" height="70" width="70">
                         {% endwith %}&nbsp&nbsp{{ title }}</h2>
-                        <a href="{% url 'member:records' member.id 'list' %}" class="button--reset">
+                        <a href="{% url return_to_view member.id 'list' %}" class="button--reset">
                             <img src="{% static 'images/icons/arrow-back.png' %}" alt="" class="mr-2">
                             Go back to records
                         </a>
@@ -74,22 +74,22 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
                                 {% for item in content_list %}
                                     <tr>
-
                                         {% for key, value in item.items %}
-
                                             {% if key in headers %}
                                             <td>{% if key == "id" %}
                                                 <a href="" class="modal-link" data-toggle="modal"
                                                     data-target="#record-detail--modal"
                                                     data-url="/member/{{ member.id }}/data/{{ item.resourceType }}/{{ item.id }}">
-                                                    {{ value }}</a>
+                                                   <img src='/static/images/icons/popup.png' alt='More info' height='20' width='20'>
+                                                </a>
                                                 {% elif value %}
-                                                    {{ value|valueformat:key }}
+                                                    {% with member.id|stringformat:'i'|add:'.'|add:item.resourceType|add:'.'|add:key as format_list %}
+                                                        {{ value|valueformat:format_list }}
+                                                    {% endwith %}
                                                 {% else %}
-                                                    No value found
+
                                                 {% endif %}
                                             </td>
                                             {% endif %}
@@ -99,7 +99,9 @@
                                                 {% if key in exclude or key in headers%}
                                                 {% else %}
                                                     <td>
-                                                        {{ key|friendlyfield:resource_profile.name }}:<br/>{{ value|valueformat:key }}
+                                                        {% with member.id|stringformat:'i'|add:'.'|add:item.resourceType|add:'.'|add:key as format_list %}
+                                                            {{ key|friendlyfield:resource_profile.name }}:<br/>{{ value|valueformat:format_list }}
+                                                        {% endwith %}
                                                     </td>
                                                 {% endif %}
                                             {% endfor %}
@@ -125,6 +127,7 @@
     </div>
 </div>
 {% include 'member/record_detail_modal.html' %}
+
 {% endblock content %}
 
 {% block ExtraJSFoot %}
@@ -144,8 +147,25 @@
             modal.find('.modal-body').html(
               '<div class="modal-body"><pre>' + data + '</pre></div>');
           }).fail(function() {
-            modal.find('#record-detail--body').html("<p><em>Data could not be loaded.</em></p>");
+            modal.find('#record-detail--body').html("<p><em>Unable to display record.</em></p>");
           });
         });
+        {#$('#reference-detail--modal').on('show.bs.modal', function (event) {#}
+        {#  var button = $(event.relatedTarget); // Button that triggered the modal#}
+        {#  var modal = $(this);#}
+        {#  var url = button.data('url');#}
+        {#  modal.find('.modal-body').html(#}
+        {#    '<div class="modal-image--block"><img src="{% static '/images/loading.gif' %}"/></div>');#}
+        {#  $.get(url, function(data) {#}
+        {#    if(data.includes('<html')) {#}
+        {#        window.location = "{% url 'login' %}";#}
+        {#        return;#}
+        {#    };#}
+        {#    modal.find('.modal-body').html(#}
+        {#      '<div class="modal-body"><pre>' + data + '</pre></div>');#}
+        {#  }).fail(function() {#}
+        {#    modal.find('#reference-detail--body').html("<p><em>Reference information could not be loaded.</em></p>");#}
+        {#  });#}
+        {#});#}
     });
 </script>{% endblock %}

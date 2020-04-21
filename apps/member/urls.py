@@ -5,6 +5,7 @@ from .views_new import (
     DashboardView,
     DataSourcesView,
     DataView,
+    # ReferenceView,
     NotificationsView,
     OrganizationsView,
     PrescriptionDetailModalView,
@@ -12,6 +13,7 @@ from .views_new import (
     ProvidersView,
     ProviderDetailView,
     RecordsView,
+    TimelineView,
     RequestAccessView,
     DeleteMemberView,
     # SummaryView,
@@ -39,19 +41,27 @@ urlpatterns = [
         RecordsView.as_view(),
         name='records',
     ),
+    # Timeline view using Summary
+    url(
+        r'^(?P<pk>[0-9]+)/timeline/$',
+        TimelineView.as_view(),
+        name='timeline',
+    ),
     # JSON to medical data
     url(
         r'^(?P<pk>[0-9]+)/data/(?P<resource_type>[\w-]+)/(?P<resource_id>[\w-]+)$',
         DataView.as_view(),
         name='data',
     ),
+
     # modal HTML content
     url(
         r'^(?P<pk>[0-9]+)/modal/prescription/(?P<resource_id>[\w-]+)$',
         PrescriptionDetailModalView.as_view(),
         name='prescription-modal',
     ),
-    url(r'^(?P<pk>[0-9]+)/providers/$', ProvidersView.as_view(), name='providers'),
+    url(r'^(?P<pk>[0-9]+)/providers/(?P<resource_name>[\w-]+)?/?$', ProvidersView.as_view(), name='providers'),
+
     url(
         r'^(?P<pk>[0-9]+)/providers/(?P<provider_id>[0-9]+)/$',
         ProviderDetailView.as_view(),
