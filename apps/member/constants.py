@@ -51,7 +51,10 @@ FIELD_TITLES = [
      'elements': [
          {'system_name': 'participant', 'show_name': 'Provider'},
      ]},
-
+    {'profile': 'LabResults',
+     'elements': [
+         {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+     ]},
     {'profile': 'medicationRequest',
      'elements': [
          {'system_name': 'dispenseRequest', 'show_name': 'Refills'},
@@ -240,10 +243,10 @@ RECORDS_STU3 = [
      'headers': ['id', 'medicationReference', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'status', 'intent', 'subject'],
      'field_formats': [
-#                       {'field': 'medicationReference', 'detail': '$.medicationReference.display', 'format': ''},
+                       # {'field': 'medicationReference', 'detail': '$.medicationReference.display', 'format': ''},
                        # {'field': 'requester', 'detail': '$.requester.agent.display', 'format': ''},
                        {'field': 'dispenseRequest', 'detail': '$.dispenseRequest.numberOfRepeatsAllowed', 'format': ''}
-      ],
+     ],
      'sort': ['$.medicationReference.display'],
      'group': ['$.medicationReference.display'],
      'views': ['record', 'records']
@@ -272,8 +275,8 @@ RECORDS_STU3 = [
      'field_formats':[{"field": "code", "detail": "$.code.coding[0].display", "format": ''},
                       {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
                       ],
-     'sort': [],
-     'group': [],
+     'sort': ['-$.effectivePeriod[*].start'],
+     'group': ['$.effectivePeriod[*].start'],
      'views': ['record', 'records']
      },
     # Split to vital-signs
@@ -292,10 +295,10 @@ RECORDS_STU3 = [
      'headers': ['id', 'code', 'effectivePeriod', '*'],
      'exclude': ['meta', 'identifier', 'status', 'resourceType', 'subject'],
      'field_formats':[{"field": "code", "detail": "$.code.text", "format": ''},
-                      {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
+                      {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*].start', 'format': {'start': 0, 'end': 10}},
                       ],
-     'sort': ['-$.effectivePeriod[*]'],
-     'group': ['$.effectivePeriod[*]'],
+     'sort': ['-$.effectivePeriod'],
+     'group': ['$.effectivePeriod'],
      'views': ['record', 'records']
      },
     #
@@ -426,6 +429,7 @@ VITALSIGNS = ['3141-9', '8302-2', '39156-5',
 
 TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
             {'name': 'Condition', 'datefield': ''},
+            {'name': 'DiagnosticReport', 'datefield': '$.effectivePeriod.start'},
             {'name': 'Encounter', 'datefield': '$.period.start'},
             # {'name': 'Medication', 'datefield': ''},
             # {'name': 'MedicationDispense', 'datefield': ''},
@@ -435,4 +439,4 @@ TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
             {'name': 'Practitioner', 'datefield': ''},
             {'name': 'PractitionerRole', 'datefield': ''},
             {'name': 'Procedure', 'datefield': '$.performedDateTime'}
-           ]
+            ]
