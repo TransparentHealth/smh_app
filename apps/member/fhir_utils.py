@@ -9,8 +9,7 @@ from jsonpath_ng import parse    # , jsonpath
 from operator import itemgetter
 # from operator import itemgetter as i
 # from functools import cmp_to_key
-from .constants import VITALSIGNS, TIMELINE
-# , RECORDS_STU3
+from .constants import VITALSIGNS, TIMELINE, RECORDS_STU3
 
 
 def resource_count(entries=[]):
@@ -76,22 +75,6 @@ def load_test_fhir_data(data):
         else:
             fhir_data = data.get('fhir_data')
     return fhir_data
-
-
-# def load_test_fhir_data(data):
-#     """
-#     load a test fhir structure
-#     :return: fhir_data
-#     """
-#     if settings.VPC_ENV in ['prod', 'staging', 'dev']:
-#         fhir_data = data.get('fhir_data')
-#     else:
-#         pass
-#         # Only run this locally
-#         # f = open("/Volumes/GoogleDrive/My Drive/NewWave/Projects/AFBH-NY/hixny/data_analysis/md_fhir.json", "r")
-#         # fhir_data = json.load(f)
-#         fhir_data = data.get('fhir_data')
-#     return fhir_data
 
 
 def path_extract(entry, resource_spec):
@@ -160,7 +143,7 @@ def sort_json(json_obj, columns):
     Supports a single sort_field passed as a list
     Removes any dicts that don't have the sort_field and appends them to the end after sorting
     :param json_obj: List
-    :param sort_fields: list with minus prefix
+    :param columns: list with minus prefix
     :return: result | json_obj
     """
 
@@ -678,3 +661,82 @@ def filter_list(full_list, inc_list=['*'], exc_list=[]):
             else:
                 filtered_list.remove(inc)
         return filtered_list
+
+
+def sort_date(entries, resource_spec=None):
+    """
+    sort the entries by reverse date
+    pass in the resource_spec from RECORDS_STU3
+
+    filter out records that don't have the sort field
+
+    :param entries:
+    :param resource_spec:
+    :return sort_list:
+    """
+    # print(len(entries))
+    # print(entries[0])
+    # print("Here is the sequence:\n")
+
+    if resource_spec is None:
+        # nothing to do
+        return entries
+
+    if 'sort' in resource_spec:
+        reverse = reverse_sort(resource_spec['sort'][0])
+        date_field_for_sort = strip_sort_indicator(resource_spec['sort'][0])
+        sort_date_field = date_field_for_sort.replace("$.", "")
+        sort_date_field = sort_date_field.replace(".", "")
+        sort_date_field = sort_date_field.replace("[*]", "")
+        # print("Sorting on:", sort_date_field)
+    else:
+        # no sort to do
+        return entries
+
+    # filter records that do not have the sort field
+    # to avoid an error
+
+    un_sortable = []
+    sortable = []
+
+    for e in entries:
+        if 'resourceType' in e:
+            rt = e['resourceType']
+        else:
+            rt = "---"
+        if 'id' in e:
+            id = e['id']
+        else:
+            id = ".."
+        if sort_date_field in e:
+            sortable.append(e)
+            pd = e[sort_date_field]
+        else:
+            un_sortable.append(e)
+            pd = "YYYY-MM-DD"
+
+        print("{rt}, {id}: {pd}".format(rt=rt, id=id, pd=pd))
+
+#     sort_list = sorted(entries, key=lambda entry: entry[sort_date_field], reverse=True)
+    sort_list = sorted(sortable, key=lambda entry: entry[sort_date_field], reverse=True)
+
+    if len(un_sortable) > 0:
+        sort_list.extend(un_sortable)
+    # print("\n\nSorted result:\n")
+    # for e in sort_list:
+    #     if 'resourceType' in e:
+    #         rt = e['resourceType']
+    #     else:
+    #         rt = "---"
+    #     if 'id' in e:
+    #         id = e['id']
+    #     else:
+    #         id = ".."
+    #     if sort_date_field in e:
+    #         pd = e[sort_date_field]
+    #     else:
+    #         pd = "YYYY-MM-DD"
+    #
+    #     print("{rt}, {id}: {pd}".format(rt=rt, id=id, pd=pd))
+
+    return sort_list

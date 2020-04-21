@@ -65,7 +65,8 @@ from .fhir_utils import (
     concatenate_lists,
     entry_check,
     context_updated_at,
-    dated_bundle
+    dated_bundle,
+    sort_date,
 )
 from ..common.templatetags.fhirtags import resourceview
 # from .practitioner_tools import practitioner_encounter, sort_extended_practitioner
@@ -159,6 +160,7 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         # summarized_records = []
 
         entries = dated_bundle(entries)
+
         # print(len(entries['entry']))
         context.setdefault('summarized_records', entries['entry'])
 
@@ -364,9 +366,9 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('resource_profile', resource_profile)
             # sorted_content = sort_json(content_list, sort_field)
             # context.setdefault('content_list', sorted_content)
-            context.setdefault('content_list', content_list)
+            dated_resources = sort_date(content_list, resource_profile)
+            context.setdefault('content_list', dated_resources)
 
-            print("Content_List:", content_list)
         return context
 
     def render_to_response(self, context, **kwargs):
