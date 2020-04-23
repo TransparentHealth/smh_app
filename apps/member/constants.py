@@ -47,6 +47,11 @@ FIELD_TITLES = [
          {'system_name': 'code', 'show_name': 'Info'},
          {'system_name': 'type', 'show_name': 'Severity'},
      ]},
+    {'profile': 'Condition',
+     'elements': [
+         {'system_name': 'verificationStatus', 'show_name': 'verified'},
+         {'system_name': 'onsetDateTime', 'show_name': 'On Set'},
+     ]},
     {'profile': 'Encounter',
      'elements': [
          {'system_name': 'participant', 'show_name': 'Provider'},
@@ -129,9 +134,10 @@ RECORDS_STU3 = [
      },
     {'name': 'Condition', 'slug': 'condition', 'call_type': 'fhir', 'resources': ['Condition'],
      'display': 'Condition',
-     'headers': ['id', 'clinicalStatus', 'verificationStatus', 'code'],
+     'headers': ['id', 'clinicalStatus', 'verificationStatus', 'code', 'onsetDateTime'],
      'exclude': ['meta', 'resourceType', 'category', 'subject'],
-     'field_formats': [{'field': 'code', 'detail': '$.code.text', 'format': ''}],
+     'field_formats': [{'field': 'code', 'detail': '$.code.text', 'format': ''},
+                       {'field': 'onsetDateTime', 'detail': '$.onsetDateTime', 'format': {"start": 0, "end": 10}}],
      'sort': ['-$.code.text'],
      'group': ['$.code.text'],
      'views': ['record', 'records']
