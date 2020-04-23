@@ -34,6 +34,15 @@ RECORDS = [
     },
 ]
 
+# Display Values in US units
+DISPLAY_US = True
+
+METRIC_CONVERSION = [{'cm': ('Ft.in', 0.393701)},
+                     {'kg': ('lbs', 2.20462)}]
+
+# decimal places to display
+PRECISION = 2
+
 PROVIDER_RESOURCES = ['Encounter', 'Location', 'Organization', 'Practitioner', 'PractitionerRole', 'CareTeam']
 
 FIELD_TITLES = [
@@ -286,14 +295,14 @@ RECORDS_STU3 = [
      'views': ['record', 'records']
      },
     # Split to vital-signs
-    {'name': 'VitalSigns', 'slug': 'vitalsigns', 'call_type': 'skip', 'resources': ['Observation'], 'display': 'Vital Signs',
+    {'name': 'VitalSigns', 'slug': 'vitalsigns', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Vital Signs',
      'headers': ['id', 'status', 'code', 'effectivePeriod', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
      'field_formats':[{"field": "code", "detail": "$.code.coding[*].display", "format": ''},
                       {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
                       ],
-     'sort': [],
-     'group': [],
+     'sort': ['-$.effectivePeriod'],
+     'group': ['$.effectivePeriod'],
      'views': ['record', 'records']
      },
     # Split to Lab Results
@@ -340,8 +349,9 @@ RECORDS_STU3 = [
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats': [{"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
                       ],
-     'sort': ['-$.name[*].family', ],
+     'sort': ['$.name[*].family', ],
      'group': [],
+     'unique': ['$.identifier[*].value'],
      'views': ['provider', 'providers']
      },
     {'name': 'PractitionerRole', 'slug': 'practitionerrole', 'call_type': 'fhir', 'resources': ['PractitionerRole'], 'display': 'Practitioner Role',
