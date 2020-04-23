@@ -719,8 +719,14 @@ def sort_date(entries, resource_spec=None):
         return entries
 
     if 'sort' in resource_spec:
-        reverse = reverse_sort(resource_spec['sort'][0])
-        date_field_for_sort = strip_sort_indicator(resource_spec['sort'][0])
+        if len(resource_spec['sort']) > 0:
+            reverse = reverse_sort(resource_spec['sort'][0])
+            date_field_for_sort = strip_sort_indicator(resource_spec['sort'][0])
+        else:
+            # nothing to sort
+            reverse = False
+            date_field_for_sort = ""
+            return entries
         sort_date_field = date_field_for_sort.replace("$.", "")
         sort_date_field = sort_date_field.replace(".", "")
         sort_date_field = sort_date_field.replace("[*]", "")
@@ -776,3 +782,58 @@ def sort_date(entries, resource_spec=None):
     #     print("{rt}, {id}: {pd}".format(rt=rt, id=id, pd=pd))
 
     return sort_list
+
+
+def filter_unique(entries, resource):
+    """
+    if unique in resource then use jsonpath to check field
+
+    :param entries:
+    :param resource:
+    :return filtered_entries:
+
+    """
+
+    if 'unique' not in resource:
+        # nothing to filter
+        return {'entry': entries}
+
+    if len(resource['unique']) > 0:
+        unique = resource['unique'][0]
+    else:
+        # nothing defined in resource['unique'] which would be a list
+        return {'entry': entries}
+    # We have something to check
+    # We will add the retrieved field value to found and use to check whether we have seen this record before
+    found = []
+    filtered_entries = []
+
+    for e in entries:
+        print("resource:", e['resourceType'], ", id:", e['id'])
+        jp_parsing = parse(unique)
+        result = jp_parsing.find(e)
+        print("Result:", unique, ":", result)
+        results = [match.value for match in result]
+        if len(results) > 0:
+            matched_on = results[0]
+        else:
+            matched_on = None
+        print("RESULTS:", matched_on)
+
+        if matched_on:
+            if matched_on in found:
+                # we have seen result before so skip it
+                print("filtered out id:", e['id'])
+                pass
+            else:
+                # we haven't seen this result before
+                print("filtered in ", e['id'])
+                filtered_entries.append(e)
+                found.append(matched_on)
+        else:
+            # we didn't find the value based on the unique test so we add it to filtered_entries
+            print("no match for ", unique, " in ", e['id'])
+            filtered_entries.append(e)
+
+    print("changed from ", len(entries), " to ", len(filtered_entries))
+    return {'entry': filtered_entries}
