@@ -742,22 +742,22 @@ def sort_date(entries, resource_spec=None):
     sortable = []
 
     for e in entries:
-        if 'resourceType' in e:
-            rt = e['resourceType']
-        else:
-            rt = "---"
-        if 'id' in e:
-            id = e['id']
-        else:
-            id = ".."
+        # if 'resourceType' in e:
+        #     rt = e['resourceType']
+        # else:
+        #     rt = "---"
+        # if 'id' in e:
+        #     e_id = e['id']
+        # else:
+        #     e_id = ".."
         if sort_date_field in e:
             sortable.append(e)
-            pd = e[sort_date_field]
+            # pd = e[sort_date_field]
         else:
             un_sortable.append(e)
-            pd = "YYYY-MM-DD"
+            # pd = "YYYY-MM-DD"
 
-        # print("{rt}, {id}: {pd}".format(rt=rt, id=id, pd=pd))
+        # print("{rt}, {id}: {pd}".format(rt=rt, id=e_id, pd=pd))
 
 #     sort_list = sorted(entries, key=lambda entry: entry[sort_date_field], reverse=True)
     sort_list = sorted(sortable, key=lambda entry: entry[sort_date_field], reverse=reverse)

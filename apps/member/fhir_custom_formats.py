@@ -1,8 +1,9 @@
 # custom data type handler
-from math import remainder
+# from math import remainder
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from .constants import DISPLAY_US, METRIC_CONVERSION, PRECISION
+
 
 def dt_address(address, member_id=None):
     """
