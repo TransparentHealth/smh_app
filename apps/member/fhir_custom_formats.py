@@ -1,6 +1,8 @@
 # custom data type handler
+# from math import remainder
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+from .constants import DISPLAY_US, METRIC_CONVERSION, PRECISION
 
 
 def dt_address(address, member_id=None):
@@ -134,7 +136,7 @@ def dt_medicationreference(value, member_id=None, resource=None):
     # print("\nResource:", resource, ", Value:", value)
     f_value = value
     if resource:
-        print("Value:", value)
+        # print("Value:", value)
         # look up field_format in RECORDS_STU3
         if type(value) == list:
             f_value = ""
@@ -149,7 +151,7 @@ def dt_medicationreference(value, member_id=None, resource=None):
                 f_value = dt_reference(value, member_id)
                 # f_value = "Medication: " + value['display']
     else:
-        print("ELSE Value:", value)
+        # print("ELSE Value:", value)
         # look up field_format in RECORDS_STU3
         f_value = value
         if type(value) == list:
@@ -219,6 +221,43 @@ def dt_reference(display_dict, member_id=None):
     return mark_safe(f_value)
 
 
+def dt_valuequantity(value):
+    """
+    Convert valueQuantity to US from metric
+
+    :return f_value:
+    """
+    f_value = ''
+    default_value = str(value['value']) + " " + value['unit']
+    if 'unit' in value:
+        # check for conversion
+        if DISPLAY_US:
+            # print("convert to us format")
+            mc = check_conversion(value['unit'])
+            # print("mc:", mc)
+            if mc:
+                # print("we found ", value['unit'], " in ", METRIC_CONVERSION)
+                if mc[0].lower() == "ft.in":
+                    feet = int((value['value'] * mc[1]) / 12)
+                    inches = int((((value['value'] * mc[1]) / 12) % feet) * 12)
+                    num_str = str(feet) + "ft " + str(inches) + "in"
+                    f_value = num_str
+                else:
+                    num_str = "{:.{precision}f}".format(value['value'] * mc[1], precision=PRECISION)
+                    f_value = str(num_str) + " " + mc[0]
+                return f_value
+            else:
+                return default_value
+        else:
+            # print("Not converting - DISPLAY_US:", DISPLAY_US)
+            return default_value
+    else:
+        # print("no unit in ", value)
+        return value
+
+    return f_value
+
+
 def address_dict(address, show_country=False):
     """
     Address as dict
@@ -261,3 +300,17 @@ def list_to_str(block, delim=", "):
         list_str = list_str + str(b)
 
     return list_str
+
+
+def check_conversion(unit_value):
+    """
+    look up a conversion value
+
+    :param unit_value:
+    :return conversion:
+    """
+    for mc in METRIC_CONVERSION:
+        if unit_value in mc:
+            for k, v in mc.items():
+                # print("MC", mc, "values:", v)
+                return v
