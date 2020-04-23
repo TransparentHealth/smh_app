@@ -134,7 +134,7 @@ def dt_medicationreference(value, member_id=None, resource=None):
     # print("\nResource:", resource, ", Value:", value)
     f_value = value
     if resource:
-        print("Value:", value)
+        # print("Value:", value)
         # look up field_format in RECORDS_STU3
         if type(value) == list:
             f_value = ""
@@ -149,7 +149,7 @@ def dt_medicationreference(value, member_id=None, resource=None):
                 f_value = dt_reference(value, member_id)
                 # f_value = "Medication: " + value['display']
     else:
-        print("ELSE Value:", value)
+        # print("ELSE Value:", value)
         # look up field_format in RECORDS_STU3
         f_value = value
         if type(value) == list:

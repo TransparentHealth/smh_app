@@ -144,8 +144,8 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         context.setdefault('resources', entries['entry'])
 
-        counts = resource_count(entries['entry'])
-        context.setdefault('counts', counts)
+        # counts = resource_count(entries['entry'])
+        # context.setdefault('counts', counts)
         #
         # print(counts)
         #
@@ -506,6 +506,7 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         if resource_name == 'list':
             # all_records = RECORDS_STU3
             all_records = view_filter(RECORDS_STU3, 'provider')
+
             summarized_records = []
             for record in all_records:
                 if record['call_type'].lower() == "fhir":

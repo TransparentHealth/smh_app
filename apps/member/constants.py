@@ -340,7 +340,7 @@ RECORDS_STU3 = [
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats': [{"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
                       ],
-     'sort': ['-$.latestDate',],
+     'sort': ['-$.name[*].family', ],
      'group': [],
      'views': ['provider', 'providers']
      },
@@ -433,7 +433,7 @@ RESOURCES = ['Account', 'ActivityDefinition', 'AllergyIntolerance', 'AdverseEven
 VITALSIGNS = ['3141-9', '8302-2', '39156-5',
               '8480-6', '8462-4', '8867-4', '8310-5', '9279-1']
 
-TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
+TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': '$.onsetDateTime'},
             {'name': 'Condition', 'datefield': '$.onsetDateTime'},
             {'name': 'DiagnosticReport', 'datefield': '$.effectivePeriod.start'},
             {'name': 'Encounter', 'datefield': '$.period.start'},
