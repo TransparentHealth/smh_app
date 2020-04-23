@@ -186,7 +186,7 @@ RECORDS_STU3 = [
                      ],
      'sort': ['-$.period[*].start', ],
      'group': ['$.period[*].start', ],
-     'views': ['record', 'records', 'provider', 'providers']
+     'views': ['record', 'records', ]
      },
     {'name': 'Endpoint', 'slug': 'endpoint', 'call_type': 'skip', 'resources': ['Endpoint'], 'display': 'Endpoint', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'EnrollmentRequest', 'slug': 'enrollmentrequest', 'call_type': 'fhir', 'resources': ['EnrollmentRequest'], 'display': 'Enrollment Request', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
@@ -428,7 +428,7 @@ VITALSIGNS = ['3141-9', '8302-2', '39156-5',
               '8480-6', '8462-4', '8867-4', '8310-5', '9279-1']
 
 TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
-            {'name': 'Condition', 'datefield': ''},
+            {'name': 'Condition', 'datefield': '$.onsetDateTime'},
             {'name': 'DiagnosticReport', 'datefield': '$.effectivePeriod.start'},
             {'name': 'Encounter', 'datefield': '$.period.start'},
             # {'name': 'Medication', 'datefield': ''},
