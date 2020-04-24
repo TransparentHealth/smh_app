@@ -747,9 +747,9 @@ def sort_date(entries, resource_spec=None):
         # else:
         #     rt = "---"
         # if 'id' in e:
-        #     e_id = e['id']
+        #     id = e['id']
         # else:
-        #     e_id = ".."
+        #     id = ".."
         if sort_date_field in e:
             sortable.append(e)
             # pd = e[sort_date_field]
@@ -757,7 +757,7 @@ def sort_date(entries, resource_spec=None):
             un_sortable.append(e)
             # pd = "YYYY-MM-DD"
 
-        # print("{rt}, {id}: {pd}".format(rt=rt, id=e_id, pd=pd))
+        # print("{rt}, {id}: {pd}".format(rt=rt, id=id, pd=pd))
 
 #     sort_list = sorted(entries, key=lambda entry: entry[sort_date_field], reverse=True)
     sort_list = sorted(sortable, key=lambda entry: entry[sort_date_field], reverse=reverse)
