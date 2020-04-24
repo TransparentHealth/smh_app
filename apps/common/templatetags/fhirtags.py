@@ -8,7 +8,8 @@ from ...member.fhir_custom_formats import (dt_address,
                                            dt_dosage,
                                            dt_medicationreference,
                                            dt_referencerange,
-                                           dt_reference)
+                                           dt_reference,
+                                           dt_valuequantity)
 from ...member.fhir_utils import (find_key_value_in_list,
                                   filter_list,
                                   path_extract
@@ -106,7 +107,8 @@ def valueformat(value, format_list):
             else:
                 return value
         elif key.lower() == 'valuequantity':
-            return str(value['value']) + " " + value['unit']
+            # return str(value['value']) + " " + value['unit']
+            return dt_valuequantity(value)
         elif key.lower() == 'valuestring':
             return value
         elif key.lower() == 'interpretation':
