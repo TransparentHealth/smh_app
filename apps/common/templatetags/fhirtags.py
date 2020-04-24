@@ -2,6 +2,7 @@
 from django.template.defaulttags import register
 from ...member.constants import FIELD_TITLES, RECORDS_STU3
 from ...member.fhir_custom_formats import (dt_address,
+                                           dt_communication,
                                            dt_telecom,
                                            dt_name,
                                            dt_dosage,
@@ -135,6 +136,8 @@ def valueformat(value, format_list):
         elif key.lower() == 'location':
             if 'display' in value[0]['location']:
                 return dt_reference(value[0]['location'], member_id)
+        elif key.lower() == 'communication':
+                return dt_communication(value)
         else:
             # print("value:", value, " type:", type(value), " for: ", key)
             return value

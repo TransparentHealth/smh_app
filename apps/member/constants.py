@@ -47,6 +47,15 @@ FIELD_TITLES = [
          {'system_name': 'code', 'show_name': 'Info'},
          {'system_name': 'type', 'show_name': 'Severity'},
      ]},
+    {'profile': 'Condition',
+     'elements': [
+         {'system_name': 'verificationStatus', 'show_name': 'verified'},
+         {'system_name': 'onsetDateTime', 'show_name': 'On Set'},
+     ]},
+    {'profile': 'DiagnosticReport',
+     'elements': [
+         {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+     ]},
     {'profile': 'Encounter',
      'elements': [
          {'system_name': 'participant', 'show_name': 'Provider'},
@@ -54,6 +63,8 @@ FIELD_TITLES = [
     {'profile': 'LabResults',
      'elements': [
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
      ]},
     {'profile': 'medicationRequest',
      'elements': [
@@ -68,7 +79,21 @@ FIELD_TITLES = [
     {'profile': 'Observation',
      'elements': [
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
-         {'system_name': 'valueQuantity', 'show_name': 'Result'}
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
+     ]},
+    {'profile': 'Patient',
+     'elements': [
+         {'system_name': 'telecom', 'show_name': 'Contact Information'},
+         {'system_name': 'gender', 'show_name': 'Gender'},
+         {'system_name': 'birthDate', 'show_name': 'Date of Birth'},
+         {'system_name': 'communication', 'show_name': 'Preferred Language'},
+     ]},
+    {'profile': 'VitalSigns',
+     'elements': [
+         {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
      ]}
 ]
 
