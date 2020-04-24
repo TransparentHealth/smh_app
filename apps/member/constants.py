@@ -31,8 +31,17 @@ RECORDS = [
     # },
     {'name': 'Vital Signs',
      'slug': 'vital-signs',
-    },
+     },
 ]
+
+# Display Values in US units
+DISPLAY_US = True
+
+METRIC_CONVERSION = [{'cm': ('Ft.in', 0.393701)},
+                     {'kg': ('lbs', 2.20462)}]
+
+# decimal places to display
+PRECISION = 2
 
 PROVIDER_RESOURCES = ['Encounter', 'Location', 'Organization', 'Practitioner', 'PractitionerRole', 'CareTeam']
 
@@ -334,8 +343,8 @@ RECORDS_STU3 = [
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats': [{"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
                       ],
-     'sort': ['-$.latestDate',],
-     'group': [],
+     'sort': ['-$.name[*].family', ],
+     'group': ['$.name[*].family', ],
      'views': ['provider', 'providers']
      },
     {'name': 'PractitionerRole', 'slug': 'practitionerrole', 'call_type': 'fhir', 'resources': ['PractitionerRole'], 'display': 'Practitioner Role',
@@ -440,3 +449,61 @@ TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
             {'name': 'PractitionerRole', 'datefield': ''},
             {'name': 'Procedure', 'datefield': '$.performedDateTime'}
             ]
+
+PREFERRED_LANGUAGE = [{'ar': 'Arabic'},
+                      {'bn': 'Bengali'},
+                      {'cs': 'Czech'},
+                      {'da': 'Danish'},
+                      {'de': 'German'},
+                      {'de-AT': 'German (Austria)'},
+                      {'de-CH': 'German (Switzerland)'},
+                      {'de-DE': 'German (Germany)'},
+                      {'el': 'Greek'},
+                      {'en': 'English'},
+                      {'en-AU': 'English (Australia)'},
+                      {'en-CA': 'English (Canada)'},
+                      {'en-GB': 'English (Great Britain)'},
+                      {'en-IN': 'English (India)'},
+                      {'en-NZ': 'English (New Zealand)'},
+                      {'en-SG': 'English (Singapore)'},
+                      {'en-US': 'English (United States)'},
+                      {'es': 'Spanish'},
+                      {'es-AR': 'Spanish (Argentina)'},
+                      {'es-ES': 'Spanish (Spain)'},
+                      {'es-UY': 'Spanish (Uruguay)'},
+                      {'fi': 'Finnish'},
+                      {'fr': 'French'},
+                      {'fr-BE': 'French (Belgium)'},
+                      {'fr-CH': 'French (Switzerland)'},
+                      {'fr-FR': 'French (France)'},
+                      {'fy': 'Frysian'},
+                      {'fy-NL': 'Frysian (Netherlands)'},
+                      {'hi': 'Hindi'},
+                      {'hr': 'Croatian'},
+                      {'it': 'Italian'},
+                      {'it-CH': 'Italian (Switzerland)'},
+                      {'it-IT': 'Italian (Italy)'},
+                      {'ja': 'Japanese'},
+                      {'ko': 'Korean'},
+                      {'nl': 'Dutch'},
+                      {'nl-BE': 'Dutch (Belgium)'},
+                      {'nl-NL': 'Dutch (Netherlands)'},
+                      {'no': 'Norwegian'},
+                      {'no-NO': 'Norwegian (Norway)'},
+                      {'pa': 'Punjabi'},
+                      {'pl': 'Polish'},
+                      {'pt': 'Portuguese'},
+                      {'pt-BR': 'Portuguese (Brazil)'},
+                      {'ru': 'Russian'},
+                      {'ru-RU': 'Russian (Russia)'},
+                      {'sr': 'Serbian'},
+                      {'sr-RS': 'Serbian (Serbia)'},
+                      {'sv': 'Swedish'},
+                      {'sv-SE': 'Swedish (Sweden)'},
+                      {'te': 'Telegu'},
+                      {'zh': 'Chinese'},
+                      {'zh-CN': 'Chinese (China)'},
+                      {'zh-HK': 'Chinese (Hong Kong)'},
+                      {'zh-SG': 'Chinese (Singapore)'},
+                      {'zh-TW': 'Chinese (Taiwan)'},
+                      ]

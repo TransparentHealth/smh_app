@@ -1,6 +1,7 @@
 # custom data type handler
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+from .constants import PREFERRED_LANGUAGE, PRECISION, DISPLAY_US, METRIC_CONVERSION
 
 
 def dt_address(address, member_id=None):
@@ -37,6 +38,19 @@ def dt_address(address, member_id=None):
         # print('string:', address)
         address_str = str(address)
     return address_str
+
+
+def dt_communication(value):
+    """
+    translate communication language to readable description
+    :param value:
+    :return f_value:
+    """
+    # print("Value:", value)
+    for i in PREFERRED_LANGUAGE:
+        if value.lower() in i:
+            return i[value.lower()]
+    return value
 
 
 def dt_telecom(value, member_id=None):
@@ -217,6 +231,42 @@ def dt_reference(display_dict, member_id=None):
         f_value += "alt='{disp}' >{disp}</a>".format(disp=escape(disp))
         # print(f_value)
     return mark_safe(f_value)
+
+
+def dt_valuequantity(value):
+    """
+    Convert valueQuantity to US from metric
+    :return f_value:
+    """
+    f_value = ''
+    default_value = str(value['value']) + " " + value['unit']
+    if 'unit' in value:
+        # check for conversion
+        if DISPLAY_US:
+            # print("convert to us format")
+            mc = check_conversion(value['unit'])
+            # print("mc:", mc)
+            if mc:
+                # print("we found ", value['unit'], " in ", METRIC_CONVERSION)
+                if mc[0].lower() == "ft.in":
+                    feet = int((value['value'] * mc[1]) / 12)
+                    inches = int((((value['value'] * mc[1]) / 12) % feet) * 12)
+                    num_str = str(feet) + "ft " + str(inches) + "in"
+                    f_value = num_str
+                else:
+                    num_str = "{:.{precision}f}".format(value['value'] * mc[1], precision=PRECISION)
+                    f_value = str(num_str) + " " + mc[0]
+                return f_value
+            else:
+                return default_value
+        else:
+            # print("Not converting - DISPLAY_US:", DISPLAY_US)
+            return default_value
+    else:
+        # print("no unit in ", value)
+        return value
+
+    return f_value
 
 
 def address_dict(address, show_country=False):
