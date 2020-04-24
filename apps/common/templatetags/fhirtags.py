@@ -100,7 +100,6 @@ def valueformat(value, format_list):
             # print("\n\nRESOURCE:", resource)
             # print("calling dt_medicationreference with Resource:", resource, ", value:", value)
             return dt_medicationreference(value, member_id, resource)
-
         elif key.lower() == 'dataabsentreason':
             if isinstance(value, dict):
                 return value['coding'][0]['display']
@@ -139,7 +138,7 @@ def valueformat(value, format_list):
             if 'display' in value[0]['location']:
                 return dt_reference(value[0]['location'], member_id)
         elif key.lower() == 'communication':
-                return dt_communication(value)
+            return dt_communication(value)
         else:
             # print("value:", value, " type:", type(value), " for: ", key)
             return value
