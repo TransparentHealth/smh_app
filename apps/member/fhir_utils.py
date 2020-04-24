@@ -10,7 +10,7 @@ from operator import itemgetter
 # from operator import itemgetter as i
 # from functools import cmp_to_key
 from .constants import VITALSIGNS, TIMELINE
-# , RECORDS_STU3
+# RECORDS_STU3
 
 
 def resource_count(entries=[]):
@@ -76,22 +76,6 @@ def load_test_fhir_data(data):
         else:
             fhir_data = data.get('fhir_data')
     return fhir_data
-
-
-# def load_test_fhir_data(data):
-#     """
-#     load a test fhir structure
-#     :return: fhir_data
-#     """
-#     if settings.VPC_ENV in ['prod', 'staging', 'dev']:
-#         fhir_data = data.get('fhir_data')
-#     else:
-#         pass
-#         # Only run this locally
-#         # f = open("/Volumes/GoogleDrive/My Drive/NewWave/Projects/AFBH-NY/hixny/data_analysis/md_fhir.json", "r")
-#         # fhir_data = json.load(f)
-#         fhir_data = data.get('fhir_data')
-#     return fhir_data
 
 
 def path_extract(entry, resource_spec):
@@ -160,7 +144,7 @@ def sort_json(json_obj, columns):
     Supports a single sort_field passed as a list
     Removes any dicts that don't have the sort_field and appends them to the end after sorting
     :param json_obj: List
-    :param sort_fields: list with minus prefix
+    :param columns: list with minus prefix
     :return: result | json_obj
     """
 
@@ -412,6 +396,33 @@ def dict_to_list_on_key(group_dict, ungrouped=[]):
     return {'entry': entry}
 
 
+def dict_to_list(group_dict, key_sequence=[], ungrouped=[]):
+    """
+    Pass in a dict that has a series of keys and values
+    use the list in key_sequence to drive the creation of a list
+    ungrouped is added to the end if passed in
+
+    :param group_dict:
+    :param key_sequence:
+    :param ungrouped:
+    :return {'entry': [entry list]
+    """
+    entry = []
+    if not key_sequence:
+        # nothing to sequence
+        return dict_to_list_on_key(group_dict, ungrouped=ungrouped)
+    # We have an overriding list of keys to process
+    for k in key_sequence:
+        if k in group_dict:
+            # we found the key
+            # print("Appending:", k)
+            entry.append({k: group_dict[k]})
+    if ungrouped:
+        # Add on anything that wasn't grouped.
+        entry.extend(ungrouped)
+    return {'entry': entry}
+
+
 def groupsort(entry, resource):
     """
 
@@ -513,7 +524,7 @@ def entry_check(entry):
         return {'entry': entry}
 
 
-def add_key(resource, key=[]):
+def add_key(resource: object, key: object = []) -> object:
     """
     Add a key to a resource if it does not exist
     key contains tuples (fieldname, instancetype)
@@ -575,6 +586,7 @@ def get_date_from_path(e_item, path_field):
     """
     get the date and return it
     :param e_item:
+    :param path_field:
     :return:
     """
 
@@ -584,7 +596,7 @@ def get_date_from_path(e_item, path_field):
 
     if sort_date:
         return sort_date[0:10]
-    return "undated"
+    return None
 
 
 def date_key(datekey):
@@ -616,6 +628,7 @@ def dated_bundle(entries):
     :param entries:
     :return:
     """
+
     grouped_entries = {}
     ungrouped = []
     if 'entry' not in entries:
@@ -645,13 +658,19 @@ def dated_bundle(entries):
                 ungrouped.append(e)
 
     # print("grouped is pre-sort:", type(grouped_entries))
-    entries = dict_to_list_on_key(grouped_entries)
-    entry = entries['entry']
+    # print("sort key:", grouped_entries.keys())
+    keys_to_sort = []
+    for k in grouped_entries.keys():
+        keys_to_sort.append(k)
+    # print("Keys to sort:", keys_to_sort)
+    # print("sorted keys - reverse", sorted(keys_to_sort, reverse=True))
+    filtered_entries = dict_to_list(grouped_entries, sorted(keys_to_sort, reverse=True), ungrouped=[])
+    entry = filtered_entries['entry']
     # sorted_entry = sorted(entry, key=lambda se: se.keys(), reverse=True)
-    sorted_entry = sorted(entry, key=lambda entry: entry.keys(), reverse=True)
-    # print('entries-0:', sorted_entry[0])
-    # print('entries-1:', sorted_entry[1])
-    return {'entry': sorted_entry}
+    # sorted_entry = sorted(entry, key=lambda entry: entry.keys(), reverse=True)
+    # print('entry-0:', entry[0])
+    # print('entry-1:', entry[1])
+    return {'entry': entry}
 
 
 def filter_list(full_list, inc_list=['*'], exc_list=[]):
@@ -676,5 +695,145 @@ def filter_list(full_list, inc_list=['*'], exc_list=[]):
             if inc in filtered_list:
                 pass
             else:
-                filtered_list.remove(inc)
+                filtered_list.append(inc)
         return filtered_list
+
+
+def sort_date(entries, resource_spec=None):
+    """
+    sort the entries by reverse date
+    pass in the resource_spec from RECORDS_STU3
+
+    filter out records that don't have the sort field
+
+    :param entries:
+    :param resource_spec:
+    :return sort_list:
+    """
+    # print(len(entries))
+    # print(entries[0])
+    # print("Here is the sequence:\n")
+
+    if resource_spec is None:
+        # nothing to do
+        return entries
+
+    if 'sort' in resource_spec:
+        if len(resource_spec['sort']) > 0:
+            reverse = reverse_sort(resource_spec['sort'][0])
+            date_field_for_sort = strip_sort_indicator(resource_spec['sort'][0])
+        else:
+            # nothing to sort
+            reverse = False
+            date_field_for_sort = ""
+            return entries
+        sort_date_field = date_field_for_sort.replace("$.", "")
+        sort_date_field = sort_date_field.replace(".", "")
+        sort_date_field = sort_date_field.replace("[*]", "")
+        # print("Sorting on:", sort_date_field)
+    else:
+        # no sort to do
+        return entries
+
+    # filter records that do not have the sort field
+    # to avoid an error
+
+    un_sortable = []
+    sortable = []
+
+    for e in entries:
+        # if 'resourceType' in e:
+        #     rt = e['resourceType']
+        # else:
+        #     rt = "---"
+        # if 'id' in e:
+        #     id = e['id']
+        # else:
+        #     id = ".."
+        if sort_date_field in e:
+            sortable.append(e)
+            # pd = e[sort_date_field]
+        else:
+            un_sortable.append(e)
+            # pd = "YYYY-MM-DD"
+
+        # print("{rt}, {id}: {pd}".format(rt=rt, id=id, pd=pd))
+
+#     sort_list = sorted(entries, key=lambda entry: entry[sort_date_field], reverse=True)
+    sort_list = sorted(sortable, key=lambda entry: entry[sort_date_field], reverse=reverse)
+
+    if len(un_sortable) > 0:
+        sort_list.extend(un_sortable)
+    # print("\n\nSorted result:\n")
+    # for e in sort_list:
+    #     if 'resourceType' in e:
+    #         rt = e['resourceType']
+    #     else:
+    #         rt = "---"
+    #     if 'id' in e:
+    #         id = e['id']
+    #     else:
+    #         id = ".."
+    #     if sort_date_field in e:
+    #         pd = e[sort_date_field]
+    #     else:
+    #         pd = "YYYY-MM-DD"
+    #
+    #     print("{rt}, {id}: {pd}".format(rt=rt, id=id, pd=pd))
+
+    return sort_list
+
+
+def filter_unique(entries, resource):
+    """
+    if unique in resource then use jsonpath to check field
+
+    :param entries:
+    :param resource:
+    :return filtered_entries:
+
+    """
+
+    if 'unique' not in resource:
+        # nothing to filter
+        return {'entry': entries}
+
+    if len(resource['unique']) > 0:
+        unique = resource['unique'][0]
+    else:
+        # nothing defined in resource['unique'] which would be a list
+        return {'entry': entries}
+    # We have something to check
+    # We will add the retrieved field value to found and use to check whether we have seen this record before
+    found = []
+    filtered_entries = []
+
+    for e in entries:
+        print("resource:", e['resourceType'], ", id:", e['id'])
+        jp_parsing = parse(unique)
+        result = jp_parsing.find(e)
+        print("Result:", unique, ":", result)
+        results = [match.value for match in result]
+        if len(results) > 0:
+            matched_on = results[0]
+        else:
+            matched_on = None
+        print("RESULTS:", matched_on)
+
+        if matched_on:
+            if matched_on in found:
+                # we have seen result before so skip it
+                print("filtered out id:", e['id'])
+                pass
+            else:
+                # we haven't seen this result before
+                print("filtered in ", e['id'])
+                filtered_entries.append(e)
+                found.append(matched_on)
+        else:
+            # we didn't find the value based on the unique test so we add it to filtered_entries
+            print("no match for ", unique, " in ", e['id'])
+            filtered_entries.append(e)
+
+    print("changed from ", len(entries), " to ", len(filtered_entries))
+    return {'entry': filtered_entries}
