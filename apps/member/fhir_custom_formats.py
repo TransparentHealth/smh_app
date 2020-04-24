@@ -2,7 +2,7 @@
 # from math import remainder
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
-from .constants import DISPLAY_US, METRIC_CONVERSION, PRECISION
+from .constants import DISPLAY_US, METRIC_CONVERSION, PRECISION, PREFERRED_LANGUAGE
 
 
 def dt_address(address, member_id=None):
@@ -39,6 +39,20 @@ def dt_address(address, member_id=None):
         # print('string:', address)
         address_str = str(address)
     return address_str
+
+
+def dt_communication(value):
+    """
+    translate communication language to readable description
+
+    :param value:
+    :return f_value:
+    """
+    # print("Value:", value)
+    for i in PREFERRED_LANGUAGE:
+        if value.lower() in i:
+            return i[value.lower()]
+    return value
 
 
 def dt_telecom(value, member_id=None):

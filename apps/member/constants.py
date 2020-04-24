@@ -61,6 +61,10 @@ FIELD_TITLES = [
          {'system_name': 'verificationStatus', 'show_name': 'verified'},
          {'system_name': 'onsetDateTime', 'show_name': 'On Set'},
      ]},
+    {'profile': 'DiagnosticReport',
+     'elements': [
+         {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+     ]},
     {'profile': 'Encounter',
      'elements': [
          {'system_name': 'participant', 'show_name': 'Provider'},
@@ -68,6 +72,8 @@ FIELD_TITLES = [
     {'profile': 'LabResults',
      'elements': [
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
      ]},
     {'profile': 'medicationRequest',
      'elements': [
@@ -82,7 +88,21 @@ FIELD_TITLES = [
     {'profile': 'Observation',
      'elements': [
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
-         {'system_name': 'valueQuantity', 'show_name': 'Result'}
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
+     ]},
+    {'profile': 'Patient',
+     'elements': [
+         {'system_name': 'telecom', 'show_name': 'Contact Information'},
+         {'system_name': 'gender', 'show_name': 'Gender'},
+         {'system_name': 'birthDate', 'show_name': 'Date of Birth'},
+         {'system_name': 'communication', 'show_name': 'Preferred Language'},
+     ]},
+    {'profile': 'VitalSigns',
+     'elements': [
+         {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
      ]}
 ]
 
@@ -456,3 +476,65 @@ TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': '$.onsetDateTime'},
             {'name': 'PractitionerRole', 'datefield': ''},
             {'name': 'Procedure', 'datefield': '$.performedDateTime'}
             ]
+
+PREFERRED_LANGUAGE = [{'ar': 'Arabic'},
+                      {'bn': 'Bengali'},
+                      {'cs': 'Czech'},
+                      {'da': 'Danish'},
+                      {'de': 'German'},
+                      {'de-AT': 'German (Austria)'},
+                      {'de-CH': 'German (Switzerland)'},
+                      {'de-DE': 'German (Germany)'},
+                      {'el': 'Greek'},
+                      {'en': 'English'},
+                      {'en-AU': 'English (Australia)'},
+                      {'en-CA': 'English (Canada)'},
+                      {'en-GB': 'English (Great Britain)'},
+                      {'en-IN': 'English (India)'},
+                      {'en-NZ': 'English (New Zealand)'},
+                      {'en-SG': 'English (Singapore)'},
+                      {'en-US': 'English (United States)'},
+                      {'es': 'Spanish'},
+                      {'es-AR': 'Spanish (Argentina)'},
+                      {'es-ES': 'Spanish (Spain)'},
+                      {'es-UY': 'Spanish (Uruguay)'},
+                      {'fi': 'Finnish'},
+                      {'fr': 'French'},
+                      {'fr-BE': 'French (Belgium)'},
+                      {'fr-CH': 'French (Switzerland)'},
+                      {'fr-FR': 'French (France)'},
+                      {'fy': 'Frysian'},
+                      {'fy-NL': 'Frysian (Netherlands)'},
+                      {'hi': 'Hindi'},
+                      {'hr': 'Croatian'},
+                      {'it': 'Italian'},
+                      {'it-CH': 'Italian (Switzerland)'},
+                      {'it-IT': 'Italian (Italy)'},
+                      {'ja': 'Japanese'},
+                      {'ko': 'Korean'},
+                      {'nl': 'Dutch'},
+                      {'nl-BE': 'Dutch (Belgium)'},
+                      {'nl-NL': 'Dutch (Netherlands)'},
+                      {'no': 'Norwegian'},
+                      {'no-NO': 'Norwegian (Norway)'},
+                      {'pa': 'Punjabi'},
+                      {'pl': 'Polish'},
+                      {'pt': 'Portuguese'},
+                      {'pt-BR': 'Portuguese (Brazil)'},
+                      {'ru': 'Russian'},
+                      {'ru-RU': 'Russian (Russia)'},
+                      {'sr': 'Serbian'},
+                      {'sr-RS': 'Serbian (Serbia)'},
+                      {'sv': 'Swedish'},
+                      {'sv-SE': 'Swedish (Sweden)'},
+                      {'te': 'Telegu'},
+                      {'zh': 'Chinese'},
+                      {'zh-CN': 'Chinese (China)'},
+                      {'zh-HK': 'Chinese (Hong Kong)'},
+                      {'zh-SG': 'Chinese (Singapore)'},
+                      {'zh-TW': 'Chinese (Taiwan)'},
+                      ]
+
+"""
+Add these languages:
+"""
