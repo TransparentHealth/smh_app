@@ -2,12 +2,14 @@
 from django.template.defaulttags import register
 from ...member.constants import FIELD_TITLES, RECORDS_STU3
 from ...member.fhir_custom_formats import (dt_address,
+                                           dt_communication,
                                            dt_telecom,
                                            dt_name,
                                            dt_dosage,
                                            dt_medicationreference,
                                            dt_referencerange,
-                                           dt_reference)
+                                           dt_reference,
+                                           dt_valuequantity)
 from ...member.fhir_utils import (find_key_value_in_list,
                                   filter_list,
                                   path_extract
@@ -98,14 +100,14 @@ def valueformat(value, format_list):
             # print("\n\nRESOURCE:", resource)
             # print("calling dt_medicationreference with Resource:", resource, ", value:", value)
             return dt_medicationreference(value, member_id, resource)
-
         elif key.lower() == 'dataabsentreason':
             if isinstance(value, dict):
                 return value['coding'][0]['display']
             else:
                 return value
         elif key.lower() == 'valuequantity':
-            return str(value['value']) + " " + value['unit']
+            # return str(value['value']) + " " + value['unit']
+            return dt_valuequantity(value)
         elif key.lower() == 'valuestring':
             return value
         elif key.lower() == 'interpretation':
@@ -135,6 +137,8 @@ def valueformat(value, format_list):
         elif key.lower() == 'location':
             if 'display' in value[0]['location']:
                 return dt_reference(value[0]['location'], member_id)
+        elif key.lower() == 'communication':
+            return dt_communication(value)
         else:
             # print("value:", value, " type:", type(value), " for: ", key)
             return value
