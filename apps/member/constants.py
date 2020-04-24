@@ -31,8 +31,17 @@ RECORDS = [
     # },
     {'name': 'Vital Signs',
      'slug': 'vital-signs',
-    },
+     },
 ]
+
+# Display Values in US units
+DISPLAY_US = True
+
+METRIC_CONVERSION = [{'cm': ('Ft.in', 0.393701)},
+                     {'kg': ('lbs', 2.20462)}]
+
+# decimal places to display
+PRECISION = 2
 
 PROVIDER_RESOURCES = ['Encounter', 'Location', 'Organization', 'Practitioner', 'PractitionerRole', 'CareTeam']
 
@@ -52,6 +61,10 @@ FIELD_TITLES = [
          {'system_name': 'verificationStatus', 'show_name': 'verified'},
          {'system_name': 'onsetDateTime', 'show_name': 'On Set'},
      ]},
+    {'profile': 'DiagnosticReport',
+     'elements': [
+         {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+     ]},
     {'profile': 'Encounter',
      'elements': [
          {'system_name': 'participant', 'show_name': 'Provider'},
@@ -59,6 +72,8 @@ FIELD_TITLES = [
     {'profile': 'LabResults',
      'elements': [
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
      ]},
     {'profile': 'medicationRequest',
      'elements': [
@@ -73,7 +88,21 @@ FIELD_TITLES = [
     {'profile': 'Observation',
      'elements': [
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
-         {'system_name': 'valueQuantity', 'show_name': 'Result'}
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
+     ]},
+    {'profile': 'Patient',
+     'elements': [
+         {'system_name': 'telecom', 'show_name': 'Contact Information'},
+         {'system_name': 'gender', 'show_name': 'Gender'},
+         {'system_name': 'birthDate', 'show_name': 'Date of Birth'},
+         {'system_name': 'communication', 'show_name': 'Preferred Language'},
+     ]},
+    {'profile': 'VitalSigns',
+     'elements': [
+         {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
      ]}
 ]
 
@@ -192,7 +221,7 @@ RECORDS_STU3 = [
                      ],
      'sort': ['-$.period[*].start', ],
      'group': ['$.period[*].start', ],
-     'views': ['record', 'records', 'provider', 'providers']
+     'views': ['record', 'records', ]
      },
     {'name': 'Endpoint', 'slug': 'endpoint', 'call_type': 'skip', 'resources': ['Endpoint'], 'display': 'Endpoint', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'EnrollmentRequest', 'slug': 'enrollmentrequest', 'call_type': 'fhir', 'resources': ['EnrollmentRequest'], 'display': 'Enrollment Request', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
@@ -286,14 +315,14 @@ RECORDS_STU3 = [
      'views': ['record', 'records']
      },
     # Split to vital-signs
-    {'name': 'VitalSigns', 'slug': 'vitalsigns', 'call_type': 'skip', 'resources': ['Observation'], 'display': 'Vital Signs',
+    {'name': 'VitalSigns', 'slug': 'vitalsigns', 'call_type': 'custom', 'resources': ['Observation'], 'display': 'Vital Signs',
      'headers': ['id', 'status', 'code', 'effectivePeriod', '*'],
      'exclude': ['meta', 'identifier', 'resourceType', 'subject'],
      'field_formats':[{"field": "code", "detail": "$.code.coding[*].display", "format": ''},
                       {'field': 'effectivePeriod', 'detail': '$.effectivePeriod[*]', 'format': {'start': 0, 'end': 10}},
                       ],
-     'sort': [],
-     'group': [],
+     'sort': ['-$.effectivePeriod'],
+     'group': ['$.effectivePeriod'],
      'views': ['record', 'records']
      },
     # Split to Lab Results
@@ -340,8 +369,9 @@ RECORDS_STU3 = [
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats': [{"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
                       ],
-     'sort': ['-$.latestDate',],
-     'group': [],
+     'sort': ['-$.name[*].family', ],
+     'group': ['$.name[*].family', ],
+     'unique': ['$.identifier[*].value'],
      'views': ['provider', 'providers']
      },
     {'name': 'PractitionerRole', 'slug': 'practitionerrole', 'call_type': 'fhir', 'resources': ['PractitionerRole'], 'display': 'Practitioner Role',
@@ -433,8 +463,8 @@ RESOURCES = ['Account', 'ActivityDefinition', 'AllergyIntolerance', 'AdverseEven
 VITALSIGNS = ['3141-9', '8302-2', '39156-5',
               '8480-6', '8462-4', '8867-4', '8310-5', '9279-1']
 
-TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
-            {'name': 'Condition', 'datefield': ''},
+TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': '$.onsetDateTime'},
+            {'name': 'Condition', 'datefield': '$.onsetDateTime'},
             {'name': 'DiagnosticReport', 'datefield': '$.effectivePeriod.start'},
             {'name': 'Encounter', 'datefield': '$.period.start'},
             # {'name': 'Medication', 'datefield': ''},
@@ -446,3 +476,61 @@ TIMELINE = [{'name': 'AllergyIntolerance', 'datefield': ''},
             {'name': 'PractitionerRole', 'datefield': ''},
             {'name': 'Procedure', 'datefield': '$.performedDateTime'}
             ]
+
+PREFERRED_LANGUAGE = [{'ar': 'Arabic'},
+                      {'bn': 'Bengali'},
+                      {'cs': 'Czech'},
+                      {'da': 'Danish'},
+                      {'de': 'German'},
+                      {'de-AT': 'German (Austria)'},
+                      {'de-CH': 'German (Switzerland)'},
+                      {'de-DE': 'German (Germany)'},
+                      {'el': 'Greek'},
+                      {'en': 'English'},
+                      {'en-AU': 'English (Australia)'},
+                      {'en-CA': 'English (Canada)'},
+                      {'en-GB': 'English (Great Britain)'},
+                      {'en-IN': 'English (India)'},
+                      {'en-NZ': 'English (New Zealand)'},
+                      {'en-SG': 'English (Singapore)'},
+                      {'en-US': 'English (United States)'},
+                      {'es': 'Spanish'},
+                      {'es-AR': 'Spanish (Argentina)'},
+                      {'es-ES': 'Spanish (Spain)'},
+                      {'es-UY': 'Spanish (Uruguay)'},
+                      {'fi': 'Finnish'},
+                      {'fr': 'French'},
+                      {'fr-BE': 'French (Belgium)'},
+                      {'fr-CH': 'French (Switzerland)'},
+                      {'fr-FR': 'French (France)'},
+                      {'fy': 'Frysian'},
+                      {'fy-NL': 'Frysian (Netherlands)'},
+                      {'hi': 'Hindi'},
+                      {'hr': 'Croatian'},
+                      {'it': 'Italian'},
+                      {'it-CH': 'Italian (Switzerland)'},
+                      {'it-IT': 'Italian (Italy)'},
+                      {'ja': 'Japanese'},
+                      {'ko': 'Korean'},
+                      {'nl': 'Dutch'},
+                      {'nl-BE': 'Dutch (Belgium)'},
+                      {'nl-NL': 'Dutch (Netherlands)'},
+                      {'no': 'Norwegian'},
+                      {'no-NO': 'Norwegian (Norway)'},
+                      {'pa': 'Punjabi'},
+                      {'pl': 'Polish'},
+                      {'pt': 'Portuguese'},
+                      {'pt-BR': 'Portuguese (Brazil)'},
+                      {'ru': 'Russian'},
+                      {'ru-RU': 'Russian (Russia)'},
+                      {'sr': 'Serbian'},
+                      {'sr-RS': 'Serbian (Serbia)'},
+                      {'sv': 'Swedish'},
+                      {'sv-SE': 'Swedish (Sweden)'},
+                      {'te': 'Telegu'},
+                      {'zh': 'Chinese'},
+                      {'zh-CN': 'Chinese (China)'},
+                      {'zh-HK': 'Chinese (Hong Kong)'},
+                      {'zh-SG': 'Chinese (Singapore)'},
+                      {'zh-TW': 'Chinese (Taiwan)'},
+                      ]
