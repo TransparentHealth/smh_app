@@ -343,20 +343,20 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             elif resource_profile['call_type'] == 'skip':
                 entries = {'entry': []}
             else:
-                print("Get, sort, join")
+                # print("Get, sort, join")
                 entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
                 # if resource_profile['name'] == "Procedure":
-                print(len(entries['entry']))
+                # print(len(entries['entry']))
                 #     print("Procedures:", entries['entry'])
                 # print(entries['entry'])
                 entries = groupsort(entries['entry'], resource_profile)
                 # if resource_profile['name'] == "Procedure":
-                print(len(entries))
+                # print(len(entries))
                 #     print("Procedures - post sort:", entries['entry'])
                 # entries = concatenate_lists(entry_check(entries))
                 entries = concatenate_output(entry_check(entries))
                 # if resource_profile['name'] == "Procedure":
-                print(len(entries['entry']))
+                # print(len(entries['entry']))
                 #     print("Procedures - post concatenate:", entries['entry'])
 
             content_list = path_extract(entries['entry'], resource_profile)
