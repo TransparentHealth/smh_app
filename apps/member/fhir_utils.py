@@ -514,24 +514,7 @@ def concatenate_output(entry):
     :return big_entry|
     """
     big_entry = []
-#
-# entry =
-# {'entry': [{'code': {'coding': [{'code': '4050939',
-#                                  'display': 'Surgical Pathology',
-#                                  'system': 'urn:oid:2.16.840.1.113883.3.4362.1.16'}],
-#                      'text': 'Surgical Pathology'},
-#             'id': '294',
-#             'identifier': [{'assigner': {'display': 'SPHCS-FillerId'},
-#                             'system': 'urn:oid:2.16.840.1.113883.3.4362.1.16',
-#                             'use': 'official',
-#                             'value': '43010234-'},
-#                            {'assigner': {'display': 'SPHCS-PlacerId'},
-#                             'system': 'urn:oid:2.16.840.1.113883.3.4362.1.16',
-#                             'use': 'official',
-#                             'value': '43010234-'}],
-#             'meta': {'profile': ['http://hl7.org/fhir/StructureDefinition/daf-diagnosticreport']},
-#             'resourceType': 'DiagnosticReport',
-#
+
     if isinstance(entry, dict):
         if list(entry.keys())[0] == 'entry':
             sub_entry = entry['entry']
