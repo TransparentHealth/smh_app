@@ -38,7 +38,9 @@ RECORDS = [
 DISPLAY_US = True
 
 METRIC_CONVERSION = [{'cm': ('Ft.in', 0.393701)},
-                     {'kg': ('lbs', 2.20462)}]
+                     {'kg': ('lbs', 2.20462)},
+                     {'[lb_av]': ('lbs', 1.00)},
+                     {'[in_us]': ('in', 1.00)}]
 
 # decimal places to display
 PRECISION = 2

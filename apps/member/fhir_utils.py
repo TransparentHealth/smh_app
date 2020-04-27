@@ -842,31 +842,31 @@ def filter_unique(entries, resource):
     filtered_entries = []
 
     for e in entries:
-        print("resource:", e['resourceType'], ", id:", e['id'])
+        # print("resource:", e['resourceType'], ", id:", e['id'])
         jp_parsing = parse(unique)
         result = jp_parsing.find(e)
-        print("Result:", unique, ":", result)
+        # print("Result:", unique, ":", result)
         results = [match.value for match in result]
         if len(results) > 0:
             matched_on = results[0]
         else:
             matched_on = None
-        print("RESULTS:", matched_on)
+        # print("RESULTS:", matched_on)
 
         if matched_on:
             if matched_on in found:
                 # we have seen result before so skip it
-                print("filtered out id:", e['id'])
+                # print("filtered out id:", e['id'])
                 pass
             else:
                 # we haven't seen this result before
-                print("filtered in ", e['id'])
+                # print("filtered in ", e['id'])
                 filtered_entries.append(e)
                 found.append(matched_on)
         else:
             # we didn't find the value based on the unique test so we add it to filtered_entries
-            print("no match for ", unique, " in ", e['id'])
+            # print("no match for ", unique, " in ", e['id'])
             filtered_entries.append(e)
 
-    print("changed from ", len(entries), " to ", len(filtered_entries))
+    # print("changed from ", len(entries), " to ", len(filtered_entries))
     return {'entry': filtered_entries}
