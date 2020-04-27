@@ -67,7 +67,6 @@ from .fhir_utils import (
     context_updated_at,
     dated_bundle,
     sort_date,
-    concatenate_output,
     filter_unique,
     concatenate_output,
 )
@@ -352,12 +351,12 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 # print(entries['entry'])
                 entries = groupsort(entries['entry'], resource_profile)
                 # if resource_profile['name'] == "Procedure":
-                print(len(entries))
+                # print(len(entries))
                 #     print("Procedures - post sort:", entries['entry'])
                 # entries = concatenate_lists(entry_check(entries))
                 entries = concatenate_output(entry_check(entries))
                 # if resource_profile['name'] == "Procedure":
-                print(len(entries['entry']))
+                # print(len(entries['entry']))
                 #     print("Procedures - post concatenate:", entries['entry'])
 
             content_list = path_extract(entries['entry'], resource_profile)
