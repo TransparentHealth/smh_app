@@ -88,7 +88,21 @@ FIELD_TITLES = [
     {'profile': 'Observation',
      'elements': [
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
-         {'system_name': 'valueQuantity', 'show_name': 'Result'}
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
+     ]},
+    {'profile': 'Patient',
+     'elements': [
+         {'system_name': 'telecom', 'show_name': 'Contact Information'},
+         {'system_name': 'gender', 'show_name': 'Gender'},
+         {'system_name': 'birthDate', 'show_name': 'Date of Birth'},
+         {'system_name': 'communication', 'show_name': 'Preferred Language'},
+     ]},
+    {'profile': 'VitalSigns',
+     'elements': [
+         {'system_name': 'effectivePeriod', 'show_name': 'Date'},
+         {'system_name': 'valueQuantity', 'show_name': 'Result'},
+         {'system_name': 'referenceRange', 'show_name': 'Range'},
      ]}
 ]
 
@@ -151,7 +165,8 @@ RECORDS_STU3 = [
      'display': 'Condition',
      'headers': ['id', 'clinicalStatus', 'verificationStatus', 'code', 'onsetDateTime'],
      'exclude': ['meta', 'resourceType', 'category', 'subject'],
-     'field_formats': [{'field': 'code', 'detail': '$.code.text', 'format': ''}],
+     'field_formats': [{'field': 'code', 'detail': '$.code.text', 'format': ''},
+                       {'field': 'onsetDateTime', 'detail': '$.onsetDateTime', 'format': {"start": 0, "end": 10}}],
      'sort': ['-$.code.text'],
      'group': ['$.code.text'],
      'views': ['record', 'records']
@@ -356,6 +371,7 @@ RECORDS_STU3 = [
                       ],
      'sort': ['-$.name[*].family', ],
      'group': ['$.name[*].family', ],
+     'unique': ['$.identifier[*].value'],
      'views': ['provider', 'providers']
      },
     {'name': 'PractitionerRole', 'slug': 'practitionerrole', 'call_type': 'fhir', 'resources': ['PractitionerRole'], 'display': 'Practitioner Role',
@@ -518,7 +534,3 @@ PREFERRED_LANGUAGE = [{'ar': 'Arabic'},
                       {'zh-SG': 'Chinese (Singapore)'},
                       {'zh-TW': 'Chinese (Taiwan)'},
                       ]
-
-"""
-Add these languages:
-"""

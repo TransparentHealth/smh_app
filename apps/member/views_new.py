@@ -68,6 +68,7 @@ from .fhir_utils import (
     dated_bundle,
     sort_date,
     concatenate_output,
+    filter_unique,
 )
 from ..common.templatetags.fhirtags import resourceview
 # from .practitioner_tools import practitioner_encounter, sort_extended_practitioner
@@ -145,8 +146,8 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
 
         context.setdefault('resources', entries['entry'])
 
-        counts = resource_count(entries['entry'])
-        context.setdefault('counts', counts)
+        # counts = resource_count(entries['entry'])
+        # context.setdefault('counts', counts)
         #
         # print(counts)
         #
@@ -510,11 +511,16 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         if resource_name == 'list':
             # all_records = RECORDS_STU3
             all_records = view_filter(RECORDS_STU3, 'provider')
+
             summarized_records = []
             for record in all_records:
                 if record['call_type'].lower() == "fhir":
                     # print("record processing for ", record['name'])
                     entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                    if 'unique' in record:
+                        print("", record['name'], " has ", record['unique'])
+                        # We need to filter duplicates
+                        entries = filter_unique(entries['entry'], record)
                     record['data'] = entries['entry']
                     record['count'] = len(entries['entry'])
                     summarized_records.append(record)
@@ -574,6 +580,11 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 # if resource_profile['name'] == "Procedure":
                 #     print(len(entries['entry']))
                 #     print("Procedures - post concatenate:", entries['entry'])
+                record = resource_profile
+                if 'unique' in record:
+                    print("", record['name'], " has ", record['unique'])
+                    # We need to filter duplicates
+                    entries = filter_unique(entries['entry'], record)
 
             content_list = path_extract(entries['entry'], resource_profile)
             context.setdefault('friendly_fields', find_list_entry(FIELD_TITLES, "profile", resource_profile['name']))
