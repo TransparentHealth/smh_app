@@ -467,6 +467,8 @@ def concatenate_lists(entry):
     # so we return entry
     if len(entry['entry']) > 0 and 'resourceType' in entry['entry'][0].keys():
         # print('not a grouped dict')
+        # print(entry)
+        # print("================\n\n")
         return entry
     # We have entries to deal with...
     # {'entry': [{'2020-12-22T09:30:00+00:00': [{'resourceType': 'Encounter', 'id': '672',
@@ -476,6 +478,52 @@ def concatenate_lists(entry):
             big_entry.extend(i[k])
     return {'entry': big_entry}
 
+
+def concatenate_output(entry):
+    """
+    Deal with groups of resources in dicts with key of date
+
+    :param entry:
+    :return big_entry|
+    """
+    big_entry = []
+#
+# entry =
+# {'entry': [{'code': {'coding': [{'code': '4050939',
+#                                  'display': 'Surgical Pathology',
+#                                  'system': 'urn:oid:2.16.840.1.113883.3.4362.1.16'}],
+#                      'text': 'Surgical Pathology'},
+#             'id': '294',
+#             'identifier': [{'assigner': {'display': 'SPHCS-FillerId'},
+#                             'system': 'urn:oid:2.16.840.1.113883.3.4362.1.16',
+#                             'use': 'official',
+#                             'value': '43010234-'},
+#                            {'assigner': {'display': 'SPHCS-PlacerId'},
+#                             'system': 'urn:oid:2.16.840.1.113883.3.4362.1.16',
+#                             'use': 'official',
+#                             'value': '43010234-'}],
+#             'meta': {'profile': ['http://hl7.org/fhir/StructureDefinition/daf-diagnosticreport']},
+#             'resourceType': 'DiagnosticReport',
+#
+    if isinstance(entry, dict):
+        if list(entry.keys())[0] == 'entry':
+            sub_entry = entry['entry']
+
+            for e in sub_entry:
+                if 'resourceType' in e:
+                    # print("adding to big_entry", e['id'])
+                    big_entry.append(e)
+                else:
+                    # print("no resourceType in e")
+                    # print(e)
+                    # print("-----------")
+                    for ek, ev in e.items():
+                        for ev_item in ev:
+                            if 'resourceType' in ev_item:
+                                big_entry.append(ev_item)
+
+            # print("big Entry", len(big_entry))
+            return {'entry': big_entry}
 
 def entry_check(entry):
     """
@@ -494,6 +542,7 @@ def entry_check(entry):
         # print('not an entry list')
         # print("entry:", entry)
     else:
+        # print("not a dict so wrap as list in dict with key=entry")
         return {'entry': entry}
 
 
