@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 def get_id_token_payload(user):
-    # Get the ID Token and parse it.
+    # Get the ID Token and parse it, return a JSON string.
     try:
         provider = user.social_auth.filter(provider='verifymyidentity-openidconnect').first()
         if 'id_token' in provider.extra_data.keys():
