@@ -68,6 +68,7 @@ from .fhir_utils import (
     dated_bundle,
     sort_date,
     filter_unique,
+    concatenate_output,
 )
 from ..common.templatetags.fhirtags import resourceview
 # from .practitioner_tools import practitioner_encounter, sort_extended_practitioner
@@ -352,7 +353,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 # if resource_profile['name'] == "Procedure":
                 print(len(entries))
                 #     print("Procedures - post sort:", entries['entry'])
-                entries = concatenate_lists(entry_check(entries))
+                # entries = concatenate_lists(entry_check(entries))
+                entries = concatenate_output(entry_check(entries))
                 # if resource_profile['name'] == "Procedure":
                 print(len(entries['entry']))
                 #     print("Procedures - post concatenate:", entries['entry'])

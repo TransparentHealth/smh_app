@@ -504,6 +504,36 @@ def concatenate_lists(entry):
     return {'entry': big_entry}
 
 
+def concatenate_output(entry):
+    """
+    Deal with groups of resources in dicts with key of date
+
+    :param entry:
+    :return big_entry|
+    """
+    big_entry = []
+
+    if isinstance(entry, dict):
+        if list(entry.keys())[0] == 'entry':
+            sub_entry = entry['entry']
+
+            for e in sub_entry:
+                if 'resourceType' in e:
+                    # print("adding to big_entry", e['id'])
+                    big_entry.append(e)
+                else:
+                    # print("no resourceType in e")
+                    # print(e)
+                    # print("-----------")
+                    for ek, ev in e.items():
+                        for ev_item in ev:
+                            if 'resourceType' in ev_item:
+                                big_entry.append(ev_item)
+
+            # print("big Entry", len(big_entry))
+            return {'entry': big_entry}
+
+
 def entry_check(entry):
     """
     check if entry is a dict and has a key entry.
