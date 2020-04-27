@@ -67,7 +67,6 @@ from .fhir_utils import (
     context_updated_at,
     dated_bundle,
     sort_date,
-    concatenate_output,
     filter_unique,
     concatenate_output,
 )
