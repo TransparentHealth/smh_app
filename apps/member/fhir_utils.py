@@ -494,6 +494,8 @@ def concatenate_lists(entry):
     # so we return entry
     if len(entry['entry']) > 0 and 'resourceType' in entry['entry'][0].keys():
         # print('not a grouped dict')
+        # print(entry)
+        # print("================\n\n")
         return entry
     # We have entries to deal with...
     # {'entry': [{'2020-12-22T09:30:00+00:00': [{'resourceType': 'Encounter', 'id': '672',
@@ -551,6 +553,7 @@ def entry_check(entry):
         # print('not an entry list')
         # print("entry:", entry)
     else:
+        # print("not a dict so wrap as list in dict with key=entry")
         return {'entry': entry}
 
 
@@ -777,9 +780,9 @@ def sort_date(entries, resource_spec=None):
         # else:
         #     rt = "---"
         # if 'id' in e:
-        #     e_id = e['id']
+        #     id = e['id']
         # else:
-        #     e_id = ".."
+        #     id = ".."
         if sort_date_field in e:
             sortable.append(e)
             # pd = e[sort_date_field]
@@ -787,7 +790,7 @@ def sort_date(entries, resource_spec=None):
             un_sortable.append(e)
             # pd = "YYYY-MM-DD"
 
-        # print("{rt}, {id}: {pd}".format(rt=rt, id=e_id, pd=pd))
+        # print("{rt}, {id}: {pd}".format(rt=rt, id=id, pd=pd))
 
 #     sort_list = sorted(entries, key=lambda entry: entry[sort_date_field], reverse=True)
     sort_list = sorted(sortable, key=lambda entry: entry[sort_date_field], reverse=reverse)
