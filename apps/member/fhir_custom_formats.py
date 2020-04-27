@@ -2,7 +2,7 @@
 # from math import remainder
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
-from .constants import PREFERRED_LANGUAGE, PRECISION, DISPLAY_US, METRIC_CONVERSION
+from .constants import DISPLAY_US, METRIC_CONVERSION, PRECISION, PREFERRED_LANGUAGE
 
 
 def dt_address(address, member_id=None):
