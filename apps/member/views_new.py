@@ -458,7 +458,7 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
                 response_data = json.dumps(data, indent=settings.JSON_INDENT)
             else:
                 response_data = "<table>" + resourceview(data, member.pk) + "</table><hr/>"
-                response_data += json.dumps(data, indent=settings.JSON_INDENT)
+                # response_data += json.dumps(data, indent=settings.JSON_INDENT)
                 # print(response_data)
 
             return HttpResponse(response_data)
