@@ -31,7 +31,7 @@ RECORDS = [
     # },
     {'name': 'Vital Signs',
      'slug': 'vital-signs',
-    },
+     },
 ]
 
 # Display Values in US units
@@ -369,8 +369,8 @@ RECORDS_STU3 = [
      'exclude': ['meta', 'identifier', 'resourceType'],
      'field_formats': [{"field": "practitioner", "detail": "$.practitioner.display", "format": ''},
                       ],
-     'sort': ['$.name[*].family', ],
-     'group': [],
+     'sort': ['-$.name[*].family', ],
+     'group': ['$.name[*].family', ],
      'unique': ['$.identifier[*].value'],
      'views': ['provider', 'providers']
      },
@@ -534,7 +534,3 @@ PREFERRED_LANGUAGE = [{'ar': 'Arabic'},
                       {'zh-SG': 'Chinese (Singapore)'},
                       {'zh-TW': 'Chinese (Taiwan)'},
                       ]
-
-"""
-Add these languages:
-"""

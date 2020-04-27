@@ -68,6 +68,7 @@ from .fhir_utils import (
     dated_bundle,
     sort_date,
     filter_unique,
+    concatenate_output,
 )
 from ..common.templatetags.fhirtags import resourceview
 # from .practitioner_tools import practitioner_encounter, sort_extended_practitioner
@@ -342,19 +343,20 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             elif resource_profile['call_type'] == 'skip':
                 entries = {'entry': []}
             else:
-                print("Get, sort, join")
+                # print("Get, sort, join")
                 entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
                 # if resource_profile['name'] == "Procedure":
-                print(len(entries['entry']))
+                # print(len(entries['entry']))
                 #     print("Procedures:", entries['entry'])
                 # print(entries['entry'])
                 entries = groupsort(entries['entry'], resource_profile)
                 # if resource_profile['name'] == "Procedure":
-                print(len(entries))
+                # print(len(entries))
                 #     print("Procedures - post sort:", entries['entry'])
-                entries = concatenate_lists(entry_check(entries))
+                # entries = concatenate_lists(entry_check(entries))
+                entries = concatenate_output(entry_check(entries))
                 # if resource_profile['name'] == "Procedure":
-                print(len(entries['entry']))
+                # print(len(entries['entry']))
                 #     print("Procedures - post concatenate:", entries['entry'])
 
             content_list = path_extract(entries['entry'], resource_profile)
@@ -369,7 +371,9 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             dated_resources = sort_date(content_list, resource_profile)
             context.setdefault('content_list', dated_resources)
 
-            print("Content_List:", content_list)
+            # print("Content_List:", content_list)
+            for l in content_list:
+                print(l.keys())
         return context
 
     def render_to_response(self, context, **kwargs):
@@ -568,7 +572,8 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 #     print(len(entries['entry']))
                 #     print("Procedures:", entries['entry'])
                 entries = groupsort(entries['entry'], resource_profile)
-                # if resource_profile['name'] == "Procedure":
+                # print("\n\n Keys in Entries:", entries.keys())
+                # if resource_profile['name'] in ["Procedure", "DiagnosticReport"]:
                 #     print(len(entries['entry']))
                 #     print("Procedures - post sort:", entries['entry'])
                 entries = concatenate_lists(entry_check(entries))
