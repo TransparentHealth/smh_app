@@ -372,8 +372,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('content_list', dated_resources)
 
             # print("Content_List:", content_list)
-            for l in content_list:
-                print(l.keys())
+            # for l in content_list:
+            #     print(l.keys())
         return context
 
     def render_to_response(self, context, **kwargs):
