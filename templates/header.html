@@ -93,20 +93,27 @@
                     {% endif %}
                 </a>
                 <div class="dropdown-menu" aria-labelledby="">
+                    
+                    {% if request.user.profile.id_token_payload.organization_agent %}
                     <span class="navbar-text">
-                         {% if request.user.user_type.value == 'Organization Agent' %}
-                        <a class="account-menu nav-item" href="/org/dashboard">Dashboard</a>
-                         {% else %}
-                         <a class="account-menu nav-item" href="/member">Dashboard</a>
-                         {% endif %}
+                          <a class="account-menu nav-item" href="{{settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST}}">Verify Users</a>
+                         </span>
+                     <div role="separator" class="dropdown-divider"></div>
+                     {% endif %}
+                    
+                                    
+                    <span class="navbar-text">
+                        <a class="account-menu nav-item" href="/member/{{ request.user.id }}">Profile: Share My Health</a>
                     </span>
+                   
                     <div role="separator" class="dropdown-divider"></div>
                     <span class="navbar-text">
-                        <a class="account-menu nav-item" href="/member/{{ request.user.id }}">Profile ({{request.user.first_name|title}} {{request.user.last_name|title}})</a>
-                    </span>
+                          <a class="account-menu nav-item" href="{{settings.SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST}}/profile/{{request.user.profile.id_token_payload.sub}}">Profile: Verify My Identity</a>
+                         </span>
                     <div role="separator" class="dropdown-divider"></div>
+                    
                     <span class="navbar-text">
-                        <a class="account-menu nav-item" href="/logout">Log Out {{request.user.first_name|title}} {{request.user.last_name|title}}</a>
+                        <a class="account-menu nav-item" href="/logout">Log Out </a>
                     </span>
                 </div>
             </div>
