@@ -252,10 +252,20 @@ def dt_valuequantity(value):
             if mc:
                 # print("we found ", value['unit'], " in ", METRIC_CONVERSION)
                 if mc[0].lower() == "ft.in":
-                    feet = int((value['value'] * mc[1]) / 12)
-                    inches = int((((value['value'] * mc[1]) / 12) % feet) * 12)
+                    if value['value'] * mc[1] < 12:
+                        feet = 0
+                    else:
+                        feet = int((value['value'] * mc[1]) / 12)
+                    if value != 0:
+                        inches = int((((value['value'] * mc[1]) / 12) % feet) * 12)
+                    else:
+                        inches = 0
                     num_str = str(feet) + "ft " + str(inches) + "in"
                     f_value = num_str
+                elif mc[0].lower() == "in":
+                    inches = value['value'] * mc[1]
+                    num_str = "{:.{precision}f}".format(inches, precision=PRECISION)
+                    f_value = str(num_str) + " " + mc[0]
                 else:
                     num_str = "{:.{precision}f}".format(value['value'] * mc[1], precision=PRECISION)
                     f_value = str(num_str) + " " + mc[0]
