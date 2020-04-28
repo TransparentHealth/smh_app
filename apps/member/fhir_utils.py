@@ -494,6 +494,8 @@ def concatenate_lists(entry):
     # so we return entry
     if len(entry['entry']) > 0 and 'resourceType' in entry['entry'][0].keys():
         # print('not a grouped dict')
+        # print(entry)
+        # print("================\n\n")
         return entry
     # We have entries to deal with...
     # {'entry': [{'2020-12-22T09:30:00+00:00': [{'resourceType': 'Encounter', 'id': '672',
@@ -502,6 +504,36 @@ def concatenate_lists(entry):
             # print(k, "with value:", i[k])
             big_entry.extend(i[k])
     return {'entry': big_entry}
+
+
+def concatenate_output(entry):
+    """
+    Deal with groups of resources in dicts with key of date
+
+    :param entry:
+    :return big_entry|
+    """
+    big_entry = []
+
+    if isinstance(entry, dict):
+        if list(entry.keys())[0] == 'entry':
+            sub_entry = entry['entry']
+
+            for e in sub_entry:
+                if 'resourceType' in e:
+                    # print("adding to big_entry", e['id'])
+                    big_entry.append(e)
+                else:
+                    # print("no resourceType in e")
+                    # print(e)
+                    # print("-----------")
+                    for ek, ev in e.items():
+                        for ev_item in ev:
+                            if 'resourceType' in ev_item:
+                                big_entry.append(ev_item)
+
+            # print("big Entry", len(big_entry))
+            return {'entry': big_entry}
 
 
 def entry_check(entry):
@@ -521,6 +553,7 @@ def entry_check(entry):
         # print('not an entry list')
         # print("entry:", entry)
     else:
+        # print("not a dict so wrap as list in dict with key=entry")
         return {'entry': entry}
 
 
@@ -809,31 +842,31 @@ def filter_unique(entries, resource):
     filtered_entries = []
 
     for e in entries:
-        print("resource:", e['resourceType'], ", id:", e['id'])
+        # print("resource:", e['resourceType'], ", id:", e['id'])
         jp_parsing = parse(unique)
         result = jp_parsing.find(e)
-        print("Result:", unique, ":", result)
+        # print("Result:", unique, ":", result)
         results = [match.value for match in result]
         if len(results) > 0:
             matched_on = results[0]
         else:
             matched_on = None
-        print("RESULTS:", matched_on)
+        # print("RESULTS:", matched_on)
 
         if matched_on:
             if matched_on in found:
                 # we have seen result before so skip it
-                print("filtered out id:", e['id'])
+                # print("filtered out id:", e['id'])
                 pass
             else:
                 # we haven't seen this result before
-                print("filtered in ", e['id'])
+                # print("filtered in ", e['id'])
                 filtered_entries.append(e)
                 found.append(matched_on)
         else:
             # we didn't find the value based on the unique test so we add it to filtered_entries
-            print("no match for ", unique, " in ", e['id'])
+            # print("no match for ", unique, " in ", e['id'])
             filtered_entries.append(e)
 
-    print("changed from ", len(entries), " to ", len(filtered_entries))
+    # print("changed from ", len(entries), " to ", len(filtered_entries))
     return {'entry': filtered_entries}
