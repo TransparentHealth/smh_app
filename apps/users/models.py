@@ -87,6 +87,7 @@ class UserProfile(models.Model):
 
     @property
     def id_token_payload(self):
+        """Return the token Payload as a"""
         return self._id_token_payload
 
     @property
