@@ -49,7 +49,8 @@ def fetch_member_data(member, provider, refresh=False):
                 result_data = r.json()
             else:
                 result_data = {
-                    'error': 'Could not access member data',
+                    'error': 'Could not access member data. '
+                             'Please try again. [{status_code}]'.format(status_code=r.status_code),
                     'status': r.status_code,
                     'content': r.text,
                 }
