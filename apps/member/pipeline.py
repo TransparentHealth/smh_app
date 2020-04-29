@@ -5,7 +5,6 @@ from apps.notifications.models import Notification
 
 def connection_notifications(backend, user, response, *args, **kwargs):
     if backend.name in ['sharemyhealth']:
-        print(type(backend), backend)
         # Dismiss the notification prompting the user to connect
         notifications = Notification.objects.filter(
             notify_id=user.id,
