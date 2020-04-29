@@ -183,7 +183,7 @@ RECORDS_STU3 = [
     {'name': 'DeviceMetric', 'slug': 'devicemetric', 'call_type': 'skip', 'resources': ['DeviceMetric'], 'display': 'Device Metric', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'DeviceRequest', 'slug': 'devicerequest', 'call_type': 'skip', 'resources': ['DeviceRequest'], 'display': 'Device Request', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
     {'name': 'DeviceUseStatement', 'slug': 'deviceusestatement', 'call_type': 'skip', 'resources': ['DeviceUseStatement'], 'display': 'Device Use Statement', 'headers': ['id', '*'], 'exclude': ['meta', 'identifier', 'resourceType']},
-    {'name': 'DiagnosticReport', 'slug': 'diagnosticreport', 'call_type': 'fhir', 'resources': ['DiagnosticReport'],
+    {'name': 'DiagnosticReport', 'slug': 'diagnosticreport', 'call_type': 'skip', 'resources': ['DiagnosticReport'],
      'display': 'Diagnostic Report',
      'headers': ['id', 'status', 'effectivePeriod', 'result', '*'],
      'exclude': ['resourceType', 'meta', 'identifier', 'subject'],
