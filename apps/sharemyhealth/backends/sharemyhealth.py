@@ -17,6 +17,9 @@ class ShareMyHealthOAuth2Backend(OpenIdConnectAuth):
         super().__init__(*args, **kwargs)
         self.OIDC_ENDPOINT = getattr(
             settings, 'SOCIAL_AUTH_SHAREMYHEALTH_HOST')
+        self.REVOKE_TOKEN_METHOD = "POST"  # Just set for documentation
+        self.REVOKE_TOKEN_URL = "%s%s" % (
+            self.OIDC_ENDPOINT, "/o/revoke_token/")
 
     def request_access_token(self, *args, **kwargs):
         """
