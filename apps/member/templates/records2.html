@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load smhtags %}
+{% load fhirtags %}
+
+{% block extra_head %}
+{% endblock %}
+
+{% block content %}
+<div class="row mr-0 ml-0">
+    {% include "member_sidebar.html" with member=member %}
+    <div class="member-tabs col-lg-9 px-5">
+        {% include "time_since_update.html" %}
+        {% include "member_tabbed_nav.html" with member=member %}
+        <div role="tabpanel" aria-hidden="true" class=" tab-pane">
+
+            <!--
+                request data in context but not being shown here:
+                - patient_data
+                - organization_data
+                - medication_request_data
+
+                TODO: Loop through records_records in view instead and return an object that
+                sets record.number and link to detail view specific to
+                to the patient here.
+            -->
+            
+            {% if all_records %}
+                <!-- showing the list of all resources here -->
+                <div class="tile-flex mt-5">
+                    {% for record in all_records %}
+                       {% if record.count > 0 %}
+                    <a
+                        class="tile tile-flex__item {% if not record.count %} disabled {% endif %}"
+                        {% if record.count %}
+                            href="{% url return_to_view member.id record.slug %}"
+                        {% else %}
+                            href="#"
+                        {% endif %}
+                    >
+                        {% with 'images/icons/'|add:record.slug|add:".png" as source %}
+                            <img src="{% static source %}" alt="record.name">
+                        {% endwith %}
+                        <p>{{ record.display }}
+                            <span> {% if record.count %} ({{ record.count }}) {% endif %}</span>
+                        </p>
+                    </a>
+                        {%  endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- showing a list of a resource detail here -->
+                <div>
+                    <div class="record-heading-wrapper d-flex justify-content-between align-items-center pt-5 pb-2 mb-3">
+
+                        <h2 class="m-0">{% with 'images/icons/'|add:resource_profile.slug|add:".png" as source %}
+                            <img src="{% static source %}" alt="record.name" height="70" width="70">
+                        {% endwith %}&nbsp&nbsp{{ title }}</h2>
+                        <a href="{% url return_to_view member.id 'list' %}" class="button--reset">
+                            <img src="{% static 'images/icons/arrow-back.png' %}" alt="" class="mr-2">
+                            Go back to records
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+
+                        <table class="table table--records table-hover">
+                            <thead>
+                                <tr>
+                                    {% for heading in headers %}
+                                        <th>
+                                            {{ heading|friendlyfield:resource_profile.name }}
+                                        </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in content_list %}
+                                    <tr>
+                                        {% for key, value in item.items %}
+                                            {% if key in headers %}
+                                            <td>{% if key == "id" %}
+                                                <a href="" class="modal-link" data-toggle="modal"
+                                                    data-target="#record-detail--modal"
+                                                    data-url="/member/{{ member.id }}/data/{{ item.resourceType }}/{{ item.id }}">
+                                                   <img src='/static/images/icons/popup.png' alt='More info' height='20' width='20'>
+                                                </a>
+                                                {% elif value %}
+                                                    {% with member.id|stringformat:'i'|add:'.'|add:item.resourceType|add:'.'|add:key as format_list %}
+                                                        {{ value|valueformat:format_list }}
+                                                    {% endwith %}
+                                                {% else %}
+
+                                                {% endif %}
+                                            </td>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if "*" in headers %}
+                                            {% for key, value in item.items %}
+                                                {% if key in exclude or key in headers%}
+                                                {% else %}
+                                                    <td>
+                                                        {% with member.id|stringformat:'i'|add:'.'|add:item.resourceType|add:'.'|add:key as format_list %}
+                                                            {{ key|friendlyfield:resource_profile.name }}:<br/>{{ value|valueformat:format_list }}
+                                                        {% endwith %}
+                                                    </td>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        {% if settings.DEBUG and data.error %}
+        <div class="debug-panel">
+            <p class="alert alert-danger">{{ data.error }}</p>
+            {% for response in data.responses %}
+            <pre>
+{{ response }}
+            </pre>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% include 'member/record_detail_modal.html' %}
+
+{% endblock content %}
+
+{% block ExtraJSFoot %}
+<script>
+    $(document).ready(function() {
+        $('#record-detail--modal').on('show.bs.modal', function (event) {
+          var button = $(event.relatedTarget); // Button that triggered the modal
+          var modal = $(this);
+          var url = button.data('url');
+          modal.find('.modal-body').html(
+            '<div class="modal-image--block"><img src="{% static '/images/loading.gif' %}"/></div>');
+          $.get(url, function(data) {
+            if(data.includes('<html')) {
+                window.location = "{% url 'login' %}";
+                return;
+            };
+            modal.find('.modal-body').html(
+              '<div class="modal-body"><pre>' + data + '</pre></div>');
+          }).fail(function() {
+            modal.find('#record-detail--body').html("<p><em>Unable to display record.</em></p>");
+          });
+        });
+        {#$('#reference-detail--modal').on('show.bs.modal', function (event) {#}
+        {#  var button = $(event.relatedTarget); // Button that triggered the modal#}
+        {#  var modal = $(this);#}
+        {#  var url = button.data('url');#}
+        {#  modal.find('.modal-body').html(#}
+        {#    '<div class="modal-image--block"><img src="{% static '/images/loading.gif' %}"/></div>');#}
+        {#  $.get(url, function(data) {#}
+        {#    if(data.includes('<html')) {#}
+        {#        window.location = "{% url 'login' %}";#}
+        {#        return;#}
+        {#    };#}
+        {#    modal.find('.modal-body').html(#}
+        {#      '<div class="modal-body"><pre>' + data + '</pre></div>');#}
+        {#  }).fail(function() {#}
+        {#    modal.find('#reference-detail--body').html("<p><em>Reference information could not be loaded.</em></p>");#}
+        {#  });#}
+        {#});#}
+    });
+</script>{% endblock %}

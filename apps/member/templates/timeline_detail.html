@@ -1,0 +1,16 @@
+<div class="table-responsive">
+    <table class="table table--records table-hover">
+        {% for activity_date, item in content_list.items %}
+            <tr>
+                <td><b>{{ activity_date }}</b></td>
+            </tr>
+            <tr>
+                {%  autoescape off %}
+                {% for r in item %}
+                    {{ r|resourceview:member.id }}<br/>
+                {% endfor %}
+                {% endautoescape %}
+            </tr>
+        {% endfor %}
+    </table>
+</div>

@@ -211,7 +211,6 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = [
     'social_core.pipeline.social_auth.auth_allowed',
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.debug.debug',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
     'apps.member.pipeline.connection_notifications',
@@ -220,14 +219,17 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = [
 if DEBUG:
     SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE.append('social_core.pipeline.debug.debug')
 
+SHAREMYHEALTH_REVOKE_TOKENS_ON_DISCONNECT = True
 
-SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = (
+SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = [
     'social_core.pipeline.disconnect.allowed_to_disconnect',
+    'apps.sharemyhealth.pipeline.disconnect.remote_revoke',
     'social_core.pipeline.disconnect.get_entries',
     'social_core.pipeline.disconnect.revoke_tokens',
     'social_core.pipeline.disconnect.disconnect',
     'apps.member.pipeline.disconnection_notifications',
-)
+]
+
 
 # Settings for our custom OIDC and OAuth backends. Note: The name of the social auth
 # backend must come after 'SOCIAL_AUTH_' in these settings, in order for
@@ -272,6 +274,11 @@ REMOTE_ACCOUNT_DELETE_ENDPOINT = "%s/accounts/delete" % (
 RESOURCE_NAME_AND_CLASS_MAPPING = {
     'sharemyhealth': 'apps.sharemyhealth.resources.Resource'
 }
+
+
+CREATE_MEMBER_ACCOUNT_URI = "%s/home/select-org-for-account-create/member" % (SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
+CREATE_AGENT_ACCOUNT_URI = "%s/home/select-org-for-account-create/agent" % (SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
+SEARCH_FOR_MEMBER_URI = "%s/search" % (SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
 
 # Valid record types for member data
 VALID_MEMBER_DATA_RECORD_TYPES = [
@@ -392,6 +399,10 @@ SETTINGS_EXPORT = [
     'SESSION_COOKIE_AGE',
     'REMOTE_ACCOUNT_SETTINGS_ENDPOINT',
     'REMOTE_ACCOUNT_SET_PICTURE_ENDPOINT',
+    'CREATE_MEMBER_ACCOUNT_URI',
+    'CREATE_AGENT_ACCOUNT_URI',
+    'SEARCH_FOR_MEMBER_URI',
+    'SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST',
 ]
 
 # Django-phonenumber-field settings
@@ -407,13 +418,22 @@ SESSION_COOKIE_SAMESITE = None
 # Using django-session-security to manage session timeout
 SESSION_SECURITY_EXPIRE_AFTER = 30 * 60  # 30 min inactivity
 
+# CDAs and FHIR Resources can be large. Editing in Admin can fail
+# If we don't update the max limit (in bytes)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2621440 * 4
+#  2621440 = 2.5Mb
+
+# Used for Pretty Printing JSON
+JSON_INDENT = 4
+
 # AWS Settings -------------------------------------------
 AWS_DEFAULT_REGION = env('AWS_DEFAULT_REGION', 'us-east-1')
 
 EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES = env(
     'EC2PARAMSTORE_4_ENVIRONMENT_VARIABLES', "EC2_PARAMSTORE")
 
-VPC_ENV = env('VPC_ENV',"UNKNOWN")
+VPC_ENV = env('VPC_ENV', "UNKNOWN")
 ROLE_TYPE = env('ROLE_TYPE', "NOT_SET")
 
 LOGGING = {
@@ -453,7 +473,7 @@ LOGGING = {
     },
     'loggers': {
         # root logger
-        'smh':{
+        'smh': {
             'handlers': ['console', 'logging.handlers.SysLogHandler'],
             'propagate': True,
             'level': 'INFO',
