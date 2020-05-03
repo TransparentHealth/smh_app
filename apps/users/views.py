@@ -41,6 +41,14 @@ def mylogout(request):
             )
         except UserSocialAuth.DoesNotExist:
             pass
+        except UserSocialAuth.MultipleObjectsReturned:
+            logger.info(
+                _("%s remote logout of %s failed: Multiple Objects Returned")
+                % (request.user, settings.REMOTE_LOGOUT_ENDPOINT)
+            )
+            # print(request.user, "social:", request.user.social_auth)
+            logout(request)
+
         logger.info(_("$s logged out."), request.user)
         logout(request)
     # messages.success(request, _('You have been logged out.'))

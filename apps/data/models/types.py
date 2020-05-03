@@ -31,7 +31,7 @@ class CodeableConcept(DataModel):
 
     @classmethod
     def from_data(cls, value):
-        """CodeableConcept are sometimes given as plain strings; 
+        """ CodeableConcept are sometimes given as plain strings;
         interpret as the "text" value
         """
         if isinstance(value, str):
@@ -86,6 +86,10 @@ class Identifier(DataModel):
     value: str = None
     period: Period = field(default_factory=Period)
     assigner: Reference = field(default_factory=Reference)
+
+    # CONVERTERS = dict(
+    #     type=[CodeableConcept.from_data],
+    # )
 
     CONVERTERS = dict(
         type=[CodeableConcept.from_data],
@@ -169,6 +173,7 @@ class Address(DataModel):
     country: str = None
     period: Period = None
 
+    # CONVERTERS = dict(line=[list])
     CONVERTERS = dict(period=[Period.from_data], line=[list])
 
     @property

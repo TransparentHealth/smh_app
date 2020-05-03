@@ -468,6 +468,26 @@ pre {
   margin-right: auto;
   margin-left: auto; }
 
+.container-outline {
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  border: 3px solid #EFECEC;
+  border-radius: 16px;
+  box-sizing: border-box;
+  outline: 0px solid blueviolet;
+}
+
+  /*.outline {*/
+  /*  !* Rectangle *!*/
+  /*  # border: 3px solid #EFECEC;*/
+  /*  box-sizing: border-box;*/
+  /*  border-radius: 16px;*/
+  /*  # outline: 1px solid white;*/
+  /*}*/
+
 .row {
   display: flex;
   flex-wrap: wrap;
@@ -11823,7 +11843,7 @@ textarea {
 select,
 select.form-control,
 .modal-content-wrap form select {
-  background: #f3f3f6 url("/images/icons/caret.png") 95% center no-repeat;
+  background: #f3f3f6 url("/static/images/icons/caret.png") 95% center no-repeat;
   border: 0;
   border-radius: 40px;
   color: #131c4b;
@@ -12583,7 +12603,7 @@ small {
   object-position: 50% 30%; }
 
 .sidebar-background {
-  background-image: url("/images/sidebar-background.jpg");
+  background-image: url("/static/images/sidebar-background.jpg");
   background-position: center;
   background-repeat-y: repeat; }
 
@@ -12823,3 +12843,13 @@ small {
   .breadcrumb-link:hover {
     color: #4b66ea;
     border-bottom-color: #4b66ea; }
+
+.rectangle {
+  /* Rectangle */
+  position: absolute;
+  width: 50%;
+  height: 200px;
+
+  border: 3px solid #EFECEC;
+  box-sizing: border-box;
+  border-radius: 16px; }

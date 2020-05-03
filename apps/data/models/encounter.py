@@ -11,18 +11,24 @@ class EncounterParticipant(DataModel):
     period: Period = field(default_factory=Period)
     individual: Reference = field(default_factory=Reference)
 
+    print("Period:", Period)
+
     CONVERTERS = {
         'type': [lambda value: [CodeableConcept.from_data(val) for val in value]],
-        'period': [Period.from_data],
-        'individual': [Reference.from_data],
     }
+
+    # CONVERTERS = {
+    #     'type': [lambda value: [CodeableConcept.from_data(val) for val in value]],
+    #     'period': [Period.from_data],
+    #     'individual': [Reference.from_data],
+    # }
 
 
 @dataclass
 class EncounterLocation(DataModel):
     location: Reference = field(default_factory=Reference)
 
-    CONVERTERS = {'location': [Reference.from_data]}
+    # CONVERTERS = {'location': [Reference.from_data]}
 
 
 @dataclass
