@@ -211,7 +211,6 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = [
     'social_core.pipeline.social_auth.auth_allowed',
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.debug.debug',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
     'apps.member.pipeline.connection_notifications',
@@ -220,14 +219,17 @@ SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE = [
 if DEBUG:
     SOCIAL_AUTH_SHAREMYHEALTH_PIPELINE.append('social_core.pipeline.debug.debug')
 
+SHAREMYHEALTH_REVOKE_TOKENS_ON_DISCONNECT = True
 
-SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = (
+SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = [
     'social_core.pipeline.disconnect.allowed_to_disconnect',
+    'apps.sharemyhealth.pipeline.disconnect.remote_revoke',
     'social_core.pipeline.disconnect.get_entries',
     'social_core.pipeline.disconnect.revoke_tokens',
     'social_core.pipeline.disconnect.disconnect',
     'apps.member.pipeline.disconnection_notifications',
-)
+]
+
 
 # Settings for our custom OIDC and OAuth backends. Note: The name of the social auth
 # backend must come after 'SOCIAL_AUTH_' in these settings, in order for
