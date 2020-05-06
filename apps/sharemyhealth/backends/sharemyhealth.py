@@ -20,7 +20,7 @@ class ShareMyHealthOAuth2Backend(OpenIdConnectAuth):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.OIDC_ENDPOINT =  settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST
+        self.OIDC_ENDPOINT = settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST
         self.REVOKE_TOKEN_METHOD = "POST"  # Just set for documentation
 
         # Note the ending slash must be present for this POST
