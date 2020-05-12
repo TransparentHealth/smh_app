@@ -98,10 +98,13 @@
                                             {% for key, value in item.items %}
                                                 {% if key in exclude or key in headers%}
                                                 {% else %}
-                                                    <td>
-                                                        {% with member.id|stringformat:'i'|add:'.'|add:item.resourceType|add:'.'|add:key as format_list %}
-                                                            {{ key|friendlyfield:resource_profile.name }}:<br/>{{ value|valueformat:format_list }}
-                                                        {% endwith %}
+                                                    <td>{% if item.resourceType %}
+                                                            {% with member.id|stringformat:'i'|add:'.'|add:item.resourceType|add:'.'|add:key as format_list %}
+                                                                {{ key|friendlyfield:resource_profile.name }}:<br/>{{ value|valueformat:format_list }}
+                                                            {% endwith %}
+                                                        {% else %}
+                                                        <i>{{ key }}:{{ value }}</i>
+                                                        {% endif %}
                                                     </td>
                                                 {% endif %}
                                             {% endfor %}
