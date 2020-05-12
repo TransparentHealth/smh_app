@@ -31,7 +31,7 @@ def connection_notifications(backend, user, response, *args, **kwargs):
             notify=user,
             actor=user,
             actions=[{'url': action_url, 'text': 'Disconnect'}],
-            message=f'You connected to <b>HIXNY</b>',
+            message='You connected to <b>HIXNY</b>',
         )
 
 
