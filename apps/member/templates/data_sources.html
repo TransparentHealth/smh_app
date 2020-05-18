@@ -9,16 +9,21 @@
     {% include "member_sidebar.html" with member=member %}
     <div class="member-tabs col-lg-9">
         {% include "member_tabbed_nav.html" with member=member %}
-        <div class="data-sources">
-            
-               <div class="col alert alert-warning">
-        <p id="message1"></p>Even after disconnecting from a data source, you may still access it for 5 minutes or until you logout.
+        <div class="data-sources">    
+ 
+         
+         {% if search_error %}
+             <div class="col alert alert-danger">
+        <p id="search_error_message"></p> {{ search_error }}
         </div>
+            {% endif %}
         </div>
+        
+        
             <div class="mt-5">
                 
         
-                <h2>Current Data Sources</h2>
+                <h2>Connected Data Sources</h2>
                 {% for data_source in data_sources %}
                 
                     {% if data_source.connected %}
