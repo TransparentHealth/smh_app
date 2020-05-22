@@ -223,6 +223,7 @@ SHAREMYHEALTH_REVOKE_TOKENS_ON_DISCONNECT = True
 
 SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = [
     'social_core.pipeline.disconnect.allowed_to_disconnect',
+    'apps.sharemyhealth.pipeline.disconnect.delete_memory',
     'apps.sharemyhealth.pipeline.disconnect.remote_revoke',
     'social_core.pipeline.disconnect.get_entries',
     'social_core.pipeline.disconnect.revoke_tokens',
