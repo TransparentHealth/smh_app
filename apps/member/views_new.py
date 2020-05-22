@@ -661,7 +661,7 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 'image_url': static('images/icons/hixny.png'),
             }
         ]
-       # TODO simplify this code. Hard to read
+        # TODO simplify this code. Hard to read
         connected_source_providers = [
             source.provider for source in context['member'].social_auth.all()
         ]
