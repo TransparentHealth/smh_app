@@ -2,27 +2,78 @@
 {% load static %}
 
 {% block content %}
+
+
+        
 <div class="row mr-0 ml-0">
     {% include "member_sidebar.html" with member=member %}
-    <div class="member-tabs col-lg-9 p-5">
+    <div class="member-tabs col-lg-9">
         {% include "member_tabbed_nav.html" with member=member %}
-        <div class="data-sources">
+        <div class="data-sources">    
+ 
+         
+         {% if search_error %}
+             <div class="col alert alert-danger">
+        <p id="search_error_message"></p> {{ search_error }}
+        </div>
+            {% endif %}
+        </div>
+        
+        
             <div class="mt-5">
-                <h2>Current Data Sources</h2>
+                
+        
+                <h2>Connected Data Sources</h2>
                 {% for data_source in data_sources %}
+                
                     {% if data_source.connected %}
-                    <div class="tile-flex">
-                        {% if request.user == member %}
+                    <div class="row">
+ 
+                    
+                    <div class="modal fade" id="exampleModal{{ data_source.name }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel{{ data_source.name }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="exampleModalLabel">Confirm data source disconnection for {{ data_source.name }}</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                          Do you really want to disconnect from {{ data_source.name }}?
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        
+                         {% if request.user == member %}
                         <form action="{% url 'social:disconnect' 'sharemyhealth' %}" method="post">
                           {% csrf_token %}
                           <input type="hidden" name="next" value="{{ request.path }}"/>
-                          <button type="submit">
+                          <button type="submit" class="btn btn-primary">
+                    
+                            Yes, disconnect from {{ data_source.name }}
+                            
+                          </button>
+                        </form>
+                        {% endif %}
+                        
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                                      
+                    
+                    
+                    <div class="tile-flex">
+                        {% if request.user == member %}
+                        
+                          <button type="button" data-toggle="modal" data-target="#exampleModal{{ data_source.name }}">
                             <div class="tile tile-flex__item">
                                 <img src="{{ data_source.image_url }}" alt="data_source.name">
                                 <p>{{ data_source.name }}</p>
                             </div>
                           </button>
-                        </form>
+                        
                         {% else %}
                         <div class="tile tile-flex__item">
                             <img src="{{ data_source.image_url }}" alt="data_source.name">
@@ -30,7 +81,13 @@
                         </div>
                         {% endif %}
                     </div>
+                    
+             
                     {% endif %}
+                    
+                    
+                    
+                    
                 {% endfor %}
             </div>
             <div class="mt-5 pt-5">

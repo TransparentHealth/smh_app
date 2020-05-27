@@ -223,6 +223,7 @@ SHAREMYHEALTH_REVOKE_TOKENS_ON_DISCONNECT = True
 
 SOCIAL_AUTH_SHAREMYHEALTH_DISCONNECT_PIPELINE = [
     'social_core.pipeline.disconnect.allowed_to_disconnect',
+    'apps.sharemyhealth.pipeline.disconnect.delete_memory',
     'apps.sharemyhealth.pipeline.disconnect.remote_revoke',
     'social_core.pipeline.disconnect.get_entries',
     'social_core.pipeline.disconnect.revoke_tokens',
@@ -261,6 +262,7 @@ REMOTE_LOGOUT_ENDPOINT = "%s/api/v1/remote-logout" % (
     SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
 REMOTE_SET_PASSPHRASE_ENDPOINT = "%s/accounts/password-recovery-passphrase/" % (
     SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
+
 REMOTE_PASSWORD_RECOVERY_ENDPOINT = "%s/accounts/reset-password" % (
     SOCIAL_AUTH_VERIFYMYIDENTITY_OPENIDCONNECT_HOST)
 REMOTE_ACCOUNT_SETTINGS_ENDPOINT = "%s/accounts/settings" % (

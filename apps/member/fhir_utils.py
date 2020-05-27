@@ -45,9 +45,9 @@ def find_index(dicts, key, value):
 
 def find_list_entry(big_list, key, value):
     for bl in big_list:
-        # print("looking at", l, " with key:", key, " value: ", value)
+        # print("looking at", bl, " with key:", key, " value: ", value)
         if key in bl:
-            # print("checking", value, "against ", l[key])
+            # print("checking", value, "against ", bl[key])
             if bl[key] == value:
                 # print("found value:", value)
                 return bl

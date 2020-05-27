@@ -41,9 +41,7 @@ from .constants import RECORDS_STU3, FIELD_TITLES, RESOURCES
 # , PROVIDER_RESOURCES,
 # , VITALSIGNS
 from .forms import ResourceRequestForm
-from .utils import (
-     fetch_member_data
-)
+from .utils import (fetch_member_data, fetch_backend_api_responses)
 #     # get_allergies,
 #     get_prescriptions,
 #     get_resource_data,
@@ -129,7 +127,8 @@ class TimelineView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context.setdefault('return_to_view', return_to_view)
 
         ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        # this will only pull a local fhir file if VPC_ENV is not
+        # prod|stage|dev
         fhir_data = load_test_fhir_data(data)
         # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
@@ -181,7 +180,8 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context = context_updated_at(context)
 
         ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        # this will only pull a local fhir file if VPC_ENV is not
+        # prod|stage|dev
         fhir_data = load_test_fhir_data(data)
         # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
@@ -228,7 +228,8 @@ class SummaryView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         for record in all_records:
 
             if record['call_type'].lower() == "fhir":
-                entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                entries = get_converted_fhir_resource(
+                    fhir_data, record['resources'])
                 record['data'] = entries['entry']
                 record['count'] = len(entries['entry'])
                 summarized_records.append(record)
@@ -274,7 +275,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context.setdefault('return_to_view', return_to_view)
 
         ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        # this will only pull a local fhir file if VPC_ENV is not
+        # prod|stage|dev
         fhir_data = load_test_fhir_data(data)
         # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
@@ -297,7 +299,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             for record in all_records:
                 if record['call_type'].lower() == "fhir":
                     # print("record processing for ", record['name'])
-                    entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                    entries = get_converted_fhir_resource(
+                        fhir_data, record['resources'])
                     record['data'] = entries['entry']
                     record['count'] = len(entries['entry'])
                     summarized_records.append(record)
@@ -318,7 +321,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('all_records', summarized_records)
 
         else:
-            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_name)]
+            resource_profile = RECORDS_STU3[
+                find_index(RECORDS_STU3, "slug", resource_name)]
 
             # print("Resource Profile", resource_profile)
 
@@ -344,7 +348,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 entries = {'entry': []}
             else:
                 # print("Get, sort, join")
-                entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+                entries = get_converted_fhir_resource(
+                    fhir_data, [resource_profile['name']])
                 # if resource_profile['name'] == "Procedure":
                 # print(len(entries['entry']))
                 #     print("Procedures:", entries['entry'])
@@ -360,7 +365,8 @@ class RecordsView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 #     print("Procedures - post concatenate:", entries['entry'])
 
             content_list = path_extract(entries['entry'], resource_profile)
-            context.setdefault('friendly_fields', find_list_entry(FIELD_TITLES, "profile", resource_profile['name']))
+            context.setdefault('friendly_fields', find_list_entry(
+                FIELD_TITLES, "profile", resource_profile['name']))
             context.setdefault('title', title)
             context.setdefault('headers', headers)
             context.setdefault('exclude', exclude)
@@ -397,7 +403,8 @@ class PrescriptionDetailModalView(
         context['updated_at'] = parse_timestamp(data.get('updated_at'))
         context = context_updated_at(context)
         ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        # this will only pull a local fhir file if VPC_ENV is not
+        # prod|stage|dev
         fhir_data = load_test_fhir_data(data)
         # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
@@ -435,7 +442,8 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
                 pretty = True
 
         ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        # this will only pull a local fhir file if VPC_ENV is not
+        # prod|stage|dev
         fhir_data = load_test_fhir_data(data)
         # fhir_data = data.get('fhir_data')
 
@@ -447,9 +455,11 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
         #         fhir_data, id=resource_id, incl_practitioners=True, json=True
         #     )
         elif resource_type in RESOURCES:
-            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_type.lower())]
+            resource_profile = RECORDS_STU3[find_index(
+                RECORDS_STU3, "slug", resource_type.lower())]
             if resource_profile:
-                bundle = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+                bundle = get_converted_fhir_resource(
+                    fhir_data, [resource_profile['name']])
                 for entry in bundle['entry']:
                     if 'id' in entry:
                         if entry['id'] == resource_id:
@@ -457,7 +467,8 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
             if not pretty:
                 response_data = json.dumps(data, indent=settings.JSON_INDENT)
             else:
-                response_data = "<table>" + resourceview(data, member.pk) + "</table><hr/>"
+                response_data = "<table>" + \
+                    resourceview(data, member.pk) + "</table><hr/>"
                 # response_data += json.dumps(data, indent=settings.JSON_INDENT)
                 # print(response_data)
 
@@ -465,7 +476,8 @@ class DataView(LoginRequiredMixin, SelfOrApprovedOrgMixin, View):
 
         else:
             # fallback
-            data = ["we shall show the pretty view for ", resource_type, "[", resource_id, "]"]
+            data = ["we shall show the pretty view for ",
+                    resource_type, "[", resource_id, "]"]
             response_data = resourceview()
             # print("httpResponse:", response_data, "-----")
 
@@ -492,7 +504,8 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
         context.setdefault('return_to_view', return_to_view)
 
         ###
-        # this will only pull a local fhir file if VPC_ENV is not prod|stage|dev
+        # this will only pull a local fhir file if VPC_ENV is not
+        # prod|stage|dev
         fhir_data = load_test_fhir_data(data)
         # fhir_data = data.get('fhir_data')
         if settings.DEBUG:
@@ -516,7 +529,8 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             for record in all_records:
                 if record['call_type'].lower() == "fhir":
                     # print("record processing for ", record['name'])
-                    entries = get_converted_fhir_resource(fhir_data, record['resources'])
+                    entries = get_converted_fhir_resource(
+                        fhir_data, record['resources'])
                     if 'unique' in record:
                         print("", record['name'], " has ", record['unique'])
                         # We need to filter duplicates
@@ -542,7 +556,8 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             context.setdefault('all_records', summarized_records)
 
         else:
-            resource_profile = RECORDS_STU3[find_index(RECORDS_STU3, "slug", resource_name)]
+            resource_profile = RECORDS_STU3[
+                find_index(RECORDS_STU3, "slug", resource_name)]
 
             # print("Resource Profile", resource_profile)
 
@@ -567,7 +582,8 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             elif resource_profile['call_type'] == 'skip':
                 entries = {'entry': []}
             else:
-                entries = get_converted_fhir_resource(fhir_data, [resource_profile['name']])
+                entries = get_converted_fhir_resource(
+                    fhir_data, [resource_profile['name']])
                 # if resource_profile['name'] == "Procedure":
                 #     print(len(entries['entry']))
                 #     print("Procedures:", entries['entry'])
@@ -587,7 +603,8 @@ class ProvidersView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                     entries = filter_unique(entries['entry'], record)
 
             content_list = path_extract(entries['entry'], resource_profile)
-            context.setdefault('friendly_fields', find_list_entry(FIELD_TITLES, "profile", resource_profile['name']))
+            context.setdefault('friendly_fields', find_list_entry(
+                FIELD_TITLES, "profile", resource_profile['name']))
             context.setdefault('title', title)
             context.setdefault('headers', headers)
             context.setdefault('exclude', exclude)
@@ -620,7 +637,8 @@ class ProviderDetailView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateVie
                 'member'], 'sharemyhealth')
 
         # all_records = view_filter(RECORDS_STU3, 'provider')
-        practitioner_set = get_converted_fhir_resource(fhir_data, " Practitioner")
+        practitioner_set = get_converted_fhir_resource(
+            fhir_data, " Practitioner")
         context['practitioner'] = practitioner_set['entry']
 
         if not context['practitioner']:
@@ -643,6 +661,7 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
                 'image_url': static('images/icons/hixny.png'),
             }
         ]
+        # TODO simplify this code. Hard to read
         connected_source_providers = [
             source.provider for source in context['member'].social_auth.all()
         ]
@@ -652,6 +671,22 @@ class DataSourcesView(LoginRequiredMixin, SelfOrApprovedOrgMixin, TemplateView):
             if source['provider']
         ]
         context.setdefault('data_sources', data_sources)
+
+        # display HIXNY errors
+        for sp in connected_source_providers:
+            if str(sp) == 'sharemyhealth':
+                social_auth = context['member'].social_auth.filter(
+                    provider='sharemyhealth').first()
+                access_token = social_auth.extra_data.get('access_token')
+                backend_api_responses = fetch_backend_api_responses(
+                    access_token)
+                if "YOUR SEARCH CRITERIA YIELDED MULTIPLE MATCHES" in backend_api_responses['patient_search_response']:
+                    context["search_error"] = """YOUR SEARCH CRITERIA FOR HIXNY YIELDED MULTIPLE MATCHES.
+                                                 PLEASE PROVIDE ADDITIONAL INFORMATION TO GET AN EXACT MATCH."""
+                elif "NO MATCH FOUND" in backend_api_responses['patient_search_response']:
+                    context["search_error"] = """NO MATCH FOUND IN HIXNY."""
+                else:
+                    context["search_error"] = ""
         return context
 
 
