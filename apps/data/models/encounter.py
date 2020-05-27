@@ -64,4 +64,4 @@ class Encounter(DataModel):
 
     @property
     def locations_display(self):
-        return '; '.join(l.location.display for l in self.location)
+        return '; '.join(ld.location.display for ld in self.location)

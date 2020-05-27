@@ -44,13 +44,13 @@ def find_index(dicts, key, value):
 
 
 def find_list_entry(big_list, key, value):
-    for l in big_list:
+    for bl in big_list:
         # print("looking at", l, " with key:", key, " value: ", value)
-        if key in l:
+        if key in bl:
             # print("checking", value, "against ", l[key])
-            if l[key] == value:
+            if bl[key] == value:
                 # print("found value:", value)
-                return l
+                return bl
             else:
                 # print("no match for ", value)
                 pass
