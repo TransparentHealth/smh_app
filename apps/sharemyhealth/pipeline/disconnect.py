@@ -6,13 +6,21 @@ from social_django.models import UserSocialAuth
 import requests
 from django.conf import settings
 import logging
-
+from memoize import delete_memoized
+from ...member.utils import fetch_member_data
 __author__ = "Alan Viars"
 
 logger = logging.getLogger('smhapp_.%s' % __name__)
 
 
+def delete_memory(backend, user, *args, **kwargs):
+    """This should prevent a view of data after disconnect"""
+    if backend.name == 'sharemyhealth':
+        delete_memoized(fetch_member_data, user, backend.name)
+
+
 def remote_revoke(backend, user, *args, **kwargs):
+    """Perform a remote revocation of access_token and refresh_token"""
     if backend.name == 'sharemyhealth':
 
         usas = UserSocialAuth.objects.filter(user=user, provider=backend.name)
