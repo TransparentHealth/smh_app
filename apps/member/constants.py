@@ -50,7 +50,7 @@ PROVIDER_RESOURCES = ['Encounter', 'Location', 'Organization', 'Practitioner', '
 FIELD_TITLES = [
     {'profile': 'AllergyIntolerance',
      'elements': [
-         {'system_name': 'id', 'show_name': 'Ref#'},
+         {'system_name': 'id', 'show_name': 'detail'},
          {'system_name': 'clinicalStatus', 'show_name': 'CStatus'},
          {'system_name': 'verificationStatus', 'show_name': 'Verified'},
          {'system_name': 'onsetDateTime', 'show_name': 'Onset'},
@@ -60,41 +60,48 @@ FIELD_TITLES = [
      ]},
     {'profile': 'Condition',
      'elements': [
+         {'system_name': 'id', 'show_name': 'detail'},
          {'system_name': 'verificationStatus', 'show_name': 'verified'},
          {'system_name': 'onsetDateTime', 'show_name': 'On Set'},
      ]},
     {'profile': 'DiagnosticReport',
      'elements': [
+         {'system_name': 'id', 'show_name': 'detail'},
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
      ]},
     {'profile': 'Encounter',
      'elements': [
+         {'system_name': 'id', 'show_name': 'detail'},
          {'system_name': 'participant', 'show_name': 'Provider'},
      ]},
     {'profile': 'LabResults',
      'elements': [
+         {'system_name': 'id', 'show_name': 'detail'},
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
          {'system_name': 'valueQuantity', 'show_name': 'Result'},
          {'system_name': 'referenceRange', 'show_name': 'Range'},
      ]},
     {'profile': 'medicationRequest',
      'elements': [
+         {'system_name': 'id', 'show_name': 'detail'},
          {'system_name': 'dispenseRequest', 'show_name': 'Refills'},
          {'system_name': 'medicationReference', 'show_name': 'Medication'}
      ]},
     {'profile': 'MedicationStatement',
      'elements': [
-         {'system_name': 'id', 'show_name': 'Ref#'},
+         {'system_name': 'id', 'show_name': 'detail'},
          {'system_name': 'medicationReference', 'show_name': 'Medication'},
      ]},
     {'profile': 'Observation',
      'elements': [
+         {'system_name': 'id', 'show_name': 'detail'},
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
          {'system_name': 'valueQuantity', 'show_name': 'Result'},
          {'system_name': 'referenceRange', 'show_name': 'Range'},
      ]},
     {'profile': 'Patient',
      'elements': [
+         {'system_name': 'id', 'show_name': 'detail'},
          {'system_name': 'telecom', 'show_name': 'Contact Information'},
          {'system_name': 'gender', 'show_name': 'Gender'},
          {'system_name': 'birthDate', 'show_name': 'Date of Birth'},
@@ -102,6 +109,7 @@ FIELD_TITLES = [
      ]},
     {'profile': 'VitalSigns',
      'elements': [
+         {'system_name': 'id', 'show_name': 'detail'},
          {'system_name': 'effectivePeriod', 'show_name': 'Date'},
          {'system_name': 'valueQuantity', 'show_name': 'Result'},
          {'system_name': 'referenceRange', 'show_name': 'Range'},

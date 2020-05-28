@@ -16,16 +16,25 @@ from apps.users.utils import refresh_access_token
 logger = logging.getLogger(__name__)
 
 
+def fetch_backend_api_responses(access_token):
+    # Call the backend API response API so we can display errors from
+    # InterSystems HealthShare
+    url = "%s/hixny/api/back-end-api-responses" % (
+        settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST)
+    r = requests.get(
+        url, headers={'Authorization': 'Bearer %s' % access_token})
+    return json.loads(r.content)
+
+
 @memoize(timeout=300)
 def fetch_member_data(member, provider, refresh=False):
     '''Fetch FHIR data from HIXNY data provider (sharemyhealth)
-    
     If refresh=True, it will instruct the api to refresh the patient data.
     '''
-    url = f"{settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST}/hixny/api/fhir/stu3/Patient/$everything"
+    url = "%s/hixny/api/fhir/stu3/Patient/$everything" % (
+        settings.SOCIAL_AUTH_SHAREMYHEALTH_HOST)
     params = {'refresh': refresh}
     social_auth = member.social_auth.filter(provider=provider).first()
-
     # fallback
     result_data = {}
 
@@ -42,7 +51,8 @@ def fetch_member_data(member, provider, refresh=False):
                 if refreshed:  # repeat the previous request
                     access_token = social_auth.extra_data.get('access_token')
                     r = requests.get(
-                        url, headers={'Authorization': 'Bearer %s' % access_token}
+                        url, headers={
+                            'Authorization': 'Bearer %s' % access_token}
                     )
 
             if r.status_code == 200:
@@ -50,7 +60,8 @@ def fetch_member_data(member, provider, refresh=False):
             else:
                 result_data = {
                     'error': 'Could not access member data. '
-                             'Please try again. [{status_code}]'.format(status_code=r.status_code),
+                             'Please try again. [{status_code}]'.format(
+                                 status_code=r.status_code),
                     'status': r.status_code,
                     'content': r.text,
                 }
