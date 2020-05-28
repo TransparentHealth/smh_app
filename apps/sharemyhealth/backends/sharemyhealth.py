@@ -13,7 +13,7 @@ class ShareMyHealthOAuth2Backend(OpenIdConnectAuth):
     """
 
     name = "sharemyhealth"
-
+    
     # http://openid.net/specs/openid-connect-core-1_0.html#rfc.section.15.6.2
 
     DEFAULT_SCOPE = []
